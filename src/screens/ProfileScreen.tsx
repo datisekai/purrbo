@@ -147,18 +147,24 @@ export default function ProfileScreen({ navigation }: any) {
           </Pressable>
         </View>
 
-        {/* Stats */}
-        <View style={s.sgrid}>
-          {stats.map((st, i) => (
-            <View key={i} style={s.stile}>
-              <View style={[s.si, { backgroundColor: st.bg }]}>
-                <Icon name={st.ic} size={18} color={st.col} />
+        {/* Stats — chạm để xem biểu đồ */}
+        <Pressable onPress={() => navigation.navigate('Stats')}>
+          <View style={s.sgrid}>
+            {stats.map((st, i) => (
+              <View key={i} style={s.stile}>
+                <View style={[s.si, { backgroundColor: st.bg }]}>
+                  <Icon name={st.ic} size={18} color={st.col} />
+                </View>
+                <Text style={s.stileNum}>{st.n}</Text>
+                <Text style={s.stileLbl}>{st.l}</Text>
               </View>
-              <Text style={s.stileNum}>{st.n}</Text>
-              <Text style={s.stileLbl}>{st.l}</Text>
-            </View>
-          ))}
-        </View>
+            ))}
+          </View>
+          <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 4, marginTop: 8 }}>
+            <Text style={{ fontFamily: fonts.heading, fontSize: 12, color: colors.purpleDark }}>Xem thống kê chi tiết</Text>
+            <Icon name="star" size={12} color={colors.purpleDark} />
+          </View>
+        </Pressable>
 
         {/* Bạn đồng hành hiện tại */}
         <View style={s.stitle}>

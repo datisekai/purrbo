@@ -14,7 +14,7 @@ from api.app.db import SessionLocal, init_db
 from api.app.models import Persona
 from api.app.routers import (
     admin, appconfig, auth, chat, gacha, habits, integrations, items, nlp, personas, profile,
-    rewards, settings as settings_router,
+    rewards, stats, settings as settings_router,
 )
 from api.app.routers.items import seed_items
 
@@ -101,7 +101,7 @@ async def _http_exc(request, exc: StarletteHTTPException):
 
 
 # AD-12: mọi API dưới /v1
-for r in (auth, personas, habits, chat, gacha, settings_router, profile, nlp, integrations, appconfig, admin, rewards, items):
+for r in (auth, personas, habits, chat, gacha, settings_router, profile, nlp, integrations, appconfig, admin, rewards, items, stats):
     app.include_router(r.router, prefix="/v1")
 
 

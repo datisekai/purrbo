@@ -77,6 +77,7 @@ export const Api = {
   config: () => req('/config') as Promise<any>,   // cấu hình động (gói/tỉ lệ/copy) — quản lý ở web admin
   profile: () => req('/profile'),
   updateProfile: (body: { name?: string; timezone?: string }) => req('/profile', { method: 'PUT', body }),
+  stats: () => req('/stats') as Promise<{ streak: number; best_streak: number; total_done: number; active_days: number; days: { ymd: string; dd: number; count: number }[] }>,
   nlpParse: (text: string) => req('/nlp/parse', { method: 'POST', body: { text } }),
   chatHistory: () => req('/chat'),
   sendChat: (text: string) => req('/chat', { method: 'POST', body: { text } }),
