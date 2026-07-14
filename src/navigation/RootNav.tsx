@@ -1,9 +1,10 @@
 import React from 'react';
-import { View, Text, ActivityIndicator } from 'react-native';
+import { Text } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { colors, fonts } from '../theme';
 import { Icon } from '../components/Icon';
+import { LoadingScreen } from '../components/LoadingScreen';
 import { useAuth } from '../auth';
 
 import HomeScreen from '../screens/HomeScreen';
@@ -56,14 +57,9 @@ export default function RootNav() {
   const { ready, token, onboarded } = useAuth();
 
   if (!ready) {
-    // Loading screen MÀU HỒNG (không phải trắng) — nếu app kẹt ở đây thì thấy
-    // hồng + spinner, phân biệt được với "JS không vẽ gì" (trắng tinh).
-    return (
-      <View style={{ flex: 1, backgroundColor: '#FF4D8D', alignItems: 'center', justifyContent: 'center' }}>
-        <ActivityIndicator size="large" color="#fff" />
-        <Text style={{ color: '#fff', marginTop: 14, fontSize: 15, fontWeight: '700' }}>Đang khởi động Purrbo…</Text>
-      </View>
-    );
+    // Màn khởi động: linh vật mèo cam animation (nền hồng-kem, KHÁC trắng #FFF)
+    // → không bao giờ để màn trắng trơ; kẹt ở đây vẫn thấy mèo + "Đang khởi động".
+    return <LoadingScreen message="Đang khởi động Purrbo…" sub="chờ xíu nha cưng 🐾" />;
   }
 
   return (
