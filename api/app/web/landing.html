@@ -213,6 +213,7 @@
   .pgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(148px,1fr));gap:16px;margin-top:30px}
   .pcard{background:#fff;border:2px solid #fff;border-radius:22px;padding:18px 12px;text-align:center;box-shadow:var(--shadow);position:relative}
   .pcard svg{width:76px;height:76px}
+  .pcard svg.chibi{width:74px;height:106px}
   .pcard .pname{font-weight:800;font-size:16px;margin-top:8px}
   .pcard .ptag{color:var(--muted);font-size:12px;margin-top:2px;min-height:30px}
   .rar{position:absolute;top:10px;right:10px;font-size:10px;font-weight:800;color:#fff;padding:2px 8px;border-radius:999px;letter-spacing:.4px}
@@ -733,37 +734,77 @@
 </footer>
 
 <script>
+// Mỗi persona có MẮT + MIỆNG riêng (đồng bộ với app: src/components/PersonaFace.tsx).
 var PERSONAS = [
-  {name:'Mun',   c:'#6B6480', ear:'cat',   rar:'SSR',    tag:'tsundere · cà khịa yêu'},
-  {name:'Mochi', c:'#FF9E4D', ear:'cat',   rar:'SSR',    tag:'soft · ngọt xỉu thả thính'},
-  {name:'Lỳ',    c:'#E8743B', ear:'fox',   rar:'SSR',    tag:'bad-boy · thính thủ lạnh'},
-  {name:'Sếp',   c:'#8B7BB0', ear:'cat',   rar:'Hiếm',   tag:'tổng tài · chủ động', glasses:1},
-  {name:'Bông',  c:'#F4A6C0', ear:'bunny', rar:'Hiếm',   tag:'nũng nịu · uwu'},
-  {name:'Xu',    c:'#34D399', ear:'cat',   rar:'Hiếm',   tag:'hype · năng lượng vô cực', antenna:1},
-  {name:'Bơ',    c:'#7FB77E', ear:'bear',  rar:'Thường', tag:'chill · ít nói mà ấm'},
-  {name:'Sìn',   c:'#E8B04B', ear:'dog',   rar:'Thường', tag:'trung thành · quấn chủ'},
+  {name:'Mun',   c:'#6B6480', ear:'cat',   rar:'SSR',    tag:'tsundere · cà khịa yêu',        eye:'tsun',    mouth:'smug'},
+  {name:'Mochi', c:'#FF9E4D', ear:'cat',   rar:'SSR',    tag:'soft · ngọt xỉu thả thính',     eye:'sparkle', mouth:'smile', blush:1},
+  {name:'Lỳ',    c:'#E8743B', ear:'fox',   rar:'SSR',    tag:'bad-boy · thính thủ lạnh',      eye:'sharp',   mouth:'smirk'},
+  {name:'Sếp',   c:'#8B7BB0', ear:'cat',   rar:'Hiếm',   tag:'tổng tài · chủ động',           glasses:1,     mouth:'flat'},
+  {name:'Bông',  c:'#F4A6C0', ear:'bunny', rar:'Hiếm',   tag:'nũng nịu · uwu',                eye:'big',     mouth:'uwu',   blush:1},
+  {name:'Xu',    c:'#34D399', ear:'cat',   rar:'Hiếm',   tag:'hype · năng lượng vô cực',      antenna:1,     eye:'wide',    mouth:'grin'},
+  {name:'Bơ',    c:'#7FB77E', ear:'bear',  rar:'Thường', tag:'chill · ít nói mà ấm',          eye:'sleepy',  mouth:'smile'},
+  {name:'Sìn',   c:'#E8B04B', ear:'dog',   rar:'Thường', tag:'trung thành · quấn chủ',        eye:'happy',   mouth:'tongue'},
 ];
 var RARC = {'SSR':'#FFB23E','Hiếm':'#38BDF8','Thường':'#9AA0B4'};
-function ears(e,c){var S='#2E2A3F';
+var D='#2E2A3F';
+function ears(e,c){var S=D;
   if(e==='bear')  return '<circle cx="20" cy="18" r="8" fill="'+c+'" stroke="'+S+'" stroke-width="2.5"/><circle cx="44" cy="18" r="8" fill="'+c+'" stroke="'+S+'" stroke-width="2.5"/>';
   if(e==='bunny') return '<ellipse cx="24" cy="12" rx="5" ry="13" fill="'+c+'" stroke="'+S+'" stroke-width="2.5"/><ellipse cx="40" cy="12" rx="5" ry="13" fill="'+c+'" stroke="'+S+'" stroke-width="2.5"/>';
   if(e==='fox')   return '<path d="M15 22 L18 5 L31 17 Z" fill="'+c+'" stroke="'+S+'" stroke-width="2.5" stroke-linejoin="round"/><path d="M49 22 L46 5 L33 17 Z" fill="'+c+'" stroke="'+S+'" stroke-width="2.5" stroke-linejoin="round"/>';
   if(e==='dog')   return '<path d="M16 16 q-6 4 -3 15 l9 -6 Z" fill="'+c+'" stroke="'+S+'" stroke-width="2.5" stroke-linejoin="round"/><path d="M48 16 q6 4 3 15 l-9 -6 Z" fill="'+c+'" stroke="'+S+'" stroke-width="2.5" stroke-linejoin="round"/>';
   return '<path d="M18 20 L22 8 L30 18 Z" fill="'+c+'" stroke="'+S+'" stroke-width="2.5" stroke-linejoin="round"/><path d="M46 20 L42 8 L34 18 Z" fill="'+c+'" stroke="'+S+'" stroke-width="2.5" stroke-linejoin="round"/>';
 }
-function face(p){
+// Mắt theo kiểu (2 mắt tại x=25 & x=39, y≈33).
+function eye1(k,x){
+  if(k==='sparkle') return '<circle cx="'+x+'" cy="33" r="3.8" fill="'+D+'"/><circle cx="'+(x+1.2)+'" cy="31.4" r="1.3" fill="#fff"/><circle cx="'+(x-1)+'" cy="34" r="0.7" fill="#fff"/>';
+  if(k==='big')     return '<circle cx="'+x+'" cy="33" r="4.6" fill="'+D+'"/><circle cx="'+(x+1.4)+'" cy="31" r="1.8" fill="#fff"/><circle cx="'+(x-1.2)+'" cy="34.4" r="0.9" fill="#fff"/>';
+  if(k==='wide')    return '<circle cx="'+x+'" cy="33" r="4.2" fill="#fff" stroke="'+D+'" stroke-width="2"/><circle cx="'+x+'" cy="33" r="2" fill="'+D+'"/>';
+  if(k==='tsun')    return '<path d="M'+(x-4)+' 31.5 h8" stroke="'+D+'" stroke-width="2.6" stroke-linecap="round"/><circle cx="'+x+'" cy="34" r="2" fill="'+D+'"/>';
+  if(k==='sharp')   return '<path d="M'+(x-4)+' 34.5 Q'+x+' 31 '+(x+4)+' 33.5" stroke="'+D+'" stroke-width="2.8" fill="none" stroke-linecap="round"/>';
+  if(k==='sleepy')  return '<path d="M'+(x-3.5)+' 33.5 h7" stroke="'+D+'" stroke-width="2.6" stroke-linecap="round"/>';
+  if(k==='happy')   return '<path d="M'+(x-3.6)+' 34 Q'+x+' 30 '+(x+3.6)+' 34" stroke="'+D+'" stroke-width="2.6" fill="none" stroke-linecap="round"/>';
+  return '<circle cx="'+x+'" cy="33" r="3.4" fill="'+D+'"/><circle cx="'+(x+1)+'" cy="31.8" r="1" fill="#fff"/>';
+}
+function eyesSvg(k){ return eye1(k,25)+eye1(k,39); }
+// Miệng theo kiểu (vùng y≈42-47).
+function mouthSvg(k){
+  if(k==='smug')  return '<path d="M30 44 Q34 47 38 43" stroke="'+D+'" stroke-width="2.4" fill="none" stroke-linecap="round"/>';
+  if(k==='smirk') return '<path d="M28 45 Q33 44 38 41" stroke="'+D+'" stroke-width="2.4" fill="none" stroke-linecap="round"/>';
+  if(k==='flat')  return '<path d="M28 44 h8" stroke="'+D+'" stroke-width="2.4" stroke-linecap="round"/>';
+  if(k==='uwu')   return '<path d="M27 43 q2.5 2.6 5 0 q2.5 2.6 5 0" stroke="'+D+'" stroke-width="2.2" fill="none" stroke-linecap="round"/>';
+  if(k==='grin')  return '<path d="M27 42 Q32 49 37 42 Z" fill="'+D+'"/><path d="M28.5 43.4 Q32 45.2 35.5 43.4" fill="#FF7AA8"/>';
+  if(k==='tongue')return '<path d="M28 42 Q32 47 36 42 Z" fill="'+D+'"/><path d="M30.5 44 q1.5 3 3 0 Z" fill="#FF7AA8"/>';
+  return '<path d="M27 42 Q32 47 37 42" stroke="'+D+'" stroke-width="2.6" fill="none" stroke-linecap="round"/>';
+}
+// Nội dung ĐẦU (viewBox 64×64) — dùng chung cho avatar & chibi.
+function faceInner(p){
   var eyes = p.glasses
-    ? '<circle cx="25" cy="33" r="5.5" fill="none" stroke="#2E2A3F" stroke-width="2.5"/><circle cx="39" cy="33" r="5.5" fill="none" stroke="#2E2A3F" stroke-width="2.5"/><path d="M30.5 33h3" stroke="#2E2A3F" stroke-width="2.5"/><circle cx="25" cy="33" r="2.2" fill="#2E2A3F"/><circle cx="39" cy="33" r="2.2" fill="#2E2A3F"/>'
-    : '<circle cx="25" cy="33" r="3.4" fill="#2E2A3F"/><circle cx="39" cy="33" r="3.4" fill="#2E2A3F"/><circle cx="26" cy="32" r="1" fill="#fff"/><circle cx="40" cy="32" r="1" fill="#fff"/>';
+    ? '<circle cx="25" cy="33" r="5.5" fill="none" stroke="'+D+'" stroke-width="2.5"/><circle cx="39" cy="33" r="5.5" fill="none" stroke="'+D+'" stroke-width="2.5"/><path d="M30.5 33h3" stroke="'+D+'" stroke-width="2.5"/><circle cx="25" cy="33" r="2.2" fill="'+D+'"/><circle cx="39" cy="33" r="2.2" fill="'+D+'"/>'
+    : eyesSvg(p.eye);
   var ant = p.antenna ? '<path d="M32 6 v8" stroke="'+p.c+'" stroke-width="3" stroke-linecap="round"/><circle cx="32" cy="5" r="3" fill="#FF4D8D"/>' : '';
-  return '<svg viewBox="0 0 64 64" aria-hidden="true">'+ears(p.ear,p.c)+ant+
-    '<circle cx="32" cy="34" r="22" fill="'+p.c+'" stroke="#2E2A3F" stroke-width="3"/>'+eyes+
-    '<circle cx="20" cy="41" r="3.2" fill="#FF7AA8" opacity=".65"/><circle cx="44" cy="41" r="3.2" fill="#FF7AA8" opacity=".65"/>'+
-    '<path d="M27 42 Q32 47 37 42" stroke="#2E2A3F" stroke-width="2.6" fill="none" stroke-linecap="round"/></svg>';
+  var br = p.blush ? '3.9' : '3.2', bo = p.blush ? '.9' : '.6';
+  return ears(p.ear,p.c)+ant+
+    '<circle cx="32" cy="34" r="22" fill="'+p.c+'" stroke="'+D+'" stroke-width="3"/>'+eyes+
+    '<circle cx="20" cy="41" r="'+br+'" fill="#FF7AA8" opacity="'+bo+'"/><circle cx="44" cy="41" r="'+br+'" fill="#FF7AA8" opacity="'+bo+'"/>'+
+    mouthSvg(p.mouth);
+}
+// Avatar tròn (chỉ đầu) — cho mockup nhỏ.
+function face(p){ return '<svg viewBox="0 0 64 64" aria-hidden="true">'+faceInner(p)+'</svg>'; }
+// Chibi TOÀN THÂN (đầu to + thân + tay + chân) — cho gallery persona.
+function chibi(p){ var C=p.c;
+  return '<svg class="chibi" viewBox="0 0 64 92" aria-hidden="true">'+
+    '<ellipse cx="32" cy="89" rx="16" ry="3.2" fill="'+D+'" opacity="0.12"/>'+
+    '<ellipse cx="14" cy="64" rx="5" ry="7.5" fill="'+C+'" stroke="'+D+'" stroke-width="2.6" transform="rotate(18 14 64)"/>'+
+    '<ellipse cx="50" cy="64" rx="5" ry="7.5" fill="'+C+'" stroke="'+D+'" stroke-width="2.6" transform="rotate(-18 50 64)"/>'+
+    '<ellipse cx="25" cy="86" rx="6" ry="4.2" fill="'+C+'" stroke="'+D+'" stroke-width="2.6"/>'+
+    '<ellipse cx="39" cy="86" rx="6" ry="4.2" fill="'+C+'" stroke="'+D+'" stroke-width="2.6"/>'+
+    '<path d="M17 60 Q17 50 32 50 Q47 50 47 60 L46 78 Q46 87 32 87 Q18 87 18 78 Z" fill="'+C+'" stroke="'+D+'" stroke-width="3" stroke-linejoin="round"/>'+
+    '<ellipse cx="32" cy="70" rx="9" ry="12" fill="#fff" opacity="0.22"/>'+
+    faceInner(p)+'</svg>';
 }
 document.getElementById('pgrid').innerHTML = PERSONAS.map(function(p){
   return '<div class="pcard"><span class="rar" style="background:'+RARC[p.rar]+'">'+p.rar.toUpperCase()+'</span>'+
-    face(p)+'<div class="pname">'+p.name+'</div><div class="ptag">'+p.tag+'</div></div>';
+    chibi(p)+'<div class="pname">'+p.name+'</div><div class="ptag">'+p.tag+'</div></div>';
 }).join('');
 
 // ── Ảnh giao diện: đổ mặt persona vào mockup ──
