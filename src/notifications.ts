@@ -4,6 +4,7 @@ import { Platform } from 'react-native';
 import * as Notifications from 'expo-notifications';
 import Constants from 'expo-constants';
 import { Api } from './api';
+import { navigate } from './navigation/ref';
 
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
@@ -37,13 +38,28 @@ export async function ensureNotifPermission(): Promise<boolean> {
   return req.granted;
 }
 
+// Deep-link: chạm thông báo → mở đúng màn (mặc định về Home). Xử lý cả
+// cold-start (mở app từ notif) lẫn khi app đang chạy. Gọi 1 lần ở App.
+export function setupNotificationNavigation(): () => void {
+  const go = (data: any) => navigate(data?.target || 'Main', data?.params);
+  Notifications.getLastNotificationResponseAsync()
+    .then((resp) => {
+      if (resp) setTimeout(() => go(resp.notification.request.content.data), 500);
+    })
+    .catch(() => {});
+  const sub = Notifications.addNotificationResponseReceivedListener((resp) => {
+    go(resp.notification.request.content.data);
+  });
+  return () => sub.remove();
+}
+
 // Gửi 1 thông báo TEST sau 3 giây — để user kiểm tra notif thật sự chạy.
 export async function sendTestNotification(): Promise<boolean> {
   try {
     const ok = await ensureNotifPermission();
     if (!ok) return false;
     await Notifications.scheduleNotificationAsync({
-      content: { title: 'Purrbo 🐾', body: 'Thử nè cưng! Nhận được là notif đang chạy ngon 💗' },
+      content: { title: 'Purrbo 🐾', body: 'Thử nè cưng! Nhận được là notif đang chạy ngon 💗', data: { target: 'Main' } },
       trigger: { seconds: 3, channelId: 'purrbo-reminders' } as any,
     });
     return true;
@@ -82,7 +98,7 @@ export async function scheduleHabitReminders(habits: Habit[]): Promise<void> {
     await Notifications.cancelAllScheduledNotificationsAsync();
     for (const h of habits) {
       const body = `${h.name} — em đang hóng cưng khoe đó 👀💗`;
-      const content = { title: 'Purrbo 🐾', body };
+      const content = { title: 'Purrbo 🐾', body, data: { target: 'Main' } };
       const repeat = String(h.repeat || 'daily');
 
       // Mỗi X giờ — không cần giờ cố định

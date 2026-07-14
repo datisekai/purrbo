@@ -11,8 +11,9 @@ import {
   BeVietnamPro_600SemiBold, BeVietnamPro_700Bold, BeVietnamPro_800ExtraBold,
 } from '@expo-google-fonts/be-vietnam-pro';
 import RootNav from './src/navigation/RootNav';
+import { navigationRef } from './src/navigation/ref';
 import { AuthProvider } from './src/auth';
-import { ensureNotifPermission, registerPushToken } from './src/notifications';
+import { ensureNotifPermission, registerPushToken, setupNotificationNavigation } from './src/notifications';
 import { initSound } from './src/sound';
 
 const queryClient = new QueryClient();  // AD-10
@@ -27,6 +28,8 @@ export default function App() {
     ensureNotifPermission();  // AD-9: xin quyền + tạo Android channel
     registerPushToken();      // remote push (chỉ dev build; Expo Go tự bỏ qua)
     initSound();              // nhạc nền + sfx (bọc try/catch, thiếu module không sao)
+    const off = setupNotificationNavigation();  // chạm notif → mở đúng màn
+    return off;
   }, []);
 
   if (!loaded) return null;
@@ -35,7 +38,7 @@ export default function App() {
       <StatusBar style="dark" />
       <QueryClientProvider client={queryClient}>
         <AuthProvider>
-          <NavigationContainer>
+          <NavigationContainer ref={navigationRef}>
             <RootNav />
           </NavigationContainer>
         </AuthProvider>
