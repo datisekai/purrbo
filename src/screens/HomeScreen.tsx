@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { View, Text, ScrollView, Pressable, StyleSheet } from 'react-native';
+import { View, Text, ScrollView, Pressable, RefreshControl, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect } from '@react-navigation/native';
 import { colors, fonts, radii, hardShadow } from '../theme';
@@ -31,26 +31,34 @@ export default function HomeScreen({ navigation }: any) {
   const [claimable, setClaimable] = useState(0);
   const [equipped, setEquipped] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+
+  // Nạp toàn bộ dữ liệu Home (dùng cho mount + kéo làm mới).
+  const loadCore = useCallback(async () => {
+    try {
+      const [state, hs, cat] = await Promise.all([Api.state(), Api.habits(), Api.personas()]);
+      setSt(state);
+      setHabits(hs);
+      scheduleHabitReminders(hs);   // AD-9: đặt nhắc local theo giờ habit
+      const active = Array.isArray(cat) ? cat.find((p: any) => p.key === state.persona_key) : null;
+      if (active) setPersona(active);
+    } catch {
+      /* backend chưa chạy → giữ trạng thái mặc định */
+    }
+    try { const cfg = await Api.config(); if (cfg?.home_nudge) setLine(cfg.home_nudge); } catch {}
+    try { const m = await Api.missions(); setClaimable(m?.claimable_gems || 0); } catch {}
+    try { const e = await Api.equippedItems(); setEquipped(e || {}); } catch {}
+  }, []);
 
   useEffect(() => {
-    (async () => {
-      try {
-        const [state, hs, cat] = await Promise.all([Api.state(), Api.habits(), Api.personas()]);
-        setSt(state);
-        setHabits(hs);
-        scheduleHabitReminders(hs);   // AD-9: đặt nhắc local theo giờ habit
-        const active = Array.isArray(cat) ? cat.find((p: any) => p.key === state.persona_key) : null;
-        if (active) setPersona(active);
-      } catch {
-        /* backend chưa chạy → giữ trạng thái mặc định */
-      }
-      try {
-        const cfg = await Api.config();   // câu nhắc chủ đạo sửa được ở web admin
-        if (cfg?.home_nudge) setLine(cfg.home_nudge);
-      } catch {}
-      setLoading(false);
-    })();
-  }, []);
+    (async () => { await loadCore(); setLoading(false); })();
+  }, [loadCore]);
+
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    await loadCore();
+    setRefreshing(false);
+  }, [loadCore]);
 
   // Refresh mỗi lần vào Home: nhiệm vụ chờ nhận + persona ĐANG DÙNG (đổi ở nơi khác → phản ánh ngay).
   useFocusEffect(
@@ -88,7 +96,11 @@ export default function HomeScreen({ navigation }: any) {
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: colors.bg }} edges={['top']}>
-      <ScrollView contentContainerStyle={{ padding: 18, paddingBottom: 40 }} showsVerticalScrollIndicator={false}>
+      <ScrollView
+        contentContainerStyle={{ padding: 18, paddingBottom: 40 }}
+        showsVerticalScrollIndicator={false}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.pink} colors={[colors.pink]} />}
+      >
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 14 }}>
           <AnimatedMascot size={34} />
           <Text style={{ fontFamily: fonts.display, fontSize: 20, color: colors.ink }}>Purr<Text style={{ color: colors.pink }}>bo</Text></Text>
@@ -149,13 +161,22 @@ export default function HomeScreen({ navigation }: any) {
 
         <View style={s.stitle}>
           <Text style={s.stitleTxt}>Việc hôm nay</Text>
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
-            <Icon name="calendar" size={13} color={colors.muted} />
-            <Text style={{ fontFamily: fonts.bodyBold, fontSize: 12, color: colors.muted }}>13/07</Text>
-          </View>
+          <Pressable onPress={() => navigation?.navigate?.('AddTask')} style={s.addBtn}>
+            <Icon name="plus" size={14} color="#fff" />
+            <Text style={s.addBtnTxt}>Thêm việc</Text>
+          </Pressable>
         </View>
 
         {loading && habits.length === 0 && [0, 1, 2].map((i) => <SkeletonRow key={'sk' + i} />)}
+
+        {!loading && habits.length === 0 && (
+          <View style={s.empty}>
+            <AnimatedMascot size={72} />
+            <Text style={s.emptyTitle}>Chưa có việc nào hôm nay</Text>
+            <Text style={s.emptySub}>Thêm việc đầu tiên để bạn đồng hành bắt đầu nhắc cưng nha 🐾</Text>
+            <Button label="Thêm việc đầu tiên" tone="pink" onPress={() => navigation?.navigate?.('AddTask')} icon={<Icon name="plus" size={16} color="#fff" />} style={{ marginTop: 14, paddingHorizontal: 20 }} />
+          </View>
+        )}
 
         {habits.map((h) => {
           const ic = istyle(h.icon);
@@ -209,6 +230,18 @@ const s = StyleSheet.create({
   bubble: { backgroundColor: '#fff', borderRadius: 18, borderBottomLeftRadius: 5, padding: 12, ...hardShadow(3, 0.12) },
   stitle: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12, marginHorizontal: 4 },
   stitleTxt: { fontFamily: fonts.display, fontSize: 17, color: colors.ink },
+  addBtn: {
+    flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: colors.pink,
+    borderRadius: radii.pill, paddingVertical: 6, paddingHorizontal: 12,
+    borderBottomWidth: 3, borderBottomColor: colors.pinkDark,
+  },
+  addBtnTxt: { fontFamily: fonts.heading, fontSize: 12, color: '#fff' },
+  empty: {
+    alignItems: 'center', backgroundColor: '#F6ECFB', borderRadius: 24, padding: 24,
+    borderWidth: 2, borderColor: '#fff', ...hardShadow(5, 0.14),
+  },
+  emptyTitle: { fontFamily: fonts.display, fontSize: 17, color: colors.ink, marginTop: 10 },
+  emptySub: { fontFamily: fonts.body, fontSize: 13, color: colors.muted, textAlign: 'center', marginTop: 4, lineHeight: 19 },
   habit: {
     flexDirection: 'row', alignItems: 'center', gap: 12, backgroundColor: '#fff',
     borderWidth: 2, borderColor: colors.line, borderRadius: 22, padding: 13, marginBottom: 12, ...hardShadow(5, 0.14),

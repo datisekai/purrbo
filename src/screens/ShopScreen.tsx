@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
-import { View, Text, ScrollView, Pressable, StyleSheet, Animated, Alert } from 'react-native';
+import { View, Text, ScrollView, Pressable, RefreshControl, StyleSheet, Animated, Alert } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useFocusEffect } from '@react-navigation/native';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -150,6 +150,17 @@ export default function ShopScreen({ navigation }) {
 
   const [pkgs, setPkgs] = useState(PKGS);
   const [loadingShop, setLoadingShop] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    try { const st = await Api.state(); if (typeof st?.gems === 'number') setBalance(st.gems); } catch {}
+    try {
+      const col = await Api.collection();
+      if (Array.isArray(col)) setShop(col.map((c) => ({ variant: c.variant, name: c.name, rar: c.rarity, owned: c.owned, price: PRICE_BY_VARIANT[c.variant] ?? '420' })));
+    } catch {}
+    setRefreshing(false);
+  }, []);
 
   // Bộ sưu tập persona + gói đặc biệt động (nạp 1 lần khi mount).
   useEffect(() => {
@@ -231,7 +242,8 @@ export default function ShopScreen({ navigation }) {
         </Animated.View>
       )}
 
-      <ScrollView contentContainerStyle={{ padding: 18, paddingBottom: 40 }} showsVerticalScrollIndicator={false}>
+      <ScrollView contentContainerStyle={{ padding: 18, paddingBottom: 40 }} showsVerticalScrollIndicator={false}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.pink} colors={[colors.pink]} />}>
         {/* Header */}
         <View style={s.top}>
           <View style={{ flex: 1 }}>
