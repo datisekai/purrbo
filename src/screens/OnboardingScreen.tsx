@@ -106,10 +106,7 @@ export default function OnboardingScreen({ navigation }) {
         {step === 0 && (
           <View style={s.center}>
             <PurrboMascot size={120} />
-            <View style={{ flexDirection: 'row', alignItems: 'baseline' }}>
-              <Text style={s.wordmark}>Purr</Text>
-              <Text style={[s.wordmark, { color: colors.pink }]}>bo</Text>
-            </View>
+            <Text style={s.wordmark}>Purr<Text style={{ color: colors.pink }}>bo</Text></Text>
             <Text style={s.welcomeSub}>
               Chào cậu! Trước tiên, để Purrbo ghép cậu với một người đồng hành hợp gu nha 💘
             </Text>

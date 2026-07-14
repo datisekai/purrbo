@@ -28,10 +28,7 @@ export default function NameScreen() {
     <SafeAreaView style={s.root}>
       <View style={s.hero}>
         <AnimatedMascot size={120} />
-        <View style={{ flexDirection: 'row', alignItems: 'baseline', marginTop: 12 }}>
-          <Text style={s.word}>Purr</Text>
-          <Text style={[s.word, { color: colors.pink }]}>bo</Text>
-        </View>
+        <Text style={[s.word, { marginTop: 12 }]}>Purr<Text style={{ color: colors.pink }}>bo</Text></Text>
         <Text style={s.tag}>Mình gọi bạn là gì cho thân thương nè? 🐾</Text>
       </View>
 
