@@ -35,11 +35,20 @@ export function setOnUnauthorized(fn: (() => void) | null): void {
 async function req(path: string, opts: { method?: string; body?: any } = {}): Promise<any> {
   const headers: Record<string, string> = { 'Content-Type': 'application/json' };
   if (_token) headers.Authorization = `Bearer ${_token}`;
-  const res = await fetch(API_BASE + '/v1' + path, {  // AD-12: mọi API dưới /v1
-    method: opts.method ?? 'GET',
-    headers,
-    body: opts.body ? JSON.stringify(opts.body) : undefined,
-  });
+  // Timeout 12s: backend chưa live / mạng lỗi → reject thay vì treo mãi.
+  const ctrl = new AbortController();
+  const timer = setTimeout(() => ctrl.abort(), 12000);
+  let res: Response;
+  try {
+    res = await fetch(API_BASE + '/v1' + path, {  // AD-12: mọi API dưới /v1
+      method: opts.method ?? 'GET',
+      headers,
+      body: opts.body ? JSON.stringify(opts.body) : undefined,
+      signal: ctrl.signal,
+    });
+  } finally {
+    clearTimeout(timer);
+  }
   if (res.status === 401) {
     await setToken(null);
     _onUnauthorized?.();               // AD-10: về màn nhập tên thay vì im lặng

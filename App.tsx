@@ -13,36 +13,43 @@ import {
 import RootNav from './src/navigation/RootNav';
 import { navigationRef } from './src/navigation/ref';
 import { AuthProvider } from './src/auth';
+import { ErrorBoundary } from './src/components/ErrorBoundary';
 import { ensureNotifPermission, registerPushToken, setupNotificationNavigation } from './src/notifications';
 import { initSound } from './src/sound';
 
 const queryClient = new QueryClient();  // AD-10
 
 export default function App() {
-  const [loaded] = useFonts({
+  const [loaded, error] = useFonts({
     Baloo2_600SemiBold, Baloo2_700Bold, Baloo2_800ExtraBold,
     BeVietnamPro_600SemiBold, BeVietnamPro_700Bold, BeVietnamPro_800ExtraBold,
   });
 
   useEffect(() => {
-    ensureNotifPermission();  // AD-9: xin quyền + tạo Android channel
-    registerPushToken();      // remote push (chỉ dev build; Expo Go tự bỏ qua)
-    initSound();              // nhạc nền + sfx (bọc try/catch, thiếu module không sao)
-    const off = setupNotificationNavigation();  // chạm notif → mở đúng màn
-    return off;
+    // Mọi init khởi động đều bọc try/catch — lỗi phụ trợ KHÔNG được làm trắng app.
+    try { ensureNotifPermission(); } catch {}
+    try { registerPushToken(); } catch {}
+    try { initSound(); } catch {}
+    let off: any;
+    try { off = setupNotificationNavigation(); } catch {}
+    return () => { try { off && off(); } catch {} };
   }, []);
 
-  if (!loaded) return null;
+  // Font lỗi vẫn render (rơi về font hệ thống) — tránh màn hình trắng vĩnh viễn.
+  if (!loaded && !error) return null;
+
   return (
-    <SafeAreaProvider>
-      <StatusBar style="dark" />
-      <QueryClientProvider client={queryClient}>
-        <AuthProvider>
-          <NavigationContainer ref={navigationRef}>
-            <RootNav />
-          </NavigationContainer>
-        </AuthProvider>
-      </QueryClientProvider>
-    </SafeAreaProvider>
+    <ErrorBoundary>
+      <SafeAreaProvider>
+        <StatusBar style="dark" />
+        <QueryClientProvider client={queryClient}>
+          <AuthProvider>
+            <NavigationContainer ref={navigationRef}>
+              <RootNav />
+            </NavigationContainer>
+          </AuthProvider>
+        </QueryClientProvider>
+      </SafeAreaProvider>
+    </ErrorBoundary>
   );
 }

@@ -36,18 +36,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     (async () => {
-      const t = await loadToken();
-      if (t) {
-        try {
-          const me = await Api.me();
-          setTok(t);
-          setUser(me);
-          await refreshOnboarded();
-        } catch {
-          await setToken(null); // token hỏng → về màn nhập tên
+      try {
+        const t = await loadToken();
+        if (t) {
+          try {
+            const me = await Api.me();
+            setTok(t);
+            setUser(me);
+            await refreshOnboarded();
+          } catch {
+            await setToken(null); // token hỏng/hết hạn/backend die → về màn nhập tên
+          }
         }
+      } catch {
+        /* AsyncStorage lỗi → vẫn cho vào app */
+      } finally {
+        setReady(true);   // LUÔN mở app, không để treo màn trắng
       }
-      setReady(true);
     })();
   }, []);
 
