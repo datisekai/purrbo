@@ -88,6 +88,41 @@
   .ph-khoe{margin-left:auto;background:var(--mint);color:#fff;font-weight:800;font-size:11px;padding:6px 12px;border-radius:999px;border-bottom:2px solid var(--mintd)}
   .float{position:absolute;background:#fff;border:2px solid var(--line);border-radius:14px;padding:8px 11px;box-shadow:var(--shadow);font-weight:700;font-size:12px;display:flex;align-items:center;gap:6px;z-index:4}
 
+  /* App screens gallery */
+  .screens{display:flex;gap:22px;overflow-x:auto;padding:30px 4px 14px;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch}
+  .screens::-webkit-scrollbar{height:8px}
+  .screens::-webkit-scrollbar-thumb{background:#E3D8F0;border-radius:999px}
+  .scitem{flex:none;width:214px;scroll-snap-align:center;text-align:center}
+  .frame{width:214px;height:436px;background:#fff;border:8px solid #2E2A3F;border-radius:36px;box-shadow:0 14px 30px rgba(46,42,63,.18);position:relative;overflow:hidden}
+  .frame .notch2{position:absolute;top:0;left:50%;transform:translateX(-50%);width:78px;height:15px;background:#2E2A3F;border-radius:0 0 10px 10px;z-index:3}
+  .scr{height:100%;overflow:hidden;display:flex;flex-direction:column}
+  .cap{margin-top:14px;font-weight:800;font-size:14px}
+  .cap small{display:block;color:var(--muted);font-weight:600;font-size:11.5px;margin-top:1px}
+  /* mini elements dùng chung trong màn */
+  .m-hd{display:flex;align-items:center;gap:8px;padding:22px 12px 10px;border-bottom:2px solid #F0EAF6}
+  .m-hd .t{font-weight:800;font-size:14px}
+  .m-gem{margin-left:auto;display:inline-flex;align-items:center;gap:4px;background:#FFF6DE;border:1.5px solid #FFE39C;color:#E0A61C;font-weight:800;font-size:11px;padding:3px 9px;border-radius:999px}
+  .m-back{width:26px;height:26px;border-radius:9px;background:#fff;border:2px solid var(--line);display:flex;align-items:center;justify-content:center;flex:none}
+  .bub-l{align-self:flex-start;background:#fff;border:2px solid #fff;border-radius:13px;border-bottom-left-radius:4px;padding:7px 10px;font-size:10.5px;line-height:1.35;max-width:82%;box-shadow:0 3px 0 rgba(46,42,63,.08)}
+  .bub-r{align-self:flex-end;background:var(--pink);color:#fff;border-radius:13px;border-bottom-right-radius:4px;padding:7px 10px;font-size:10.5px;line-height:1.35;max-width:82%;border-bottom:2px solid var(--pinkd)}
+  .m-input{margin:auto 10px 12px;display:flex;align-items:center;gap:6px;background:var(--bg);border:2px solid var(--line);border-radius:999px;padding:6px 6px 6px 12px}
+  .m-input .f{flex:1;color:var(--muted);font-size:10.5px}
+  .m-send{width:28px;height:28px;border-radius:999px;background:var(--pink);display:flex;align-items:center;justify-content:center;flex:none}
+  .m-banner{margin:12px;border-radius:16px;padding:13px;color:#fff;background:linear-gradient(120deg,var(--pink),var(--purple),var(--yellow))}
+  .m-bag{background:#fff;border:2px solid var(--line);border-radius:14px;padding:9px;text-align:center;box-shadow:0 3px 0 rgba(46,42,63,.08)}
+  .m-pgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding:10px 12px}
+  .m-pc{background:#fff;border:2px solid var(--line);border-radius:14px;padding:8px 4px;text-align:center;position:relative}
+  .m-lock{position:absolute;inset:0;display:flex;align-items:center;justify-content:center}
+  .m-bar{height:8px;background:#EFEAF6;border-radius:999px;border:1.5px solid var(--line);overflow:hidden;margin:0 12px}
+  .m-bar i{display:block;height:100%;background:var(--pink);border-radius:999px}
+  .m-item{display:flex;align-items:center;gap:8px;margin:0 12px 8px;background:#fff;border:2px solid var(--line);border-radius:13px;padding:7px;box-shadow:0 3px 0 rgba(46,42,63,.08)}
+  .m-buy{margin-left:auto;background:var(--purple);color:#fff;font-weight:800;font-size:10px;padding:5px 11px;border-radius:999px;border-bottom:2px solid var(--purpled)}
+  #scChatFace svg{width:26px;height:26px;display:block}
+  #scItemsFace svg{width:88px;height:88px}
+  .m-pc svg{width:44px;height:44px}
+  .m-pc .pn{font-weight:800;font-size:9.5px;margin-top:3px}
+  .m-pc.lock svg{opacity:.28}
+
   /* Trust strip */
   .strip{background:var(--ink);color:#fff;border-radius:22px;display:grid;grid-template-columns:repeat(4,1fr);gap:8px;padding:20px;margin-top:8px}
   @media(max-width:720px){.strip{grid-template-columns:repeat(2,1fr)}}
@@ -314,6 +349,77 @@
   </div>
 </section>
 
+<!-- App screens -->
+<section class="wrap center" id="screens">
+  <span class="sec-tag"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="2" width="12" height="20" rx="3"/><path d="M10 19h4"/></svg> Ảnh giao diện</span>
+  <h2 class="sec-h">App trông như thế nào?</h2>
+  <p class="sec-sub">Vuốt ngang để xem các màn chính — nhắn tin, túi mù, sưu tầm, diện đồ.</p>
+
+  <div class="screens">
+    <!-- Chat -->
+    <div class="scitem">
+      <div class="frame"><div class="notch2"></div><div class="scr">
+        <div class="m-hd" style="background:#F6ECFB">
+          <div class="m-back"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#2E2A3F" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg></div>
+          <span id="scChatFace"></span>
+          <div><div class="t" style="font-size:13px">Mochi</div><div style="color:#8A8398;font-size:9px;display:flex;align-items:center;gap:4px"><span style="width:6px;height:6px;border-radius:3px;background:#34D399;display:inline-block"></span>đang online · Lv.5</div></div>
+        </div>
+        <div style="flex:1;padding:12px;display:flex;flex-direction:column;gap:8px;background:#fff">
+          <div class="bub-l" style="border-color:var(--line)">Ê cưng ơi, 3 tiếng chưa uống giọt nào 👀</div>
+          <div class="bub-r">Đang bận mà em huhu 😩</div>
+          <div class="bub-l" style="border-color:var(--line)">Bận cũng phải sống chứ 🙄 làm 1 ly liền, em canh đó!</div>
+        </div>
+        <div class="m-input"><div class="f">Nhắn cho Mochi…</div><div class="m-send"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M21 3 10.5 13.5M21 3l-6.5 18-4-8-8-4z"/></svg></div></div>
+      </div></div>
+      <div class="cap">Nhắn tin<small>persona sinh thoại bằng AI</small></div>
+    </div>
+
+    <!-- Túi mù -->
+    <div class="scitem">
+      <div class="frame"><div class="notch2"></div><div class="scr">
+        <div class="m-hd"><div class="t">Shop</div><span class="m-gem"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#E0A61C" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round"><path d="M6 3h12l3 6-9 12L3 9z"/></svg>1.250</span></div>
+        <div class="m-banner">
+          <div style="font-size:8.5px;opacity:.9;font-weight:700;text-transform:uppercase;letter-spacing:.5px">Sự kiện tuần này</div>
+          <div style="font-weight:800;font-size:15px;margin-top:2px">Túi mù Cao cấp</div>
+          <div style="font-size:9px;opacity:.95;margin:2px 0 9px">Cơ hội gặp SSR giới hạn</div>
+          <span style="background:#fff;color:#D8306F;font-weight:800;font-size:11px;padding:6px 13px;border-radius:999px">Mở túi · 120</span>
+          <div style="margin-top:9px;font-size:8.5px;background:rgba(255,255,255,.22);border-radius:8px;padding:5px 8px">Tỉ lệ: SSR 3% · Hiếm 22% · Thường 75%</div>
+        </div>
+        <div style="display:flex;gap:8px;padding:0 12px">
+          <div class="m-bag" style="flex:1"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#9AA0B4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 12v9H4v-9M2 7h20v5H2zM12 22V7"/></svg><div style="font-weight:800;font-size:11px;margin-top:3px">Thường</div><div style="color:#8A8398;font-size:9px">40 đá quý</div></div>
+          <div class="m-bag" style="flex:1;border-color:#FFE39C;background:#FFFBF0"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#E0A61C" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8l4 4 5-7 5 7 4-4-2 11H5z"/></svg><div style="font-weight:800;font-size:11px;margin-top:3px">Cao cấp</div><div style="color:#8A8398;font-size:9px">120 đá quý</div></div>
+        </div>
+      </div></div>
+      <div class="cap">Túi mù<small>tỉ lệ hiện rõ trước khi mở</small></div>
+    </div>
+
+    <!-- Thư viện persona -->
+    <div class="scitem">
+      <div class="frame"><div class="notch2"></div><div class="scr">
+        <div class="m-hd"><div class="t">Thư viện persona</div><span style="margin-left:auto;color:#6B3FD6;font-weight:800;font-size:11px">2/8</span></div>
+        <div style="padding:10px 0 8px"><div class="m-bar"><i style="width:25%"></i></div></div>
+        <div class="m-pgrid" id="scCollection"></div>
+      </div></div>
+      <div class="cap">Thư viện persona<small>sưu tầm & chọn bạn đồng hành</small></div>
+    </div>
+
+    <!-- Trang bị -->
+    <div class="scitem">
+      <div class="frame"><div class="notch2"></div><div class="scr">
+        <div class="m-hd"><div class="t">Trang bị</div><span class="m-gem"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#E0A61C" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round"><path d="M6 3h12l3 6-9 12L3 9z"/></svg>1.250</span></div>
+        <div style="text-align:center;background:#F6ECFB;margin:12px;border-radius:16px;padding:14px 10px;border:2px solid #fff">
+          <span id="scItemsFace"></span>
+          <div style="font-weight:800;font-size:13px;margin-top:6px">Mochi</div>
+          <div style="color:#8A8398;font-size:9px">chạm "Mặc" để thử đồ</div>
+        </div>
+        <div class="m-item"><div class="ph-ic" style="background:#FFF6DE;width:30px;height:30px"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#E0A61C" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8l4 4 5-7 5 7 4-4-2 11H5z"/></svg></div><div style="font-weight:700;font-size:11px">Vương miện</div><span class="m-buy" style="background:var(--mint);border-color:var(--mintd)">Mặc</span></div>
+        <div class="m-item"><div class="ph-ic" style="background:#EEE7FF;width:30px;height:30px"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#6B3FD6" stroke-width="2.2"><circle cx="8" cy="13" r="3.5"/><circle cx="16" cy="13" r="3.5"/><path d="M11.5 13h1"/></svg></div><div style="font-weight:700;font-size:11px">Kính tròn</div><span class="m-buy"><svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linejoin="round" style="vertical-align:-1px"><path d="M6 3h12l3 6-9 12L3 9z"/></svg> 120</span></div>
+      </div></div>
+      <div class="cap">Trang bị & phụ kiện<small>diện đồ đổi ngoại hình</small></div>
+    </div>
+  </div>
+</section>
+
 <!-- Persona gallery -->
 <section class="wrap" id="persona">
   <div class="personas">
@@ -424,6 +530,20 @@ function face(p){
 document.getElementById('pgrid').innerHTML = PERSONAS.map(function(p){
   return '<div class="pcard"><span class="rar" style="background:'+RARC[p.rar]+'">'+p.rar.toUpperCase()+'</span>'+
     face(p)+'<div class="pname">'+p.name+'</div><div class="ptag">'+p.tag+'</div></div>';
+}).join('');
+
+// ── Ảnh giao diện: đổ mặt persona vào mockup ──
+var byKey={}; PERSONAS.forEach(function(p){byKey[p.name]=p;});
+var mochi=byKey['Mochi'];
+document.getElementById('scChatFace').innerHTML = face(mochi);
+// Mochi + vương miện + kính tròn (overlay phụ kiện)
+var acc='<path d="M20 15 L24 6 L32 12 L40 6 L44 15 Z" fill="#FFC93C" stroke="#2E2A3F" stroke-width="2" stroke-linejoin="round"/><circle cx="24" cy="6" r="2" fill="#FF4D8D"/><circle cx="40" cy="6" r="2" fill="#FF4D8D"/><circle cx="32" cy="11" r="2" fill="#FF4D8D"/><circle cx="25" cy="33" r="6.6" fill="none" stroke="#2E2A3F" stroke-width="2"/><circle cx="39" cy="33" r="6.6" fill="none" stroke="#2E2A3F" stroke-width="2"/><path d="M31.6 33 h0.8" stroke="#2E2A3F" stroke-width="2"/>';
+document.getElementById('scItemsFace').innerHTML = face(mochi).replace('</svg>', acc+'</svg>');
+// Bộ sưu tập: 2 đã có + 4 khoá
+var col=[{p:byKey['Mun'],o:1},{p:byKey['Mochi'],o:1},{p:byKey['Sếp'],o:0},{p:byKey['Bông'],o:0},{p:byKey['Bơ'],o:0},{p:byKey['Sìn'],o:0}];
+document.getElementById('scCollection').innerHTML = col.map(function(x){
+  var lock = x.o ? '' : '<div class="m-lock"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#8A8398" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><rect x="4.5" y="10.5" width="15" height="10" rx="2.5"/><path d="M8 10.5V7a4 4 0 0 1 8 0v3.5"/></svg></div>';
+  return '<div class="m-pc'+(x.o?'':' lock')+'">'+face(x.p)+lock+'<div class="pn" style="color:'+(x.o?'#2E2A3F':'#8A8398')+'">'+(x.o?x.p.name:'???')+'</div></div>';
 }).join('');
 </script>
 </body>
