@@ -6,21 +6,21 @@
   - Dev (Expo Go): file `.env` ở gốc → IP LAN máy chạy backend.
   - Build thật: `eas.json` ép sẵn theo profile (preview/production → domain https).
 
-## 1. Chạy DEV (không Docker)
+## 1. Chạy DEV (Docker — Postgres, khuyến nghị)
 ```bash
-# Backend
-bash api/run.sh                      # venv + uvicorn :8000 (đọc api/.env)
-
-# App
-nvm use 20 && npx expo start         # quét QR bằng Expo Go (cùng WiFi)
-```
-Persona nói bằng AI khi `OPENAI_API_KEY` có trong `api/.env` (không thì dùng câu mẫu).
-
-## 2. Chạy bằng Docker (staging — SQLite)
-```bash
-docker compose up --build            # API :8000, DB SQLite persist ở ./data
+docker compose up --build            # Postgres (:5432) + API (:8000)
 curl localhost:8000/health
 ```
+Điện thoại (Expo Go) gọi vào `http://IP-LAN:8000`. DB = PostgreSQL (không còn SQLite).
+
+## 2. Chạy backend không Docker
+```bash
+docker compose up -d db              # cần Postgres chạy trước (:5432)
+bash api/run.sh                      # venv + uvicorn :8000 (đọc api/.env → localhost Postgres)
+
+nvm use 20 && npx expo start         # app: quét QR Expo Go
+```
+Persona nói bằng AI khi `OPENAI_API_KEY` có trong `api/.env` (không thì dùng câu mẫu).
 
 ## Web (landing + admin) & deploy 1 lệnh
 API tự phục vụ web tĩnh: **`/`** landing · **`/privacy`** · **`/terms`** · **`/admin`** (đăng nhập `ADMIN_USERNAME`/`ADMIN_PASSWORD`).

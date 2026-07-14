@@ -1,4 +1,4 @@
-"""Cấu hình app — đọc từ api/.env (SQLite dev / Postgres prod)."""
+"""Cấu hình app — đọc từ api/.env. DB luôn là PostgreSQL (dev + prod)."""
 from __future__ import annotations
 
 from pathlib import Path
@@ -17,8 +17,9 @@ class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_file=str(ENV_PATH), extra="ignore")
 
     app_name: str = "Purrbo API"
-    # Dev: SQLite (không cần Docker). Prod: postgresql+asyncpg://user:pass@host/db
-    database_url: str = "sqlite+aiosqlite:///./purrbo_dev.db"
+    # PostgreSQL (dev + prod). Docker prod ép DATABASE_URL qua compose;
+    # chạy tay (api/run.sh) cần `docker compose up -d db` rồi dùng localhost.
+    database_url: str = "postgresql+asyncpg://purrbo:purrbo@localhost:5432/purrbo"
     jwt_secret: str = "dev-secret-doi-truoc-khi-len-prod"
     jwt_alg: str = "HS256"
     cors_origins: str = "*"

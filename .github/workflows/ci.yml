@@ -4,12 +4,25 @@ on: [push, pull_request]
 jobs:
   backend:
     runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: purrbo
+          POSTGRES_PASSWORD: purrbo
+          POSTGRES_DB: purrbo
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U purrbo"
+          --health-interval 5s --health-timeout 5s --health-retries 10
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with: { python-version: '3.12' }
       - run: pip install -r api/requirements.txt
-      - name: pytest (smoke — mock, không gọi OpenAI)
+      - name: pytest (smoke — Postgres, mock, không gọi OpenAI)
+        env:
+          DATABASE_URL: postgresql+asyncpg://purrbo:purrbo@localhost:5432/purrbo_test
         run: python -m pytest api/tests -c api/pytest.ini -q
 
   app:

@@ -16,8 +16,5 @@ COPY api ./api
 COPY domain ./domain
 COPY adapters ./adapters
 
-# Thư mục dữ liệu (SQLite persist qua volume)
-RUN mkdir -p /app/data
-
 EXPOSE 8000
 CMD ["uvicorn", "api.app.main:app", "--host", "0.0.0.0", "--port", "8000"]
