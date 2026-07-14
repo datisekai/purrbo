@@ -1,0 +1,29 @@
+# App RN + build artifacts — KHÔNG cần cho image backend
+node_modules
+.expo
+dist
+web-build
+android
+ios
+assets
+src
+App.tsx
+index.js
+app.json
+eas.json
+tsconfig.json
+babel.config.js
+package.json
+package-lock.json
+
+# Python / dữ liệu local
+api/.venv
+**/__pycache__
+*.db
+.env
+api/.env
+
+.git
+.gitignore
+*.log
+.DS_Store

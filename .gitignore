@@ -1,0 +1,16 @@
+node_modules/
+.expo/
+dist/
+web-build/
+*.log
+.DS_Store
+
+# Backend Python
+api/.venv/
+**/__pycache__/
+*.db
+data/
+
+# Secrets / env (KHÔNG commit)
+.env
+api/.env

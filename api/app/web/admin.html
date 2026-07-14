@@ -1,0 +1,215 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Purrbo Admin</title>
+<style>
+  :root{--pink:#FF4D8D;--purple:#8B5CF6;--ink:#2E2A3F;--muted:#8A8398;--line:#EFE7DD;--soft:#F6ECFB}
+  *{box-sizing:border-box}body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;color:var(--ink);margin:0;background:#FBF9FC}
+  .top{background:#fff;border-bottom:2px solid var(--line);padding:14px 20px;display:flex;align-items:center;gap:10px}
+  .top b{font-size:18px}.top b span{color:var(--pink)}
+  .wrap{max-width:920px;margin:0 auto;padding:22px}
+  .card{background:#fff;border:2px solid var(--line);border-radius:16px;padding:18px;margin-bottom:18px}
+  h2{font-size:17px;margin:0 0 12px}
+  input,textarea,select{font:inherit;padding:9px 11px;border:2px solid var(--line);border-radius:10px;width:100%}
+  textarea{min-height:120px;font-family:ui-monospace,Menlo,monospace;font-size:13px}
+  label{font-size:12px;color:var(--muted);font-weight:600;display:block;margin:8px 0 4px}
+  button{font:inherit;font-weight:700;background:var(--pink);color:#fff;border:none;border-radius:999px;padding:9px 18px;cursor:pointer}
+  button.ghost{background:var(--soft);color:var(--purple)}
+  button.mini{padding:6px 12px;font-size:13px}
+  button.del{background:#FFF0E6;color:#E0532F}
+  .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  table{width:100%;border-collapse:collapse}td,th{text-align:left;padding:8px;border-bottom:1px solid var(--line);font-size:14px;vertical-align:top}
+  .stat{display:inline-block;background:var(--soft);border-radius:12px;padding:10px 16px;margin-right:10px;font-weight:700}
+  .stat small{display:block;color:var(--muted);font-weight:600;font-size:11px}
+  .hide{display:none}.msg{font-size:13px;color:#16A97A;margin-left:8px}.err{color:#E0532F}
+  .rar{font-size:11px;font-weight:700;padding:2px 8px;border-radius:999px;color:#fff}
+</style>
+</head>
+<body>
+<div class="top"><b>Purr<span>bo</span> Admin</b><span id="who" class="muted" style="color:var(--muted);font-size:13px"></span></div>
+<div class="wrap">
+
+  <div id="login" class="card">
+    <h2>Đăng nhập admin</h2>
+    <label>Tài khoản</label>
+    <input id="username" autocomplete="username" placeholder="admin" />
+    <label>Mật khẩu</label>
+    <input id="password" type="password" autocomplete="current-password" placeholder="••••••••" onkeydown="if(event.key==='Enter')login()" />
+    <div style="margin-top:12px"><button onclick="login()">Đăng nhập</button> <span id="loginMsg" class="msg err"></span></div>
+    <p class="muted" style="font-size:12px;margin-top:10px">Đặt <code>ADMIN_USERNAME</code> / <code>ADMIN_PASSWORD</code> trong <code>api/.env</code>.</p>
+  </div>
+
+  <div id="panel" class="hide">
+    <div class="card">
+      <h2>Tổng quan</h2>
+      <div id="stats"></div>
+    </div>
+
+    <div class="card">
+      <h2>Persona catalog</h2>
+      <table id="personas"><thead><tr><th>key</th><th>Tên / tag / intro</th><th>Con</th><th>Rarity</th><th></th></tr></thead><tbody></tbody></table>
+      <h2 style="margin-top:18px;font-size:15px">Thêm persona</h2>
+      <div class="grid">
+        <div><label>key</label><input id="np_key" placeholder="vd: cao"/></div>
+        <div><label>Tên</label><input id="np_name" placeholder="vd: Cáo"/></div>
+        <div><label>Con (variant)</label>
+          <select id="np_variant"><option>mun</option><option>cam</option><option>ly</option><option>sep</option><option>bong</option><option>xu</option><option>bo</option><option>sin</option></select></div>
+        <div><label>Rarity</label><select id="np_rarity"><option>Thường</option><option>Hiếm</option><option>SSR</option></select></div>
+      </div>
+      <label>Tag</label><input id="np_tag" placeholder="vd: bad-boy · thính thủ"/>
+      <label>Intro</label><textarea id="np_intro" style="min-height:60px"></textarea>
+      <div style="margin-top:10px"><button onclick="addPersona()">+ Thêm</button> <span id="pMsg" class="msg"></span></div>
+    </div>
+
+    <div class="card">
+      <h2>Trang bị & phụ kiện</h2>
+      <table id="items"><thead><tr><th>key</th><th>Tên</th><th>Slot</th><th>Giá 💎</th><th>Rarity</th><th></th></tr></thead><tbody></tbody></table>
+      <h2 style="margin-top:18px;font-size:15px">Thêm món</h2>
+      <div class="grid">
+        <div><label>key</label><input id="ni_key" placeholder="vd: hat_party"/></div>
+        <div><label>Tên</label><input id="ni_name" placeholder="vd: Mũ tiệc"/></div>
+        <div><label>Slot</label><select id="ni_slot"><option value="hat">hat (mũ/nơ)</option><option value="glasses">glasses (kính)</option><option value="neck">neck (cổ)</option></select></div>
+        <div><label>Giá (đá quý)</label><input id="ni_price" type="number" value="120"/></div>
+        <div><label>Rarity</label><select id="ni_rarity"><option>Thường</option><option>Hiếm</option><option>SSR</option></select></div>
+      </div>
+      <div style="margin-top:10px"><button onclick="addItem()">+ Thêm</button> <span id="iMsg" class="msg"></span></div>
+      <p class="muted" style="font-size:12px;margin-top:8px">Lưu ý: hình vẽ (overlay) của món mới cần khai báo trong <code>PersonaFace.tsx</code> theo <code>key</code> để hiển thị trong app.</p>
+    </div>
+
+    <div class="card">
+      <h2>Cấu hình động (app đọc /v1/config)</h2>
+      <p class="muted" style="font-size:13px">Sửa JSON từng khoá rồi Lưu. App sẽ nhận ngay lần mở màn kế tiếp.</p>
+      <div id="config"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+const API = location.origin + '/v1';
+let TOKEN = localStorage.getItem('purrbo.admin') || '';
+const H = () => ({'Content-Type':'application/json','Authorization':'Bearer '+TOKEN});
+const RARC = {SSR:'#FFB23E','Hiếm':'#38BDF8','Thường':'#9AA0B4'};
+
+async function login(){
+  const u = document.getElementById('username').value.trim();
+  const p = document.getElementById('password').value;
+  const msg = document.getElementById('loginMsg');
+  if(TOKEN){
+    // đã có token phiên (mở lại trang) → thử dùng luôn
+    const ok = await fetch(API+'/admin/stats',{headers:H()});
+    if(ok.ok){ enter(); return; }
+    TOKEN=''; localStorage.removeItem('purrbo.admin');
+  }
+  if(!u||!p){ msg.textContent='Nhập tài khoản & mật khẩu'; return; }
+  const r = await fetch(API+'/admin/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username:u,password:p})});
+  if(!r.ok){ msg.textContent='Sai tài khoản hoặc mật khẩu'; return; }
+  TOKEN = (await r.json()).token;
+  localStorage.setItem('purrbo.admin',TOKEN);
+  enter();
+}
+function enter(){
+  document.getElementById('login').classList.add('hide');
+  document.getElementById('panel').classList.remove('hide');
+  loadAll();
+}
+async function loadAll(){ await loadStats(); await loadPersonas(); await loadItems(); await loadConfig(); }
+
+async function loadItems(){
+  const its = await (await fetch(API+'/admin/items',{headers:H()})).json();
+  const tb = document.querySelector('#items tbody'); tb.innerHTML='';
+  its.forEach(it=>{
+    const tr=document.createElement('tr');
+    tr.innerHTML=`<td><code>${it.key}</code></td>
+      <td><input value="${esc(it.name)}" id="in_${it.key}"/></td>
+      <td><select id="is_${it.key}">${['hat','glasses','neck'].map(x=>`<option ${x===it.slot?'selected':''}>${x}</option>`).join('')}</select></td>
+      <td><input type="number" value="${it.price}" id="ip_${it.key}" style="width:80px"/></td>
+      <td><select id="ir_${it.key}">${['Thường','Hiếm','SSR'].map(r=>`<option ${r===it.rarity?'selected':''}>${r}</option>`).join('')}</select></td>
+      <td><button class="mini" onclick="saveItem('${it.key}')">Lưu</button> <button class="mini del" onclick="delItem('${it.key}')">Xoá</button></td>`;
+    tb.appendChild(tr);
+  });
+}
+async function saveItem(key){
+  const body={name:val('in_'+key),slot:val('is_'+key),price:parseInt(val('ip_'+key),10)||0,rarity:val('ir_'+key)};
+  const r=await fetch(API+'/admin/items/'+key,{method:'PUT',headers:H(),body:JSON.stringify(body)});
+  flash('iMsg', r.ok?'Đã lưu '+key:'Lỗi', !r.ok);
+}
+async function delItem(key){
+  if(!confirm('Xoá món '+key+'?'))return;
+  await fetch(API+'/admin/items/'+key,{method:'DELETE',headers:H()}); loadItems();
+}
+async function addItem(){
+  const body={key:val('ni_key'),name:val('ni_name'),slot:val('ni_slot'),price:parseInt(val('ni_price'),10)||0,rarity:val('ni_rarity')};
+  if(!body.key||!body.name){flash('iMsg','Thiếu key/tên',true);return;}
+  const r=await fetch(API+'/admin/items',{method:'POST',headers:H(),body:JSON.stringify(body)});
+  if(r.ok){flash('iMsg','Đã thêm');loadItems();['ni_key','ni_name'].forEach(id=>document.getElementById(id).value='');}
+  else flash('iMsg','Lỗi: '+(await r.json()).detail,true);
+}
+
+async function loadStats(){
+  const s = await (await fetch(API+'/admin/stats',{headers:H()})).json();
+  document.getElementById('stats').innerHTML =
+    `<span class="stat">${s.users}<small>người dùng</small></span>
+     <span class="stat">${s.habits}<small>thói quen</small></span>
+     <span class="stat">${s.personas}<small>persona</small></span>
+     <span class="stat">${s.owned_personas}<small>lượt sở hữu</small></span>`;
+}
+
+async function loadPersonas(){
+  const ps = await (await fetch(API+'/admin/personas',{headers:H()})).json();
+  const tb = document.querySelector('#personas tbody'); tb.innerHTML='';
+  ps.forEach(p=>{
+    const tr=document.createElement('tr');
+    tr.innerHTML=`<td><code>${p.key}</code></td>
+      <td><input value="${esc(p.name)}" id="n_${p.key}" style="margin-bottom:4px"/>
+          <input value="${esc(p.tag)}" id="t_${p.key}" placeholder="tag" style="margin-bottom:4px"/>
+          <textarea id="i_${p.key}" style="min-height:44px">${esc(p.intro)}</textarea></td>
+      <td><select id="v_${p.key}">${['mun','cam','ly','sep','bong','xu','bo','sin'].map(v=>`<option ${v===p.variant?'selected':''}>${v}</option>`).join('')}</select></td>
+      <td><select id="r_${p.key}">${['Thường','Hiếm','SSR'].map(r=>`<option ${r===p.rarity?'selected':''}>${r}</option>`).join('')}</select></td>
+      <td><button class="mini" onclick="savePersona('${p.key}')">Lưu</button><br/><br/><button class="mini del" onclick="delPersona('${p.key}')">Xoá</button></td>`;
+    tb.appendChild(tr);
+  });
+}
+async function savePersona(key){
+  const body={name:val('n_'+key),tag:val('t_'+key),intro:val('i_'+key),variant:val('v_'+key),rarity:val('r_'+key)};
+  const r=await fetch(API+'/admin/personas/'+key,{method:'PUT',headers:H(),body:JSON.stringify(body)});
+  flash('pMsg', r.ok?'Đã lưu '+key:'Lỗi');
+}
+async function delPersona(key){
+  if(!confirm('Xoá persona '+key+'?'))return;
+  await fetch(API+'/admin/personas/'+key,{method:'DELETE',headers:H()}); loadPersonas();
+}
+async function addPersona(){
+  const body={key:val('np_key'),name:val('np_name'),variant:val('np_variant'),rarity:val('np_rarity'),tag:val('np_tag'),intro:val('np_intro')};
+  if(!body.key||!body.name){flash('pMsg','Thiếu key/tên',true);return;}
+  const r=await fetch(API+'/admin/personas',{method:'POST',headers:H(),body:JSON.stringify(body)});
+  if(r.ok){flash('pMsg','Đã thêm');loadPersonas();['np_key','np_name','np_tag','np_intro'].forEach(id=>document.getElementById(id).value='');}
+  else flash('pMsg','Lỗi: '+(await r.json()).detail,true);
+}
+
+async function loadConfig(){
+  const d = await (await fetch(API+'/admin/config',{headers:H()})).json();
+  const box=document.getElementById('config'); box.innerHTML='';
+  Object.keys(d.defaults).forEach(k=>{
+    const wrap=document.createElement('div'); wrap.style.marginBottom='14px';
+    wrap.innerHTML=`<label>${k}</label><textarea id="cfg_${k}">${esc(JSON.stringify(d.config[k],null,2))}</textarea>
+      <div style="margin-top:6px"><button class="mini ghost" onclick="saveCfg('${k}')">Lưu ${k}</button> <span id="cm_${k}" class="msg"></span></div>`;
+    box.appendChild(wrap);
+  });
+}
+async function saveCfg(k){
+  let value; try{ value=JSON.parse(val('cfg_'+k)); }catch(e){ flash('cm_'+k,'JSON sai',true); return; }
+  const r=await fetch(API+'/admin/config',{method:'PUT',headers:H(),body:JSON.stringify({key:k,value})});
+  flash('cm_'+k, r.ok?'Đã lưu':'Lỗi', !r.ok);
+}
+
+function val(id){return document.getElementById(id).value;}
+function esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;');}
+function flash(id,msg,err){const el=document.getElementById(id);el.textContent=msg;el.className='msg'+(err?' err':'');setTimeout(()=>el.textContent='',2500);}
+
+if(TOKEN){ login(); }
+</script>
+</body>
+</html>

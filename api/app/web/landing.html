@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Purrbo — nuôi thói quen bằng một bạn đồng hành</title>
+<meta name="description" content="Purrbo là app nhắc lịch & thói quen kiểu GenZ: một bạn đồng hành persona nhắc cưng uống nước, tập gym, đọc sách — khoe là được cưng." />
+<style>
+  :root{--pink:#FF4D8D;--pinkd:#D8306F;--purple:#8B5CF6;--purpled:#6B3FD6;--ink:#2E2A3F;--muted:#8A8398;--bg:#fff;--soft:#F6ECFB}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;color:var(--ink);background:var(--bg);line-height:1.5}
+  .wrap{max-width:1040px;margin:0 auto;padding:0 20px}
+  header{padding:20px 0;display:flex;align-items:center;justify-content:space-between}
+  .logo{display:flex;align-items:center;gap:10px;font-weight:800;font-size:22px}
+  .logo b{color:var(--pink)}
+  .cat{width:40px;height:40px}
+  nav a{color:var(--ink);text-decoration:none;font-weight:600;margin-left:20px;font-size:15px}
+  nav a:hover{color:var(--pink)}
+  .hero{text-align:center;padding:60px 0 40px}
+  .hero .cat{width:120px;height:120px;margin-bottom:18px}
+  .hero h1{font-size:clamp(30px,6vw,52px);font-weight:800;letter-spacing:-1px}
+  .hero h1 span{color:var(--pink)}
+  .hero p{font-size:clamp(16px,2.5vw,20px);color:var(--muted);max-width:600px;margin:16px auto 28px}
+  .btn{display:inline-block;background:var(--pink);color:#fff;font-weight:700;padding:14px 30px;border-radius:999px;text-decoration:none;border-bottom:4px solid var(--pinkd);font-size:16px}
+  .btn.ghost{background:var(--soft);color:var(--purpled);border-bottom-color:#E1D8EC;margin-left:10px}
+  .feat{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:18px;padding:40px 0}
+  .card{background:var(--soft);border:2px solid #fff;border-radius:24px;padding:24px;box-shadow:0 6px 0 rgba(46,42,63,.08)}
+  .card .ic{font-size:30px;margin-bottom:10px}
+  .card h3{font-size:19px;margin-bottom:6px}
+  .card p{color:var(--muted);font-size:14px}
+  .band{background:linear-gradient(120deg,var(--pink),var(--purple));color:#fff;border-radius:28px;padding:40px;text-align:center;margin:30px 0}
+  .band h2{font-size:clamp(24px,4vw,34px);font-weight:800}
+  .band p{opacity:.95;margin:10px auto 0;max-width:560px}
+  footer{border-top:2px solid #EFE7DD;padding:30px 0;margin-top:40px;color:var(--muted);font-size:14px;text-align:center}
+  footer a{color:var(--purpled);text-decoration:none;font-weight:600}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="logo"><svg class="cat" viewBox="0 0 100 100"><path d="M22 34 L26 12 L44 26 Z" fill="#FF9E4D" stroke="#2E2A3F" stroke-width="3.4" stroke-linejoin="round"/><path d="M78 34 L74 12 L56 26 Z" fill="#FF9E4D" stroke="#2E2A3F" stroke-width="3.4" stroke-linejoin="round"/><ellipse cx="50" cy="56" rx="34" ry="31" fill="#FF9E4D" stroke="#2E2A3F" stroke-width="3.6"/><circle cx="38" cy="54" r="6" fill="#2E2A3F"/><circle cx="62" cy="54" r="6" fill="#2E2A3F"/><circle cx="26" cy="63" r="4.4" fill="#FF7AA8" opacity=".65"/><circle cx="74" cy="63" r="4.4" fill="#FF7AA8" opacity=".65"/><path d="M47 62 h6 l-3 3 z" fill="#FF7AA8"/></svg> Purr<b>bo</b></div>
+    <nav><a href="#feat">Tính năng</a><a href="/privacy">Bảo mật</a><a href="/terms">Điều khoản</a></nav>
+  </header>
+
+  <section class="hero">
+    <svg class="cat" viewBox="0 0 100 100"><path d="M22 34 L26 12 L44 26 Z" fill="#FF9E4D" stroke="#2E2A3F" stroke-width="3.4" stroke-linejoin="round"/><path d="M78 34 L74 12 L56 26 Z" fill="#FF9E4D" stroke="#2E2A3F" stroke-width="3.4" stroke-linejoin="round"/><ellipse cx="50" cy="56" rx="34" ry="31" fill="#FF9E4D" stroke="#2E2A3F" stroke-width="3.6"/><circle cx="38" cy="54" r="6" fill="#2E2A3F"/><circle cx="62" cy="54" r="6" fill="#2E2A3F"/><circle cx="26" cy="63" r="4.4" fill="#FF7AA8" opacity=".65"/><circle cx="74" cy="63" r="4.4" fill="#FF7AA8" opacity=".65"/><path d="M47 62 h6 l-3 3 z" fill="#FF7AA8"/></svg>
+    <h1>Nuôi thói quen bằng<br/>một <span>bạn đồng hành</span></h1>
+    <p>Purrbo là app nhắc lịch kiểu GenZ: một persona dễ thương nhắc cưng uống nước, tập gym, đọc sách — cưng khoe là được cưng, cột thân thiết lên đều mỗi ngày.</p>
+    <a class="btn" href="#feat">Khám phá</a>
+    <a class="btn ghost" href="/privacy">Chính sách</a>
+  </section>
+
+  <section class="feat" id="feat">
+    <div class="card"><div class="ic">🐱</div><h3>Persona có hồn</h3><p>8 nhân vật GenZ mỗi người một "gu" — tsundere, soft-simp, tổng tài, hype… nhắc cưng theo đúng chất.</p></div>
+    <div class="card"><div class="ic">💬</div><h3>Khoe → Được cưng</h3><p>Làm xong việc thì khoe, persona khen liền, cột thân thiết + streak lên mỗi ngày.</p></div>
+    <div class="card"><div class="ic">🎁</div><h3>Túi mù minh bạch</h3><p>Sưu tầm persona qua túi mù — tỉ lệ hiện rõ ràng, chơi vui không móc túi.</p></div>
+    <div class="card"><div class="ic">📅</div><h3>Đồng bộ lịch</h3><p>Kéo lịch thật từ Google Calendar / Lark, nhắc lặp lại hằng tuần hoặc mỗi vài giờ.</p></div>
+  </section>
+
+  <section class="band">
+    <h2>Sắp có mặt trên App Store & Google Play</h2>
+    <p>Đang hoàn thiện. Theo dõi để nhận thông báo khi Purrbo ra mắt nha 🐾</p>
+  </section>
+</div>
+
+<footer>
+  <div class="wrap">
+    © 2026 Purrbo · <a href="/privacy">Chính sách quyền riêng tư</a> · <a href="/terms">Điều khoản sử dụng</a><br/>
+    Made with 💗 cho những ai muốn sống ngoan hơn mỗi ngày.
+  </div>
+</footer>
+</body>
+</html>
