@@ -18,10 +18,9 @@ command -v eas >/dev/null 2>&1 || { echo "❌ Chưa có eas-cli. Cài:  npm i -g
 STEP="${1:-all}"
 
 do_build(){
-  echo "▶  EAS build iOS (profile production, trỏ https://api.purrbo.app)..."
-  echo "   Lần đầu EAS sẽ hỏi tạo/चọn credentials (App Store Connect API key hoặc Apple ID)."
-  eas build --profile production --platform ios --non-interactive || \
-    eas build --profile production --platform ios   # fallback tương tác nếu cần credentials
+  echo "▶  EAS build iOS (profile production, trỏ https://purrbo.fun)..."
+  echo "   Lần đầu EAS sẽ hỏi tạo/chọn credentials (App Store Connect API key hoặc Apple ID)."
+  eas build --profile production --platform ios
 }
 
 do_submit(){
