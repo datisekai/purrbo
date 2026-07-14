@@ -20,7 +20,11 @@ import { initSound } from './src/sound';
 const queryClient = new QueryClient();  // AD-10
 
 export default function App() {
-  const [loaded, error] = useFonts({
+  // Nạp font nhưng KHÔNG chặn render theo nó. Trong bản standalone, nếu font
+  // nhúng lỗi/treo thì việc `return null` khi chưa loaded sẽ làm TRẮNG vĩnh viễn
+  // (local chạy Metro nên luôn qua → không repro được). Cứ render, font tự pop-in;
+  // trong lúc chờ, text rơi về font hệ thống.
+  useFonts({
     Baloo2_600SemiBold, Baloo2_700Bold, Baloo2_800ExtraBold,
     BeVietnamPro_600SemiBold, BeVietnamPro_700Bold, BeVietnamPro_800ExtraBold,
   });
@@ -34,9 +38,6 @@ export default function App() {
     try { off = setupNotificationNavigation(); } catch {}
     return () => { try { off && off(); } catch {} };
   }, []);
-
-  // Font lỗi vẫn render (rơi về font hệ thống) — tránh màn hình trắng vĩnh viễn.
-  if (!loaded && !error) return null;
 
   return (
     <ErrorBoundary>

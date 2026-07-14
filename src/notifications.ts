@@ -6,15 +6,21 @@ import Constants from 'expo-constants';
 import { Api } from './api';
 import { navigate } from './navigation/ref';
 
-Notifications.setNotificationHandler({
-  handleNotification: async () => ({
-    shouldShowAlert: true,
-    shouldPlaySound: true,
-    shouldSetBadge: false,
-    shouldShowBanner: true,
-    shouldShowList: true,
-  }),
-});
+// QUAN TRỌNG: call này chạy Ở CẤP MODULE (lúc import). Nếu native module
+// expo-notifications init khác trong bản standalone và ném lỗi ở đây thì cả
+// module graph vỡ TRƯỚC khi React mount → màn trắng, ErrorBoundary không bắt được.
+// Bọc try/catch để lỗi khởi tạo notif không bao giờ làm trắng app.
+try {
+  Notifications.setNotificationHandler({
+    handleNotification: async () => ({
+      shouldShowAlert: true,
+      shouldPlaySound: true,
+      shouldSetBadge: false,
+      shouldShowBanner: true,
+      shouldShowList: true,
+    }),
+  });
+} catch {}
 
 // Android BẮT BUỘC có channel, không thì banner/âm thanh bị nuốt.
 export async function setupAndroidChannel(): Promise<void> {
