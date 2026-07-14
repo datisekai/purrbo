@@ -213,6 +213,18 @@ export default function ShopScreen({ navigation }) {
     }
   };
 
+  const openBag10 = async (bag = 'caocap') => {
+    playOpen();
+    try {
+      const res = await Api.gachaOpen10(bag);
+      playSuccess();
+      setBalance(res.gems);
+      navigation?.navigate?.('GachaResult', { results: res.results, gems: res.gems });
+    } catch (e) {
+      Alert.alert('Không đủ đá quý', 'Mở x10 cần nhiều đá quý hơn — nạp thêm nha 💎');
+    }
+  };
+
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: colors.bg }} edges={['top']}>
       {reveal && (
@@ -289,7 +301,7 @@ export default function ShopScreen({ navigation }) {
             <Button
               label="Mở x10"
               tone="yellow"
-              onPress={() => openBag('caocap')}
+              onPress={() => openBag10('caocap')}
               icon={<MiniIcon name="layers" size={15} color={colors.ink} />}
               style={{ paddingHorizontal: 16 }}
             />

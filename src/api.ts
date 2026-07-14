@@ -66,6 +66,7 @@ export const Api = {
   createHabit: (h: { name: string; icon?: string; time?: string; hint?: string; repeat?: string }) => req('/habits', { method: 'POST', body: h }),
   khoe: (id: number) => req(`/habits/${id}/khoe`, { method: 'POST' }),
   gachaOpen: (bag: 'thuong' | 'caocap' = 'thuong') => req(`/gacha/open?bag=${bag}`, { method: 'POST' }),
+  gachaOpen10: (bag: 'thuong' | 'caocap' = 'thuong') => req(`/gacha/open10?bag=${bag}`, { method: 'POST' }) as Promise<{ results: { persona: any; is_new: boolean }[]; gems: number }>,
   // AD-14: nạp đá quý — verify receipt ở server rồi mới cộng gems (client không tự cộng)
   billingVerify: (receipt: string, gems: number) =>
     req('/billing/verify', { method: 'POST', body: { receipt, gems } }) as Promise<{ ok: boolean; gems?: number }>,

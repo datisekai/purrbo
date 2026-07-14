@@ -60,3 +60,50 @@ async def open_bag(bag: str = "thuong", user_id: str = Depends(get_current_user)
 
     await db.commit()
     return GachaOut(persona=PersonaOut.model_validate(picked), gems=st.gems, is_new=is_new)
+
+
+@router.post("/gacha/open10")
+async def open_bag_x10(bag: str = "thuong", user_id: str = Depends(get_current_user), db: AsyncSession = Depends(get_session)):
+    """Mở túi x10 (atomic): trừ 10× giá 1 lần, đảm bảo ít nhất 1 Hiếm (pity)."""
+    if bag not in _BAGS:
+        raise HTTPException(status_code=400, detail="loại túi không hợp lệ")
+    price, odds = _BAGS[bag]
+    total = price * 10
+
+    st = await db.get(UserState, user_id)
+    if st is None:
+        st = UserState(user_id=user_id)
+        db.add(st)
+        await db.flush()
+    if st.gems < total:
+        raise HTTPException(status_code=402, detail="không đủ đá quý")
+
+    catalog = (await db.execute(select(Persona))).scalars().all()
+    if not catalog:
+        raise HTTPException(status_code=400, detail="chưa có persona")
+
+    def pick(rarity: str):
+        pool = [p for p in catalog if p.rarity == rarity] or catalog
+        return random.choice(pool)
+
+    rolls = [_roll_rarity(odds) for _ in range(10)]
+    # Pity: nếu 10 lần đều Thường → nâng lần cuối lên Hiếm (nếu có persona Hiếm)
+    if all(r == "Thường" for r in rolls) and any(p.rarity == "Hiếm" for p in catalog):
+        rolls[-1] = "Hiếm"
+    picked = [pick(r) for r in rolls]
+
+    st.gems -= total
+
+    already = set(
+        (await db.execute(select(OwnedPersona.persona_key).where(OwnedPersona.user_id == user_id))).scalars().all()
+    )
+    results = []
+    for p in picked:
+        is_new = p.key not in already
+        if is_new:
+            db.add(OwnedPersona(user_id=user_id, persona_key=p.key))
+            already.add(p.key)   # dedupe trong cùng lượt mở
+        results.append({"persona": PersonaOut.model_validate(p), "is_new": is_new})
+
+    await db.commit()
+    return {"results": results, "gems": st.gems}
