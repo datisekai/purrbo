@@ -127,7 +127,16 @@ def _page(name: str):
     return _h
 
 
+async def _favicon():
+    f = _WEB / "favicon.svg"
+    if f.exists():
+        return FileResponse(f, media_type="image/svg+xml")
+    return HTMLResponse(status_code=404, content="")
+
+
 app.add_api_route("/", _page("landing.html"), methods=["GET"], include_in_schema=False)
 app.add_api_route("/privacy", _page("privacy.html"), methods=["GET"], include_in_schema=False)
 app.add_api_route("/terms", _page("terms.html"), methods=["GET"], include_in_schema=False)
 app.add_api_route("/admin", _page("admin.html"), methods=["GET"], include_in_schema=False)
+app.add_api_route("/favicon.svg", _favicon, methods=["GET"], include_in_schema=False)
+app.add_api_route("/favicon.ico", _favicon, methods=["GET"], include_in_schema=False)
