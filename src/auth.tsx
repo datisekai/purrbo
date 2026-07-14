@@ -35,6 +35,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   useEffect(() => {
+    let settled = false;
+    const finish = () => { if (!settled) { settled = true; setReady(true); } };
+    // TRẦN CỨNG 3s: dù loadToken()/Api.me() có treo (native module lỗi, mạng
+    // kẹt mà abort không cắt được...) thì tối đa 3s vẫn mở app — không treo trắng.
+    const hard = setTimeout(finish, 3000);
     (async () => {
       try {
         const t = await loadToken();
@@ -51,9 +56,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       } catch {
         /* AsyncStorage lỗi → vẫn cho vào app */
       } finally {
-        setReady(true);   // LUÔN mở app, không để treo màn trắng
+        clearTimeout(hard);
+        finish();   // LUÔN mở app, không để treo màn trắng
       }
     })();
+    return () => clearTimeout(hard);
   }, []);
 
   useEffect(() => {
