@@ -4,70 +4,211 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Purrbo — nuôi thói quen bằng một bạn đồng hành</title>
-<meta name="description" content="Purrbo là app nhắc lịch & thói quen kiểu GenZ: một bạn đồng hành persona nhắc cưng uống nước, tập gym, đọc sách — khoe là được cưng." />
+<meta name="description" content="Purrbo là app nhắc lịch & thói quen kiểu GenZ: một bạn đồng hành persona nhắc cưng uống nước, tập gym, đọc sách — khoe là được cưng. Sưu tầm 8 persona, diện đồ, gom đá quý." />
 <style>
-  :root{--pink:#FF4D8D;--pinkd:#D8306F;--purple:#8B5CF6;--purpled:#6B3FD6;--ink:#2E2A3F;--muted:#8A8398;--bg:#fff;--soft:#F6ECFB}
+  :root{
+    --pink:#FF4D8D;--pinkd:#D8306F;--purple:#8B5CF6;--purpled:#6B3FD6;
+    --yellow:#FFC93C;--yellowd:#E0A61C;--mint:#34D399;--mintd:#16A97A;--sky:#38BDF8;
+    --ink:#2E2A3F;--muted:#8A8398;--line:#EFE7DD;--bg:#fff;--soft:#F6ECFB;--cream:#FFF3E9;
+    --shadow:0 6px 0 rgba(46,42,63,.10);
+  }
   *{box-sizing:border-box;margin:0;padding:0}
-  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;color:var(--ink);background:var(--bg);line-height:1.5}
-  .wrap{max-width:1040px;margin:0 auto;padding:0 20px}
-  header{padding:20px 0;display:flex;align-items:center;justify-content:space-between}
+  html{scroll-behavior:smooth}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",sans-serif;color:var(--ink);background:var(--bg);line-height:1.55;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:1080px;margin:0 auto;padding:0 22px}
+  a{color:inherit;text-decoration:none}
+  .ic{width:1em;height:1em;display:inline-block;vertical-align:-.125em;flex:none}
+  .sec-tag{display:inline-flex;align-items:center;gap:7px;background:var(--soft);color:var(--purpled);font-weight:700;font-size:13px;padding:6px 14px;border-radius:999px}
+  .sec-h{font-size:clamp(26px,4.4vw,40px);font-weight:800;letter-spacing:-.5px;margin:14px 0 8px}
+  .sec-sub{color:var(--muted);font-size:clamp(15px,2vw,17px);max-width:560px}
+  .center{text-align:center}.center .sec-sub{margin-left:auto;margin-right:auto}
+
+  /* Header */
+  header{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.86);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+  .nav{display:flex;align-items:center;justify-content:space-between;padding:14px 0}
   .logo{display:flex;align-items:center;gap:10px;font-weight:800;font-size:22px}
   .logo b{color:var(--pink)}
-  .cat{width:40px;height:40px}
-  nav a{color:var(--ink);text-decoration:none;font-weight:600;margin-left:20px;font-size:15px}
-  nav a:hover{color:var(--pink)}
-  .hero{text-align:center;padding:60px 0 40px}
-  .hero .cat{width:120px;height:120px;margin-bottom:18px}
-  .hero h1{font-size:clamp(30px,6vw,52px);font-weight:800;letter-spacing:-1px}
+  .logo svg{width:38px;height:38px}
+  nav.links a{font-weight:600;font-size:15px;margin-left:22px;color:var(--ink)}
+  nav.links a:hover{color:var(--pink)}
+  @media(max-width:640px){nav.links a{margin-left:14px;font-size:14px}}
+
+  /* Hero */
+  .hero{text-align:center;padding:64px 0 46px}
+  .hero .mascot{width:128px;height:128px;filter:drop-shadow(0 10px 0 rgba(46,42,63,.08));animation:bob 3s ease-in-out infinite}
+  @keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+  .hero h1{font-size:clamp(32px,6.4vw,56px);font-weight:800;letter-spacing:-1.2px;margin-top:18px;line-height:1.08}
   .hero h1 span{color:var(--pink)}
-  .hero p{font-size:clamp(16px,2.5vw,20px);color:var(--muted);max-width:600px;margin:16px auto 28px}
-  .btn{display:inline-block;background:var(--pink);color:#fff;font-weight:700;padding:14px 30px;border-radius:999px;text-decoration:none;border-bottom:4px solid var(--pinkd);font-size:16px}
-  .btn.ghost{background:var(--soft);color:var(--purpled);border-bottom-color:#E1D8EC;margin-left:10px}
-  .feat{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:18px;padding:40px 0}
-  .card{background:var(--soft);border:2px solid #fff;border-radius:24px;padding:24px;box-shadow:0 6px 0 rgba(46,42,63,.08)}
-  .card .ic{font-size:30px;margin-bottom:10px}
-  .card h3{font-size:19px;margin-bottom:6px}
+  .hero p{font-size:clamp(16px,2.5vw,20px);color:var(--muted);max-width:620px;margin:18px auto 26px}
+  .btns{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
+  .btn{display:inline-flex;align-items:center;gap:8px;font-weight:700;font-size:16px;padding:14px 28px;border-radius:999px;border-bottom:4px solid var(--pinkd);background:var(--pink);color:#fff}
+  .btn.ghost{background:var(--soft);color:var(--purpled);border-bottom-color:#E1D8EC}
+  .btn:hover{transform:translateY(-1px)}
+
+  /* Features */
+  section{padding:54px 0}
+  .feat{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:16px;margin-top:30px}
+  .card{background:var(--bg);border:2px solid var(--line);border-radius:22px;padding:22px;box-shadow:var(--shadow);transition:transform .15s}
+  .card:hover{transform:translateY(-3px)}
+  .card .badge{width:46px;height:46px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:22px;margin-bottom:12px}
+  .card h3{font-size:18px;margin-bottom:5px}
   .card p{color:var(--muted);font-size:14px}
-  .band{background:linear-gradient(120deg,var(--pink),var(--purple));color:#fff;border-radius:28px;padding:40px;text-align:center;margin:30px 0}
+
+  /* Persona gallery */
+  .personas{background:var(--soft);border-radius:32px;padding:44px 26px;margin:0 0}
+  .pgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:16px;margin-top:30px}
+  .pcard{background:#fff;border:2px solid #fff;border-radius:22px;padding:18px 12px;text-align:center;box-shadow:var(--shadow);position:relative}
+  .pcard svg{width:78px;height:78px}
+  .pcard .pname{font-weight:800;font-size:16px;margin-top:8px}
+  .pcard .ptag{color:var(--muted);font-size:12px;margin-top:2px;min-height:30px}
+  .rar{position:absolute;top:10px;right:10px;font-size:10px;font-weight:800;color:#fff;padding:2px 8px;border-radius:999px;letter-spacing:.4px}
+
+  /* Steps */
+  .steps{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px;margin-top:30px}
+  .step{background:#fff;border:2px solid var(--line);border-radius:22px;padding:22px;box-shadow:var(--shadow)}
+  .step .n{width:34px;height:34px;border-radius:12px;background:var(--ink);color:#fff;font-weight:800;display:flex;align-items:center;justify-content:center;margin-bottom:12px}
+  .step h3{font-size:17px;margin-bottom:4px}
+  .step p{color:var(--muted);font-size:14px}
+
+  /* Band */
+  .band{background:linear-gradient(120deg,var(--pink),var(--purple));color:#fff;border-radius:30px;padding:44px 30px;text-align:center;margin:8px 0}
   .band h2{font-size:clamp(24px,4vw,34px);font-weight:800}
-  .band p{opacity:.95;margin:10px auto 0;max-width:560px}
-  footer{border-top:2px solid #EFE7DD;padding:30px 0;margin-top:40px;color:var(--muted);font-size:14px;text-align:center}
-  footer a{color:var(--purpled);text-decoration:none;font-weight:600}
+  .band p{opacity:.95;margin:10px auto 0;max-width:580px}
+  .ethic{display:flex;align-items:flex-start;gap:12px;background:#EAF7F1;border:2px solid #CFEDE0;border-radius:22px;padding:20px;margin-top:30px}
+  .ethic .badge{background:#fff;color:var(--mintd)}
+  .ethic h3{font-size:16px;color:var(--mintd)}
+  .ethic p{color:#4E7767;font-size:14px;margin-top:3px}
+
+  footer{border-top:2px solid var(--line);padding:34px 0;margin-top:20px;color:var(--muted);font-size:14px;text-align:center}
+  footer a{color:var(--purpled);font-weight:600}
+  footer .mail{display:inline-flex;align-items:center;gap:6px}
 </style>
 </head>
 <body>
-<div class="wrap">
-  <header>
-    <div class="logo"><svg class="cat" viewBox="0 0 100 100"><path d="M22 34 L26 12 L44 26 Z" fill="#FF9E4D" stroke="#2E2A3F" stroke-width="3.4" stroke-linejoin="round"/><path d="M78 34 L74 12 L56 26 Z" fill="#FF9E4D" stroke="#2E2A3F" stroke-width="3.4" stroke-linejoin="round"/><ellipse cx="50" cy="56" rx="34" ry="31" fill="#FF9E4D" stroke="#2E2A3F" stroke-width="3.6"/><circle cx="38" cy="54" r="6" fill="#2E2A3F"/><circle cx="62" cy="54" r="6" fill="#2E2A3F"/><circle cx="26" cy="63" r="4.4" fill="#FF7AA8" opacity=".65"/><circle cx="74" cy="63" r="4.4" fill="#FF7AA8" opacity=".65"/><path d="M47 62 h6 l-3 3 z" fill="#FF7AA8"/></svg> <span class="brand">Purr<b>bo</b></span></div>
-    <nav><a href="#feat">Tính năng</a><a href="/privacy">Bảo mật</a><a href="/terms">Điều khoản</a></nav>
-  </header>
 
-  <section class="hero">
-    <svg class="cat" viewBox="0 0 100 100"><path d="M22 34 L26 12 L44 26 Z" fill="#FF9E4D" stroke="#2E2A3F" stroke-width="3.4" stroke-linejoin="round"/><path d="M78 34 L74 12 L56 26 Z" fill="#FF9E4D" stroke="#2E2A3F" stroke-width="3.4" stroke-linejoin="round"/><ellipse cx="50" cy="56" rx="34" ry="31" fill="#FF9E4D" stroke="#2E2A3F" stroke-width="3.6"/><circle cx="38" cy="54" r="6" fill="#2E2A3F"/><circle cx="62" cy="54" r="6" fill="#2E2A3F"/><circle cx="26" cy="63" r="4.4" fill="#FF7AA8" opacity=".65"/><circle cx="74" cy="63" r="4.4" fill="#FF7AA8" opacity=".65"/><path d="M47 62 h6 l-3 3 z" fill="#FF7AA8"/></svg>
-    <h1>Nuôi thói quen bằng<br/>một <span>bạn đồng hành</span></h1>
-    <p>Purrbo là app nhắc lịch kiểu GenZ: một persona dễ thương nhắc cưng uống nước, tập gym, đọc sách — cưng khoe là được cưng, cột thân thiết lên đều mỗi ngày.</p>
-    <a class="btn" href="#feat">Khám phá</a>
-    <a class="btn ghost" href="/privacy">Chính sách</a>
-  </section>
+<header>
+  <div class="wrap nav">
+    <a class="logo" href="/">
+      <svg viewBox="0 0 100 100" aria-hidden="true"><path d="M22 34 L26 12 L44 26 Z" fill="#FF9E4D" stroke="#2E2A3F" stroke-width="3.4" stroke-linejoin="round"/><path d="M78 34 L74 12 L56 26 Z" fill="#FF9E4D" stroke="#2E2A3F" stroke-width="3.4" stroke-linejoin="round"/><ellipse cx="50" cy="56" rx="34" ry="31" fill="#FF9E4D" stroke="#2E2A3F" stroke-width="3.6"/><circle cx="38" cy="54" r="6" fill="#2E2A3F"/><circle cx="62" cy="54" r="6" fill="#2E2A3F"/><circle cx="26" cy="63" r="4.4" fill="#FF7AA8" opacity=".65"/><circle cx="74" cy="63" r="4.4" fill="#FF7AA8" opacity=".65"/><path d="M47 62 h6 l-3 3 z" fill="#FF7AA8"/></svg>
+      <span>Purr<b>bo</b></span>
+    </a>
+    <nav class="links">
+      <a href="#feat">Tính năng</a>
+      <a href="#persona">Persona</a>
+      <a href="/privacy">Bảo mật</a>
+      <a href="/terms">Điều khoản</a>
+    </nav>
+  </div>
+</header>
 
-  <section class="feat" id="feat">
-    <div class="card"><div class="ic">🐱</div><h3>Persona có hồn</h3><p>8 nhân vật GenZ mỗi người một "gu" — tsundere, soft-simp, tổng tài, hype… nhắc cưng theo đúng chất.</p></div>
-    <div class="card"><div class="ic">💬</div><h3>Khoe → Được cưng</h3><p>Làm xong việc thì khoe, persona khen liền, cột thân thiết + streak lên mỗi ngày.</p></div>
-    <div class="card"><div class="ic">🎁</div><h3>Túi mù minh bạch</h3><p>Sưu tầm persona qua túi mù — tỉ lệ hiện rõ ràng, chơi vui không móc túi.</p></div>
-    <div class="card"><div class="ic">📅</div><h3>Đồng bộ lịch</h3><p>Kéo lịch thật từ Google Calendar / Lark, nhắc lặp lại hằng tuần hoặc mỗi vài giờ.</p></div>
-  </section>
+<!-- Hero -->
+<section class="hero wrap" style="padding-top:56px">
+  <svg class="mascot" viewBox="0 0 100 100" aria-hidden="true"><path d="M22 34 L26 12 L44 26 Z" fill="#FF9E4D" stroke="#2E2A3F" stroke-width="3.4" stroke-linejoin="round"/><path d="M78 34 L74 12 L56 26 Z" fill="#FF9E4D" stroke="#2E2A3F" stroke-width="3.4" stroke-linejoin="round"/><path d="M28 30 L30 19 L38 27 Z" fill="#FFC9A0"/><path d="M72 30 L70 19 L62 27 Z" fill="#FFC9A0"/><ellipse cx="50" cy="56" rx="34" ry="31" fill="#FF9E4D" stroke="#2E2A3F" stroke-width="3.6"/><path d="M50 27 v10 M40 30 l3 9 M60 30 l-3 9" stroke="#E97D2A" stroke-width="3.4" stroke-linecap="round" fill="none"/><circle cx="38" cy="54" r="6" fill="#2E2A3F"/><circle cx="62" cy="54" r="6" fill="#2E2A3F"/><circle cx="40" cy="52" r="2" fill="#fff"/><circle cx="64" cy="52" r="2" fill="#fff"/><circle cx="26" cy="63" r="4.4" fill="#FF7AA8" opacity=".65"/><circle cx="74" cy="63" r="4.4" fill="#FF7AA8" opacity=".65"/><path d="M47 62 h6 l-3 3 z" fill="#FF7AA8"/><path d="M50 65 v3 M50 68 q-5 4 -9 1 M50 68 q5 4 9 1" stroke="#2E2A3F" stroke-width="2.4" fill="none" stroke-linecap="round"/></svg>
+  <h1>Nuôi thói quen bằng<br/>một <span>bạn đồng hành</span></h1>
+  <p>Một persona dễ thương nhắc cưng uống nước, tập gym, đọc sách — cưng khoe là được cưng, <b>cột thân thiết</b> lên đều mỗi ngày.</p>
+  <div class="btns">
+    <a class="btn" href="#feat">Khám phá tính năng</a>
+    <a class="btn ghost" href="#persona">Xem thư viện persona</a>
+  </div>
+</section>
 
-  <section class="band">
-    <h2>Sắp có mặt trên App Store & Google Play</h2>
+<!-- Features -->
+<section class="wrap center" id="feat">
+  <span class="sec-tag"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l2.2 5.6L20 9l-4.2 3.6L17 18l-5-3-5 3 1.2-5.4L4 9l5.8-.4z"/></svg> Tính năng</span>
+  <h2 class="sec-h">Không phải app nhắc lịch khô khan</h2>
+  <p class="sec-sub">Purrbo biến việc chăm bản thân thành mối quan hệ dễ thương — có động lực để quay lại mỗi ngày.</p>
+
+  <div class="feat" style="text-align:left">
+    <div class="card"><div class="badge" style="background:#FFEAF2;color:#D8306F"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7-4.5-9.5-9A5 5 0 0 1 12 6a5 5 0 0 1 9.5 3c-2.5 4.5-9.5 12-9.5 12z"/></svg></div><h3>Persona có hồn</h3><p>8 nhân vật GenZ mỗi người một "gu" — tsundere, soft-simp, tổng tài, hype… nhắc cưng đúng chất.</p></div>
+    <div class="card"><div class="badge" style="background:#EEE7FF;color:#6B3FD6"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.4 8.4 0 0 1-9 8.5 9.3 9.3 0 0 1-4-1L3 21l1-4a8.5 8.5 0 0 1-1-4.5A8.4 8.4 0 0 1 12 3a8.4 8.4 0 0 1 9 8.5z"/></svg></div><h3>Khoe → Được cưng</h3><p>Làm xong việc thì khoe, persona khen liền, cột thân thiết + streak lên mỗi ngày.</p></div>
+    <div class="card"><div class="badge" style="background:#FFF6DE;color:#E0A61C"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 12v9H4v-9M2 7h20v5H2z"/><path d="M12 22V7M12 7C10 7 7 3 9 3s3 4 3 4zM12 7c2 0 5-4 3-4s-3 4-3 4z"/></svg></div><h3>Túi mù minh bạch</h3><p>Sưu tầm persona qua túi mù — tỉ lệ hiện rõ ràng, chơi vui không móc túi.</p></div>
+    <div class="card"><div class="badge" style="background:#EEE7FF;color:#6B3FD6"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8l4 4 5-7 5 7 4-4-2 11H5z"/></svg></div><h3>Trang bị & phụ kiện</h3><p>Mua mũ, kính, trang sức bằng đá quý — diện đồ đổi ngoại hình cho bạn đồng hành.</p></div>
+    <div class="card"><div class="badge" style="background:#E6F7FF;color:#1893D1"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="5" width="16" height="16" rx="2.5"/><path d="M3 10h18M8 3v4M16 3v4"/></svg></div><h3>Đồng bộ lịch</h3><p>Kéo lịch thật từ Google Calendar / Lark, nhắc lặp hằng tuần hoặc mỗi vài giờ.</p></div>
+    <div class="card"><div class="badge" style="background:#EAF7F1;color:#16A97A"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l2.5 6 6.5.5-5 4 1.5 6.5L12 17l-5.5 3 1.5-6.5-5-4 6.5-.5z"/></svg></div><h3>Nhiệm vụ & mời bạn</h3><p>Điểm danh, làm nhiệm vụ hằng ngày, rủ bạn — gom đá quý đều tay để giữ streak.</p></div>
+  </div>
+</section>
+
+<!-- Persona gallery -->
+<section class="wrap" id="persona">
+  <div class="personas">
+    <div class="center">
+      <span class="sec-tag"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l2.2 5.6L20 9l-4.2 3.6L17 18l-5-3-5 3 1.2-5.4L4 9l5.8-.4z"/></svg> Thư viện persona</span>
+      <h2 class="sec-h">Chọn bạn đồng hành hợp gu</h2>
+      <p class="sec-sub">8 nhân vật, mỗi em một tính cách & câu chuyện riêng. Mở túi mù để sưu tầm đủ bộ.</p>
+    </div>
+    <div class="pgrid" id="pgrid"></div>
+  </div>
+</section>
+
+<!-- How it works -->
+<section class="wrap center">
+  <span class="sec-tag"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l4 4L19 6"/></svg> Cách hoạt động</span>
+  <h2 class="sec-h">Vòng lặp "Khoe → Được cưng"</h2>
+  <div class="steps" style="text-align:left">
+    <div class="step"><div class="n">1</div><h3>Chọn persona</h3><p>Làm quiz nhỏ để tìm bạn đồng hành hợp gu, hoặc mở túi mù gặp em mình thích.</p></div>
+    <div class="step"><div class="n">2</div><h3>Làm việc & khoe</h3><p>Uống nước, tập gym, đọc sách… xong thì khoe. Persona sinh thoại khen ngay bằng AI.</p></div>
+    <div class="step"><div class="n">3</div><h3>Được cưng, lên hạng</h3><p>Cột thân thiết + streak tăng, mở cột mốc mới, gom đá quý diện đồ cho em.</p></div>
+  </div>
+</section>
+
+<!-- Ethics + CTA -->
+<section class="wrap">
+  <div class="ethic">
+    <div class="badge"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l7 3v6c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9V6z"/></svg></div>
+    <div><h3>Chơi vui, không móc túi</h3><p>Purrbo luôn hiện tỉ lệ thật, không ép mua. Túi mù là gia vị — điều bạn nuôi được là một mối quan hệ có chiều sâu.</p></div>
+  </div>
+
+  <div class="band" style="margin-top:26px">
+    <h2>Sắp có mặt trên App Store &amp; Google Play</h2>
     <p>Đang hoàn thiện. Theo dõi để nhận thông báo khi Purrbo ra mắt nha 🐾</p>
-  </section>
-</div>
+  </div>
+</section>
 
 <footer>
   <div class="wrap">
+    <div style="margin-bottom:8px">
+      <a class="mail" href="mailto:datly030102@gmail.com"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2.5"/><path d="M4 7l8 6 8-6"/></svg> datly030102@gmail.com</a>
+    </div>
     © 2026 Purrbo · <a href="/privacy">Chính sách quyền riêng tư</a> · <a href="/terms">Điều khoản sử dụng</a><br/>
     Made with 💗 cho những ai muốn sống ngoan hơn mỗi ngày.
   </div>
 </footer>
+
+<script>
+// Thư viện persona — dựng SVG mặt theo dữ liệu (giống PersonaFace của app).
+var PERSONAS = [
+  {name:'Mun',   c:'#6B6480', ear:'cat',   rar:'SSR',    tag:'tsundere · cà khịa yêu'},
+  {name:'Mochi', c:'#FF9E4D', ear:'cat',   rar:'SSR',    tag:'soft · ngọt xỉu thả thính'},
+  {name:'Lỳ',    c:'#E8743B', ear:'fox',   rar:'SSR',    tag:'bad-boy · thính thủ lạnh'},
+  {name:'Sếp',   c:'#8B7BB0', ear:'cat',   rar:'Hiếm',   tag:'tổng tài · chủ động', glasses:1},
+  {name:'Bông',  c:'#F4A6C0', ear:'bunny', rar:'Hiếm',   tag:'nũng nịu · uwu'},
+  {name:'Xu',    c:'#34D399', ear:'cat',   rar:'Hiếm',   tag:'hype · năng lượng vô cực', antenna:1},
+  {name:'Bơ',    c:'#7FB77E', ear:'bear',  rar:'Thường', tag:'chill · ít nói mà ấm'},
+  {name:'Sìn',   c:'#E8B04B', ear:'dog',   rar:'Thường', tag:'trung thành · quấn chủ'},
+];
+var RARC = {'SSR':'#FFB23E','Hiếm':'#38BDF8','Thường':'#9AA0B4'};
+function ears(e,c){
+  var S='#2E2A3F';
+  if(e==='bear')  return '<circle cx="20" cy="18" r="8" fill="'+c+'" stroke="'+S+'" stroke-width="2.5"/><circle cx="44" cy="18" r="8" fill="'+c+'" stroke="'+S+'" stroke-width="2.5"/>';
+  if(e==='bunny') return '<ellipse cx="24" cy="12" rx="5" ry="13" fill="'+c+'" stroke="'+S+'" stroke-width="2.5"/><ellipse cx="40" cy="12" rx="5" ry="13" fill="'+c+'" stroke="'+S+'" stroke-width="2.5"/>';
+  if(e==='fox')   return '<path d="M15 22 L18 5 L31 17 Z" fill="'+c+'" stroke="'+S+'" stroke-width="2.5" stroke-linejoin="round"/><path d="M49 22 L46 5 L33 17 Z" fill="'+c+'" stroke="'+S+'" stroke-width="2.5" stroke-linejoin="round"/>';
+  if(e==='dog')   return '<path d="M16 16 q-6 4 -3 15 l9 -6 Z" fill="'+c+'" stroke="'+S+'" stroke-width="2.5" stroke-linejoin="round"/><path d="M48 16 q6 4 3 15 l-9 -6 Z" fill="'+c+'" stroke="'+S+'" stroke-width="2.5" stroke-linejoin="round"/>';
+  return '<path d="M18 20 L22 8 L30 18 Z" fill="'+c+'" stroke="'+S+'" stroke-width="2.5" stroke-linejoin="round"/><path d="M46 20 L42 8 L34 18 Z" fill="'+c+'" stroke="'+S+'" stroke-width="2.5" stroke-linejoin="round"/>';
+}
+function face(p){
+  var eyes = p.glasses
+    ? '<circle cx="25" cy="33" r="5.5" fill="none" stroke="#2E2A3F" stroke-width="2.5"/><circle cx="39" cy="33" r="5.5" fill="none" stroke="#2E2A3F" stroke-width="2.5"/><path d="M30.5 33h3" stroke="#2E2A3F" stroke-width="2.5"/><circle cx="25" cy="33" r="2.2" fill="#2E2A3F"/><circle cx="39" cy="33" r="2.2" fill="#2E2A3F"/>'
+    : '<circle cx="25" cy="33" r="3.4" fill="#2E2A3F"/><circle cx="39" cy="33" r="3.4" fill="#2E2A3F"/><circle cx="26" cy="32" r="1" fill="#fff"/><circle cx="40" cy="32" r="1" fill="#fff"/>';
+  var ant = p.antenna ? '<path d="M32 6 v8" stroke="'+p.c+'" stroke-width="3" stroke-linecap="round"/><circle cx="32" cy="5" r="3" fill="#FF4D8D"/>' : '';
+  return '<svg viewBox="0 0 64 64" aria-hidden="true">'+ears(p.ear,p.c)+ant+
+    '<circle cx="32" cy="34" r="22" fill="'+p.c+'" stroke="#2E2A3F" stroke-width="3"/>'+eyes+
+    '<circle cx="20" cy="41" r="3.2" fill="#FF7AA8" opacity=".65"/><circle cx="44" cy="41" r="3.2" fill="#FF7AA8" opacity=".65"/>'+
+    '<path d="M27 42 Q32 47 37 42" stroke="#2E2A3F" stroke-width="2.6" fill="none" stroke-linecap="round"/></svg>';
+}
+document.getElementById('pgrid').innerHTML = PERSONAS.map(function(p){
+  return '<div class="pcard"><span class="rar" style="background:'+RARC[p.rar]+'">'+p.rar.toUpperCase()+'</span>'+
+    face(p)+'<div class="pname">'+p.name+'</div><div class="ptag">'+p.tag+'</div></div>';
+}).join('');
+</script>
 </body>
 </html>
