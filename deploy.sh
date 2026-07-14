@@ -37,25 +37,31 @@ fi
 
 # --- 2. Cảnh báo secret mặc định ---
 grep -q '^JWT_SECRET=changeme' api/.env 2>/dev/null && echo "⚠️  JWT_SECRET vẫn mặc định — NÊN đổi."
-grep -q 'admin-doi-truoc' api/.env 2>/dev/null && echo "⚠️  ADMIN_TOKEN vẫn mặc định — NÊN đổi."
+grep -q 'doi-mat-khau-nay' api/.env 2>/dev/null && echo "⚠️  ADMIN_PASSWORD vẫn mặc định — NÊN đổi."
 
-# --- 3. Build & chạy ---
-echo "▶  Build & chạy Purrbo (Postgres + API + Caddy :80/:443, HTTPS tự động)..."
+# --- 3. Cổng publish (mặc định 3012; nginx VPS proxy vào cổng này) ---
+APP_PORT="$(grep -E '^APP_PORT=' api/.env 2>/dev/null | head -1 | cut -d= -f2- | tr -d '"'"'"' ' || true)"
+APP_PORT="${APP_PORT:-3012}"
+export APP_PORT
+
+# --- 4. Build & chạy ---
+echo "▶  Build & chạy Purrbo (Postgres + API) — publish 127.0.0.1:${APP_PORT}..."
 POSTGRES_PASSWORD="${POSTGRES_PASSWORD:-purrbo}" $COMPOSE up -d --build
 
-# --- 4. Chờ API sẵn sàng (kiểm tra trong container, không phụ thuộc TLS) ---
+# --- 5. Chờ API sẵn sàng ---
 echo "⏳  Chờ API sẵn sàng..."
 for i in $(seq 1 40); do
-  if $COMPOSE exec -T api python -c "import urllib.request,sys; sys.exit(0 if urllib.request.urlopen('http://localhost:8000/health').status==200 else 1)" >/dev/null 2>&1; then
+  if curl -fsS "http://127.0.0.1:${APP_PORT}/health" >/dev/null 2>&1; then
     echo ""
-    echo "✅  API đã chạy. Caddy đang xin/áp chứng chỉ HTTPS cho purrbo.fun..."
-    echo "    • Landing : https://purrbo.fun/"
-    echo "    • Chính sách : https://purrbo.fun/privacy · /terms"
-    echo "    • Admin   : https://purrbo.fun/admin"
-    echo "    • API     : https://purrbo.fun/v1/...  (health: /health)"
+    echo "✅  Purrbo đang chạy tại http://127.0.0.1:${APP_PORT} (chỉ localhost)"
+    echo "    • Health : http://127.0.0.1:${APP_PORT}/health"
+    echo "    • Landing/Admin/API do nginx VPS phục vụ qua domain."
     echo ""
-    echo "→ Điều kiện HTTPS: DNS purrbo.fun (+ www) trỏ A record về IP VPS này, mở cổng 80 + 443."
-    echo "  Lần đầu Caddy mất ~30-60s để lấy cert. Xem log: $COMPOSE logs -f caddy"
+    echo "→ Bước cuối (1 lần): copy file nginx vào sites-available, bật site, xin HTTPS:"
+    echo "    sudo cp nginx.conf /etc/nginx/sites-available/purrbo.fun"
+    echo "    sudo ln -sf /etc/nginx/sites-available/purrbo.fun /etc/nginx/sites-enabled/"
+    echo "    sudo nginx -t && sudo systemctl reload nginx"
+    echo "    sudo certbot --nginx -d purrbo.fun -d www.purrbo.fun"
     exit 0
   fi
   sleep 2

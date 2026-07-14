@@ -25,20 +25,18 @@ curl localhost:8000/health
 ## Web (landing + admin) & deploy 1 lệnh
 API tự phục vụ web tĩnh: **`/`** landing · **`/privacy`** · **`/terms`** · **`/admin`** (đăng nhập `ADMIN_USERNAME`/`ADMIN_PASSWORD`).
 ```bash
-./deploy.sh          # pull → build docker-compose.prod (Postgres+API+Caddy) → HTTPS tự động
+./deploy.sh          # build docker-compose.prod (Postgres+API) → publish 127.0.0.1:3012
 ./release-ios.sh     # EAS build production iOS + submit TestFlight (cần eas-cli + Apple account)
 ```
-- **Domain purrbo.fun**: trỏ **A record** `purrbo.fun` (+ `www`) về IP VPS, mở cổng **80 + 443**. Caddy tự xin cert Let's Encrypt (không cần certbot). App prod đã trỏ `https://purrbo.fun` (eas.json).
+- **Domain purrbo.fun (nginx VPS)**: copy `nginx.conf` → `/etc/nginx/sites-available/purrbo.fun`, bật site, `certbot --nginx -d purrbo.fun -d www.purrbo.fun`. App prod đã trỏ `https://purrbo.fun` (eas.json). Đổi cổng: `APP_PORT` trong `api/.env`.
 - **Cấu hình động**: app đọc `GET /v1/config` (gói nạp/đặc biệt, tỉ lệ túi mù, câu nhắc). Sửa persona + trang bị + config ở `/admin` → app nhận ngay.
 
-## 3. Deploy PROD (Postgres + Caddy)
+## 3. Deploy PROD (Postgres + API, nginx VPS proxy)
 ```bash
-# đặt secret trong api/.env (OPENAI_API_KEY, JWT_SECRET mạnh, CORS_ORIGINS domain thật)
-POSTGRES_PASSWORD='matkhau-manh' \
-  docker compose -f docker-compose.prod.yml up --build -d
-# Caddy lắng nghe :80/:443, HTTPS tự động → proxy api:8000
+# đặt secret trong api/.env (OPENAI_API_KEY, JWT_SECRET mạnh, ADMIN_PASSWORD, POSTGRES_PASSWORD)
+./deploy.sh                       # publish 127.0.0.1:3012 (APP_PORT trong api/.env)
 ```
-- Gắn domain + HTTPS: trỏ DNS về server, thêm TLS (Caddy/Traefik hoặc certbot cho nginx).
+- Nginx VPS proxy `purrbo.fun` → `127.0.0.1:3012` (file `nginx.conf`), TLS bằng `certbot --nginx`.
 - Prod chạy Postgres → cần chạy migration (Alembic) thay vì `create_all`. (Alembic đã có trong requirements; scaffold migration khi cần.)
 
 ## 4. Build app (EAS)

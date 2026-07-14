@@ -1,8 +1,6 @@
-# Prod — Postgres + API + Caddy (reverse proxy + HTTPS TỰ ĐỘNG cho purrbo.fun).
-# Chạy:  ./deploy.sh   (hoặc: POSTGRES_PASSWORD=... docker compose -f docker-compose.prod.yml up --build -d)
-#
-# Caddy tự xin & gia hạn chứng chỉ Let's Encrypt cho purrbo.fun — KHÔNG cần certbot thủ công.
-# Điều kiện: DNS purrbo.fun (+ www) trỏ A record về IP VPS, và mở cổng 80 + 443.
+# Prod — Postgres + API. Web/API publish ở 127.0.0.1:3012 (chỉ localhost).
+# Nginx CỦA VPS (sites-available) reverse-proxy purrbo.fun → 127.0.0.1:3012 + TLS (certbot).
+# Chạy:  ./deploy.sh
 services:
   db:
     image: postgres:16-alpine
@@ -25,25 +23,12 @@ services:
       - ./api/.env
     environment:
       DATABASE_URL: postgresql+asyncpg://purrbo:${POSTGRES_PASSWORD:-purrbo}@db:5432/purrbo
+    ports:
+      - "127.0.0.1:${APP_PORT:-3012}:8000"   # chỉ localhost → nginx VPS proxy vào
     depends_on:
       db:
         condition: service_healthy
     restart: unless-stopped
 
-  caddy:
-    image: caddy:2-alpine
-    ports:
-      - "80:80"
-      - "443:443"
-    volumes:
-      - ./Caddyfile:/etc/caddy/Caddyfile:ro
-      - caddy_data:/data       # lưu chứng chỉ TLS (giữ qua mỗi lần deploy)
-      - caddy_config:/config
-    depends_on:
-      - api
-    restart: unless-stopped
-
 volumes:
   pgdata:
-  caddy_data:
-  caddy_config:
