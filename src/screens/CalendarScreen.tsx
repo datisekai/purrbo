@@ -7,6 +7,7 @@ import { colors, fonts, radii, hardShadow } from '../theme';
 import { Icon } from '../components/Icon';
 import { PersonaFace } from '../components/PersonaFace';
 import { Button, SkeletonRow } from '../components/ui';
+import { CelebrationModal } from '../components/CelebrationModal';
 import { Api } from '../api';
 import { getGcalToken, getLarkToken } from '../googleCalendar';
 import { playSuccess } from '../sound';
@@ -129,6 +130,9 @@ export default function CalendarScreen({ navigation }) {
   const [view, setView] = useState('week'); // 'week' = 7 ngày · 'month' = 30 ngày
   const [note, setNote] = useState(NOTE);
   const [gcalOn, setGcalOn] = useState(false);
+  const [st, setSt] = useState(null);
+  const [activePersona, setActivePersona] = useState({ variant: 'mun', name: 'Bạn đồng hành' });
+  const [celebration, setCelebration] = useState(null);
   // Mặc định (offline): chỉ habit mẫu — KHÔNG bịa event Google.
   const [items, setItems] = useState([
     { id: 'water', type: 'habit', time: '08:00', ampm: 'SA', ic: 'droplet', bg: '#E6F7FF', col: colors.skyDark, name: 'Uống nước', nudge: 'cưng nhấp môi 1 ngụm cho em vui nha', done: false },
@@ -172,6 +176,12 @@ export default function CalendarScreen({ navigation }) {
         [...base, ...gitems].sort((a, b) => String(a.time).localeCompare(String(b.time)))
       );
     }
+    try {
+      const [state, cat] = await Promise.all([Api.state(), Api.personas()]);
+      setSt(state);
+      const active = Array.isArray(cat) ? cat.find((p) => p.key === state.persona_key) : null;
+      if (active) setActivePersona({ variant: active.variant, name: active.name });
+    } catch {}
     setLoading(false);
   }, []);
 
@@ -186,12 +196,20 @@ export default function CalendarScreen({ navigation }) {
   const khoe = async (it) => {
     if (it.type !== 'habit' || it.done) return;
     playSuccess();
+    const prevLevel = st?.affinity_level ?? 1;
+    const prevStreak = st?.streak ?? 0;
     // optimistic
     setItems((xs) => xs.map((x) => (x.id === it.id ? { ...x, done: true } : x)));
     try {
       const r = await Api.khoe(it.hid ?? it.id);
       if (r && r.line) setNote(r.line);
       else setNote(PRAISE[it.id] || NOTE);
+      if (typeof r?.affinity_level === 'number') {
+        setSt((s) => ({ ...(s || {}), affinity_level: r.affinity_level, affinity_points: r.affinity_points, streak: r.streak }));
+        const MS = [3, 7, 14, 30, 50, 100];
+        if (r.affinity_level > prevLevel) setCelebration({ type: 'level', value: r.affinity_level, persona: activePersona });
+        else if (r.streak > prevStreak && MS.includes(r.streak)) setCelebration({ type: 'streak', value: r.streak, persona: activePersona });
+      }
     } catch (e) {
       setNote(PRAISE[it.id] || NOTE);
     }
@@ -365,6 +383,8 @@ export default function CalendarScreen({ navigation }) {
       <Pressable style={s.fab} onPress={() => navigation?.navigate?.('AddTask')}>
         <Icon name="plus" size={26} color="#fff" />
       </Pressable>
+
+      <CelebrationModal data={celebration} onClose={() => setCelebration(null)} />
     </SafeAreaView>
   );
 }

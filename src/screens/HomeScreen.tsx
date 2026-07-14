@@ -7,6 +7,7 @@ import { Icon } from '../components/Icon';
 import { PersonaFace } from '../components/PersonaFace';
 import { AnimatedMascot } from '../components/AnimatedMascot';
 import { WidgetPreview } from '../components/WidgetPreview';
+import { CelebrationModal } from '../components/CelebrationModal';
 import { Button, Chip, ProgressBar, SkeletonRow } from '../components/ui';
 import { Api } from '../api';
 import { useAuth } from '../auth';
@@ -32,6 +33,7 @@ export default function HomeScreen({ navigation }: any) {
   const [equipped, setEquipped] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [celebration, setCelebration] = useState<any>(null);
 
   // Nạp toàn bộ dữ liệu Home (dùng cho mount + kéo làm mới).
   const loadCore = useCallback(async () => {
@@ -76,14 +78,24 @@ export default function HomeScreen({ navigation }: any) {
     }, [])
   );
 
+  const STREAK_MILESTONES = [3, 7, 14, 30, 50, 100];
+
   const khoe = async (h: any) => {
     if (h.done) return;
     playSuccess();
+    const prevLevel = st?.affinity_level ?? 1;
+    const prevStreak = st?.streak ?? 0;
     setHabits((hs) => hs.map((x) => (x.id === h.id ? { ...x, done: true } : x)));
     try {
       const r = await Api.khoe(h.id);
       setLine(r.line);
       setSt((s: any) => ({ ...(s || {}), affinity_points: r.affinity_points, affinity_level: r.affinity_level, streak: r.streak }));
+      // Ăn mừng: lên cấp thân thiết hoặc chạm mốc streak (chỉ khi tăng thật)
+      if (r.affinity_level > prevLevel) {
+        setCelebration({ type: 'level', value: r.affinity_level, persona, items: equipped });
+      } else if (r.streak > prevStreak && STREAK_MILESTONES.includes(r.streak)) {
+        setCelebration({ type: 'streak', value: r.streak, persona, items: equipped });
+      }
     } catch {
       /* giữ optimistic */
     }
@@ -204,6 +216,8 @@ export default function HomeScreen({ navigation }: any) {
           <WidgetPreview habits={habits} dateLabel="Hôm nay · 13/07" />
         </View>
       </ScrollView>
+
+      <CelebrationModal data={celebration} onClose={() => setCelebration(null)} />
     </SafeAreaView>
   );
 }
