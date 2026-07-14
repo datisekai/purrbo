@@ -113,7 +113,7 @@ async def health():
 # ── Web: landing + chính sách + admin (phục vụ tĩnh từ api/app/web/) ──
 from pathlib import Path
 
-from fastapi.responses import FileResponse, HTMLResponse
+from fastapi.responses import FileResponse, HTMLResponse, PlainTextResponse, Response
 
 _WEB = Path(__file__).resolve().parent / "web"
 
@@ -134,9 +134,42 @@ async def _favicon():
     return HTMLResponse(status_code=404, content="")
 
 
+async def _og_image():
+    f = _WEB / "og-image.png"
+    if f.exists():
+        return FileResponse(f, media_type="image/png")
+    return HTMLResponse(status_code=404, content="")
+
+
+_SITE = "https://purrbo.fun"
+
+
+async def _robots():
+    body = (
+        "User-agent: *\n"
+        "Allow: /\n"
+        "Disallow: /admin\n"
+        f"Sitemap: {_SITE}/sitemap.xml\n"
+    )
+    return PlainTextResponse(body)
+
+
+async def _sitemap():
+    urls = [("/", "weekly", "1.0"), ("/privacy", "yearly", "0.5"), ("/terms", "yearly", "0.5")]
+    items = "".join(
+        f"<url><loc>{_SITE}{p}</loc><changefreq>{c}</changefreq><priority>{pr}</priority></url>"
+        for p, c, pr in urls
+    )
+    xml = f'<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">{items}</urlset>'
+    return Response(content=xml, media_type="application/xml")
+
+
 app.add_api_route("/", _page("landing.html"), methods=["GET"], include_in_schema=False)
 app.add_api_route("/privacy", _page("privacy.html"), methods=["GET"], include_in_schema=False)
 app.add_api_route("/terms", _page("terms.html"), methods=["GET"], include_in_schema=False)
 app.add_api_route("/admin", _page("admin.html"), methods=["GET"], include_in_schema=False)
 app.add_api_route("/favicon.svg", _favicon, methods=["GET"], include_in_schema=False)
 app.add_api_route("/favicon.ico", _favicon, methods=["GET"], include_in_schema=False)
+app.add_api_route("/og-image.png", _og_image, methods=["GET"], include_in_schema=False)
+app.add_api_route("/robots.txt", _robots, methods=["GET"], include_in_schema=False)
+app.add_api_route("/sitemap.xml", _sitemap, methods=["GET"], include_in_schema=False)
