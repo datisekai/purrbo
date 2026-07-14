@@ -144,7 +144,7 @@ export default function HomeScreen({ navigation }: any) {
 
         <View style={s.hero}>
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12, marginBottom: 12 }}>
-            <PersonaFace variant={persona?.variant || 'mun'} ring={(persona?.rarity || 'SSR') === 'SSR' ? 'ssr' : undefined} size={54} items={equipped} />
+            <PersonaFace variant={persona?.variant || 'mun'} ring={(persona?.rarity || 'SSR') === 'SSR' ? 'ssr' : undefined} size={54} items={equipped} expr="love" />
             <View style={{ flex: 1 }}>
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
                 <Text style={{ fontFamily: fonts.display, fontSize: 19, color: colors.ink }}>{persona?.name || 'Mèo Mun'}</Text>

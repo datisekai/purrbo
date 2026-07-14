@@ -3,20 +3,21 @@ import { View } from 'react-native';
 import Svg, { Path, Circle, Ellipse, G, Rect } from 'react-native-svg';
 import { hardShadow } from '../theme';
 
-// Cấu hình từng persona: màu + kiểu tai + phụ kiện. Thêm persona mới = thêm 1 dòng.
-// ear: cat | bear | bunny | fox | dog · glasses/antenna: phụ kiện riêng.
+// Cấu hình từng persona: màu + tai + MẮT + MIỆNG (cá tính riêng) + phụ kiện.
+// ear: cat|bear|bunny|fox|dog · eye: round|sparkle|tsun|sharp|big|sleepy|happy|wide
+// mouth: smile|smug|smirk|flat|uwu|grin|tongue · blush: má hồng đậm
 const VARIANTS = {
-  mun:   { c: '#6B6480', ear: 'cat' },                       // mèo mun (tsundere)
-  cam:   { c: '#FF9E4D', ear: 'cat' },                       // Mochi — mèo cam
-  ly:    { c: '#E8743B', ear: 'fox' },                       // Lỳ — cáo bad-boy
-  sep:   { c: '#8B7BB0', ear: 'cat', glasses: true },        // Sếp — tổng tài đeo kính
-  bong:  { c: '#F4A6C0', ear: 'bunny' },                     // Bông — thỏ hồng
-  xu:    { c: '#34D399', ear: 'cat', antenna: true },        // Xu — mèo xanh hype
-  bo:    { c: '#7FB77E', ear: 'bear' },                      // Bơ — gấu xanh chill
-  sin:   { c: '#E8B04B', ear: 'dog' },                       // Sìn — shiba
+  mun:   { c: '#6B6480', ear: 'cat',   eye: 'tsun',    mouth: 'smug' },                 // tsundere
+  cam:   { c: '#FF9E4D', ear: 'cat',   eye: 'sparkle', mouth: 'smile', blush: true },   // Mochi soft
+  ly:    { c: '#E8743B', ear: 'fox',   eye: 'sharp',   mouth: 'smirk' },                // bad-boy
+  sep:   { c: '#8B7BB0', ear: 'cat',   glasses: true,  mouth: 'flat' },                 // tổng tài
+  bong:  { c: '#F4A6C0', ear: 'bunny', eye: 'big',     mouth: 'uwu',   blush: true },   // uwu
+  xu:    { c: '#34D399', ear: 'cat',   antenna: true,  eye: 'wide',    mouth: 'grin' }, // hype
+  bo:    { c: '#7FB77E', ear: 'bear',  eye: 'sleepy',  mouth: 'smile' },                // chill
+  sin:   { c: '#E8B04B', ear: 'dog',   eye: 'happy',   mouth: 'tongue' },               // shiba
   // alias tương thích dữ liệu cũ
-  gau:   { c: '#C98A5E', ear: 'bear' },
-  tong:  { c: '#8B5CF6', ear: 'cat', glasses: true },
+  gau:   { c: '#C98A5E', ear: 'bear',  eye: 'round',   mouth: 'smile' },
+  tong:  { c: '#8B5CF6', ear: 'cat',   glasses: true,  mouth: 'flat' },
 };
 
 function Ears({ ear, c }) {
@@ -32,6 +33,70 @@ function Ears({ ear, c }) {
     case 'cat':
     default:
       return <G><Path d="M18 20 L22 8 L30 18 Z" fill={c} stroke="#2E2A3F" strokeWidth="2.5" strokeLinejoin="round" /><Path d="M46 20 L42 8 L34 18 Z" fill={c} stroke="#2E2A3F" strokeWidth="2.5" strokeLinejoin="round" /></G>;
+  }
+}
+
+const D = '#2E2A3F';
+// Mắt theo kiểu (2 mắt tại x=25 & x=39, y≈33). Biểu cảm (expr) ghi đè kiểu gốc.
+function Eyes({ kind = 'round' }) {
+  const eye = (cx) => {
+    switch (kind) {
+      case 'sparkle':
+        return <G key={cx}><Circle cx={cx} cy={33} r={3.8} fill={D} /><Circle cx={cx + 1.2} cy={31.4} r={1.3} fill="#fff" /><Circle cx={cx - 1} cy={34} r={0.7} fill="#fff" /></G>;
+      case 'big':
+        return <G key={cx}><Circle cx={cx} cy={33} r={4.6} fill={D} /><Circle cx={cx + 1.4} cy={31} r={1.8} fill="#fff" /><Circle cx={cx - 1.2} cy={34.4} r={0.9} fill="#fff" /></G>;
+      case 'wide':
+        return <G key={cx}><Circle cx={cx} cy={33} r={4.2} fill="#fff" stroke={D} strokeWidth={2} /><Circle cx={cx} cy={33} r={2} fill={D} /></G>;
+      case 'tsun': // nửa mí — lườm dễ thương
+        return <G key={cx}><Path d={`M${cx - 4} 31.5 h8`} stroke={D} strokeWidth={2.6} strokeLinecap="round" /><Circle cx={cx} cy={34} r={2} fill={D} /></G>;
+      case 'sharp': // mắt hí sắc
+        return <Path key={cx} d={`M${cx - 4} 34.5 Q${cx} 31 ${cx + 4} 33.5`} stroke={D} strokeWidth={2.8} fill="none" strokeLinecap="round" />;
+      case 'sleepy':
+        return <Path key={cx} d={`M${cx - 3.5} 33.5 h7`} stroke={D} strokeWidth={2.6} strokeLinecap="round" />;
+      case 'happy': // ^ ^ cười tít
+        return <Path key={cx} d={`M${cx - 3.6} 34 Q${cx} 30 ${cx + 3.6} 34`} stroke={D} strokeWidth={2.6} fill="none" strokeLinecap="round" />;
+      case 'love': // mắt tim
+        return <Path key={cx} d={`M${cx} ${34.5} q-3 -3.5 -0.2 -4.6 q1.2 -0.5 0.2 1 q1 -1.5 0.2 -1 q2.8 1.1 -0.2 4.6z`} fill="#FF4D8D" />;
+      case 'angry':
+        return <G key={cx}><Path d={`M${cx - 4} 30.5 L${cx + 3} 32.5`} stroke={D} strokeWidth={2.2} strokeLinecap="round" transform={cx > 32 ? `rotate(0)` : ''} /><Circle cx={cx} cy={34} r={2.2} fill={D} /></G>;
+      case 'sad':
+        return <G key={cx}><Circle cx={cx} cy={34} r={3.2} fill={D} /><Circle cx={cx + 0.8} cy={32.8} r={1} fill="#fff" /></G>;
+      case 'round':
+      default:
+        return <G key={cx}><Circle cx={cx} cy={33} r={3.4} fill={D} /><Circle cx={cx + 1} cy={31.8} r={1} fill="#fff" /></G>;
+    }
+  };
+  // mắt angry cần đối xứng (mắt phải nghịch chiều)
+  if (kind === 'angry') {
+    return <G><G><Path d="M21 30.5 L28 32.5" stroke={D} strokeWidth={2.2} strokeLinecap="round" /><Circle cx="25" cy="34" r="2.2" fill={D} /></G><G><Path d="M43 30.5 L36 32.5" stroke={D} strokeWidth={2.2} strokeLinecap="round" /><Circle cx="39" cy="34" r="2.2" fill={D} /></G></G>;
+  }
+  return <G>{eye(25)}{eye(39)}</G>;
+}
+
+// Miệng theo kiểu (vùng y≈42-47).
+function Mouth({ kind = 'smile' }) {
+  switch (kind) {
+    case 'smug':  return <Path d="M30 44 Q34 47 38 43" stroke={D} strokeWidth={2.4} fill="none" strokeLinecap="round" />;
+    case 'smirk': return <Path d="M28 45 Q33 44 38 41" stroke={D} strokeWidth={2.4} fill="none" strokeLinecap="round" />;
+    case 'flat':  return <Path d="M28 44 h8" stroke={D} strokeWidth={2.4} strokeLinecap="round" />;
+    case 'uwu':   return <Path d="M27 43 q2.5 2.6 5 0 q2.5 2.6 5 0" stroke={D} strokeWidth={2.2} fill="none" strokeLinecap="round" />;
+    case 'grin':  return <G><Path d="M27 42 Q32 49 37 42 Z" fill={D} /><Path d="M28.5 43.4 Q32 45.2 35.5 43.4" fill="#FF7AA8" /></G>;
+    case 'tongue':return <G><Path d="M28 42 Q32 47 36 42 Z" fill={D} /><Path d="M30.5 44 q1.5 3 3 0 Z" fill="#FF7AA8" /></G>;
+    case 'frown': return <Path d="M27 46 Q32 42 37 46" stroke={D} strokeWidth={2.4} fill="none" strokeLinecap="round" />;
+    case 'pout':  return <Path d="M30 45 q2 -2.4 4 0" stroke={D} strokeWidth={2.4} fill="none" strokeLinecap="round" />;
+    case 'smile':
+    default:      return <Path d="M27 42 Q32 47 37 42" stroke={D} strokeWidth={2.6} fill="none" strokeLinecap="round" />;
+  }
+}
+
+// Ghi đè mắt+miệng theo biểu cảm (expr): love|happy|gat|sad. undefined = giữ cá tính gốc.
+function exprOf(expr, base) {
+  switch (expr) {
+    case 'love': return { eye: 'love', mouth: 'grin', blush: true };
+    case 'happy': return { eye: 'happy', mouth: 'grin' };
+    case 'gat': return { eye: 'angry', mouth: 'pout' };
+    case 'sad': return { eye: 'sad', mouth: 'frown' };
+    default: return base;
   }
 }
 
@@ -59,10 +124,11 @@ function Accessory({ k }) {
   }
 }
 
-// Mặt persona (SVG) — dữ liệu hoá theo VARIANTS. items = {hat,glasses,neck} (cosmetic).
-export function PersonaFace({ variant = 'mun', size = 54, ring, items }) {
+// Mặt persona (SVG). items = {hat,glasses,neck} (cosmetic) · expr = biểu cảm (love|happy|gat|sad).
+export function PersonaFace({ variant = 'mun', size = 54, ring, items, expr }) {
   const v = VARIANTS[variant] || { c: '#FFC93C', ear: 'cat' };
   const C = v.c;
+  const em = exprOf(expr, { eye: v.eye || 'round', mouth: v.mouth || 'smile', blush: v.blush });
   return (
     <View
       style={[
@@ -84,7 +150,7 @@ export function PersonaFace({ variant = 'mun', size = 54, ring, items }) {
           </G>
         )}
         <Circle cx="32" cy="34" r="22" fill={C} stroke="#2E2A3F" strokeWidth="3" />
-        {v.glasses ? (
+        {v.glasses && !expr ? (
           <G>
             <Circle cx="25" cy="33" r="5.5" fill="none" stroke="#2E2A3F" strokeWidth="2.5" />
             <Circle cx="39" cy="33" r="5.5" fill="none" stroke="#2E2A3F" strokeWidth="2.5" />
@@ -93,16 +159,11 @@ export function PersonaFace({ variant = 'mun', size = 54, ring, items }) {
             <Circle cx="39" cy="33" r="2.2" fill="#2E2A3F" />
           </G>
         ) : (
-          <G>
-            <Circle cx="25" cy="33" r="3.4" fill="#2E2A3F" />
-            <Circle cx="39" cy="33" r="3.4" fill="#2E2A3F" />
-            <Circle cx="26" cy="32" r="1" fill="#fff" />
-            <Circle cx="40" cy="32" r="1" fill="#fff" />
-          </G>
+          <Eyes kind={em.eye} />
         )}
-        <Circle cx="20" cy="41" r="3.2" fill="#FF7AA8" opacity="0.65" />
-        <Circle cx="44" cy="41" r="3.2" fill="#FF7AA8" opacity="0.65" />
-        <Path d="M27 42 Q32 47 37 42" stroke="#2E2A3F" strokeWidth="2.6" fill="none" strokeLinecap="round" />
+        <Circle cx="20" cy="41" r={em.blush ? 3.9 : 3.2} fill="#FF7AA8" opacity={em.blush ? 0.9 : 0.6} />
+        <Circle cx="44" cy="41" r={em.blush ? 3.9 : 3.2} fill="#FF7AA8" opacity={em.blush ? 0.9 : 0.6} />
+        <Mouth kind={em.mouth} />
         {items?.neck && <Accessory k={items.neck} />}
         {items?.hat && <Accessory k={items.hat} />}
         {items?.glasses && <Accessory k={items.glasses} />}
