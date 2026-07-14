@@ -124,11 +124,44 @@ function Accessory({ k }) {
   }
 }
 
-// Mặt persona (SVG). items = {hat,glasses,neck} (cosmetic) · expr = biểu cảm (love|happy|gat|sad).
-export function PersonaFace({ variant = 'mun', size = 54, ring, items, expr }) {
+// Nội dung vẽ MẶT (đầu) trong hệ toạ độ 64×64 — dùng chung cho avatar tròn & chibi.
+function FaceSvg({ variant = 'mun', items, expr }) {
   const v = VARIANTS[variant] || { c: '#FFC93C', ear: 'cat' };
   const C = v.c;
   const em = exprOf(expr, { eye: v.eye || 'round', mouth: v.mouth || 'smile', blush: v.blush });
+  return (
+    <G>
+      <Ears ear={v.ear} c={C} />
+      {v.antenna && (
+        <G>
+          <Path d="M32 6 v8" stroke={C} strokeWidth="3" strokeLinecap="round" />
+          <Circle cx="32" cy="5" r="3" fill="#FF4D8D" />
+        </G>
+      )}
+      <Circle cx="32" cy="34" r="22" fill={C} stroke="#2E2A3F" strokeWidth="3" />
+      {v.glasses && !expr ? (
+        <G>
+          <Circle cx="25" cy="33" r="5.5" fill="none" stroke="#2E2A3F" strokeWidth="2.5" />
+          <Circle cx="39" cy="33" r="5.5" fill="none" stroke="#2E2A3F" strokeWidth="2.5" />
+          <Path d="M30.5 33h3" stroke="#2E2A3F" strokeWidth="2.5" />
+          <Circle cx="25" cy="33" r="2.2" fill="#2E2A3F" />
+          <Circle cx="39" cy="33" r="2.2" fill="#2E2A3F" />
+        </G>
+      ) : (
+        <Eyes kind={em.eye} />
+      )}
+      <Circle cx="20" cy="41" r={em.blush ? 3.9 : 3.2} fill="#FF7AA8" opacity={em.blush ? 0.9 : 0.6} />
+      <Circle cx="44" cy="41" r={em.blush ? 3.9 : 3.2} fill="#FF7AA8" opacity={em.blush ? 0.9 : 0.6} />
+      <Mouth kind={em.mouth} />
+      {items?.neck && <Accessory k={items.neck} />}
+      {items?.hat && <Accessory k={items.hat} />}
+      {items?.glasses && <Accessory k={items.glasses} />}
+    </G>
+  );
+}
+
+// Avatar tròn (chỉ đầu). items = phụ kiện · expr = biểu cảm (love|happy|gat|sad).
+export function PersonaFace({ variant = 'mun', size = 54, ring, items, expr }) {
   return (
     <View
       style={[
@@ -142,33 +175,34 @@ export function PersonaFace({ variant = 'mun', size = 54, ring, items, expr }) {
       ]}
     >
       <Svg width={size} height={size} viewBox="0 0 64 64">
-        <Ears ear={v.ear} c={C} />
-        {v.antenna && (
-          <G>
-            <Path d="M32 6 v8" stroke={C} strokeWidth="3" strokeLinecap="round" />
-            <Circle cx="32" cy="5" r="3" fill="#FF4D8D" />
-          </G>
-        )}
-        <Circle cx="32" cy="34" r="22" fill={C} stroke="#2E2A3F" strokeWidth="3" />
-        {v.glasses && !expr ? (
-          <G>
-            <Circle cx="25" cy="33" r="5.5" fill="none" stroke="#2E2A3F" strokeWidth="2.5" />
-            <Circle cx="39" cy="33" r="5.5" fill="none" stroke="#2E2A3F" strokeWidth="2.5" />
-            <Path d="M30.5 33h3" stroke="#2E2A3F" strokeWidth="2.5" />
-            <Circle cx="25" cy="33" r="2.2" fill="#2E2A3F" />
-            <Circle cx="39" cy="33" r="2.2" fill="#2E2A3F" />
-          </G>
-        ) : (
-          <Eyes kind={em.eye} />
-        )}
-        <Circle cx="20" cy="41" r={em.blush ? 3.9 : 3.2} fill="#FF7AA8" opacity={em.blush ? 0.9 : 0.6} />
-        <Circle cx="44" cy="41" r={em.blush ? 3.9 : 3.2} fill="#FF7AA8" opacity={em.blush ? 0.9 : 0.6} />
-        <Mouth kind={em.mouth} />
-        {items?.neck && <Accessory k={items.neck} />}
-        {items?.hat && <Accessory k={items.hat} />}
-        {items?.glasses && <Accessory k={items.glasses} />}
+        <FaceSvg variant={variant} items={items} expr={expr} />
       </Svg>
     </View>
+  );
+}
+
+// Chibi TOÀN THÂN (đầu to + thân + tay + chân) — nền trong suốt, cho các màn lớn.
+export function PersonaChibi({ variant = 'mun', size = 120, items, expr }) {
+  const v = VARIANTS[variant] || { c: '#FFC93C', ear: 'cat' };
+  const C = v.c;
+  const w = size * 0.75;
+  return (
+    <Svg width={w} height={size} viewBox="0 0 64 92">
+      {/* bóng đổ dưới chân */}
+      <Ellipse cx="32" cy="89" rx="16" ry="3.2" fill="#2E2A3F" opacity="0.12" />
+      {/* tay (sau thân) */}
+      <Ellipse cx="14" cy="64" rx="5" ry="7.5" fill={C} stroke="#2E2A3F" strokeWidth="2.6" transform="rotate(18 14 64)" />
+      <Ellipse cx="50" cy="64" rx="5" ry="7.5" fill={C} stroke="#2E2A3F" strokeWidth="2.6" transform="rotate(-18 50 64)" />
+      {/* chân */}
+      <Ellipse cx="25" cy="86" rx="6" ry="4.2" fill={C} stroke="#2E2A3F" strokeWidth="2.6" />
+      <Ellipse cx="39" cy="86" rx="6" ry="4.2" fill={C} stroke="#2E2A3F" strokeWidth="2.6" />
+      {/* thân */}
+      <Path d="M17 60 Q17 50 32 50 Q47 50 47 60 L46 78 Q46 87 32 87 Q18 87 18 78 Z" fill={C} stroke="#2E2A3F" strokeWidth="3" strokeLinejoin="round" />
+      {/* bụng sáng */}
+      <Ellipse cx="32" cy="70" rx="9" ry="12" fill="#fff" opacity="0.22" />
+      {/* đầu (đè lên thân) */}
+      <FaceSvg variant={variant} items={items} expr={expr} />
+    </Svg>
   );
 }
 

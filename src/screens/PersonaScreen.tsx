@@ -4,7 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import Svg, { Path, Circle } from 'react-native-svg';
 import { colors, fonts, radii, hardShadow } from '../theme';
 import { Icon } from '../components/Icon';
-import { PersonaFace } from '../components/PersonaFace';
+import { PersonaFace, PersonaChibi } from '../components/PersonaFace';
 import { Button, Card, ProgressBar } from '../components/ui';
 import { Api } from '../api';
 import { playSuccess } from '../sound';
@@ -108,7 +108,7 @@ export default function PersonaScreen({ navigation, route }) {
           </View>
 
           <View style={{ alignItems: 'center' }}>
-            <PersonaFace variant={variant} ring={rarity === 'SSR' ? 'ssr' : undefined} size={96} />
+            <PersonaChibi variant={variant} size={128} />
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 12 }}>
               <Text style={{ fontFamily: fonts.display, fontSize: 24, color: colors.ink }}>{name}</Text>
               <View style={s.ssr}>

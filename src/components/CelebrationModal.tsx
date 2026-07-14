@@ -2,7 +2,7 @@ import React, { useEffect, useRef } from 'react';
 import { Modal, View, Text, Pressable, Animated, Easing, StyleSheet, Dimensions } from 'react-native';
 import Svg, { Path } from 'react-native-svg';
 import { colors, fonts, radii, hardShadow } from '../theme';
-import { PersonaFace } from './PersonaFace';
+import { PersonaChibi } from './PersonaFace';
 import { Button } from './ui';
 
 const { width: SCRW } = Dimensions.get('window');
@@ -82,7 +82,7 @@ export function CelebrationModal({ data, onClose }: { data: Celebration; onClose
               ? <Text style={s.crownTxt}>Lv.{data.value}</Text>
               : <View style={{ flexDirection: 'row', alignItems: 'center', gap: 3 }}><Flame size={20} /><Text style={s.crownTxt}>{data.value}</Text></View>}
           </View>
-          <PersonaFace variant={data.persona?.variant || 'mun'} ring="ssr" size={92} items={data.items} expr="love" />
+          <PersonaChibi variant={data.persona?.variant || 'mun'} size={120} items={data.items} expr="love" />
           <Text style={s.title}>{title}</Text>
           <Text style={s.sub}>{sub}</Text>
           <Button label="Tuyệt! 🎉" tone="pink" onPress={onClose} style={{ marginTop: 16, paddingHorizontal: 30 }} />

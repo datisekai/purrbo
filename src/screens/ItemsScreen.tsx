@@ -5,7 +5,7 @@ import { useFocusEffect } from '@react-navigation/native';
 import Svg, { Path } from 'react-native-svg';
 import { colors, fonts, radii, hardShadow } from '../theme';
 import { Icon } from '../components/Icon';
-import { PersonaFace } from '../components/PersonaFace';
+import { PersonaFace, PersonaChibi } from '../components/PersonaFace';
 import { RarityBadge } from '../components/ui';
 import { Api } from '../api';
 import { playSuccess, playTap } from '../sound';
@@ -97,7 +97,7 @@ export default function ItemsScreen({ navigation }) {
 
         {/* Live preview */}
         <View style={s.preview}>
-          <PersonaFace variant={variant} size={130} ring="ssr" items={equipped} />
+          <PersonaChibi variant={variant} size={140} items={equipped} />
           <Text style={s.previewName}>{personaName}</Text>
           <Text style={s.previewHint}>chạm "Mặc" bên dưới để thử đồ ngay</Text>
         </View>

@@ -260,7 +260,7 @@ export default function SettingsScreen({ navigation }) {
           </View>
 
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12, marginBottom: 12 }}>
-            <PersonaFace variant="mun" ring="ssr" size={54} />
+            <PersonaFace variant="mun" ring="ssr" size={54} expr={lay === 0 ? 'love' : lay === 2 ? 'gat' : 'happy'} />
             <View style={{ flex: 1 }}>
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
                 <Text style={{ fontFamily: fonts.display, fontSize: 19, color: colors.ink }}>Mèo Mun</Text>
