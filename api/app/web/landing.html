@@ -15,14 +15,14 @@
   *{box-sizing:border-box;margin:0;padding:0}
   html{scroll-behavior:smooth}
   body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",sans-serif;color:var(--ink);background:var(--bg);line-height:1.55;-webkit-font-smoothing:antialiased}
-  .wrap{max-width:1080px;margin:0 auto;padding:0 22px}
+  .wrap{max-width:1080px;margin:0 auto;padding-left:22px;padding-right:22px}
   a{color:inherit;text-decoration:none}
   .ic{width:1em;height:1em;display:inline-block;vertical-align:-.125em;flex:none}
   .sec-tag{display:inline-flex;align-items:center;gap:7px;background:var(--soft);color:var(--purpled);font-weight:700;font-size:13px;padding:6px 14px;border-radius:999px}
   .sec-h{font-size:clamp(26px,4.4vw,40px);font-weight:800;letter-spacing:-.5px;margin:14px 0 8px}
   .sec-sub{color:var(--muted);font-size:clamp(15px,2vw,17px);max-width:600px}
   .center{text-align:center}.center .sec-sub{margin-left:auto;margin-right:auto}
-  section{padding:52px 0}
+  section{padding-top:60px;padding-bottom:60px}
 
   /* Header */
   header{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.88);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
@@ -38,7 +38,7 @@
   @media(max-width:720px){nav.links a:not(.cta){display:none}}
 
   /* Hero */
-  .hero{display:grid;grid-template-columns:1.05fr .95fr;gap:30px;align-items:center;padding:52px 0 30px}
+  .hero{display:grid;grid-template-columns:1.05fr .95fr;gap:34px;align-items:center;padding-top:48px;padding-bottom:28px}
   @media(max-width:860px){.hero{grid-template-columns:1fr;text-align:center}.hero .phone{margin:0 auto}}
   .hero h1{font-size:clamp(32px,5.6vw,52px);font-weight:800;letter-spacing:-1.1px;line-height:1.08;margin-top:14px}
   .hero h1 span{color:var(--pink)}
@@ -54,21 +54,36 @@
   .trustline span{display:inline-flex;align-items:center;gap:6px}
   .trustline .ic{color:var(--mintd)}
 
-  /* Phone mockup */
-  .phone{width:250px;height:510px;background:#fff;border:10px solid #2E2A3F;border-radius:42px;box-shadow:0 18px 40px rgba(46,42,63,.22);padding:14px 12px;position:relative;overflow:hidden}
-  .phone .notch{position:absolute;top:0;left:50%;transform:translateX(-50%);width:110px;height:22px;background:#2E2A3F;border-radius:0 0 14px 14px}
-  .phscreen{background:#fff;height:100%;border-radius:26px;overflow:hidden;display:flex;flex-direction:column}
-  .ph-top{background:#F6ECFB;padding:14px 14px 12px;border-bottom:2px solid #fff}
-  .ph-hi{font-weight:800;font-size:15px}
-  .ph-sub{color:var(--muted);font-size:11px}
-  .ph-hero{margin:12px;background:#F6ECFB;border-radius:18px;padding:12px;border:2px solid #fff}
+  /* Phone mockup — giống màn Home của app */
+  .phone{width:264px;height:540px;background:#fff;border:9px solid #2E2A3F;border-radius:44px;box-shadow:0 18px 40px rgba(46,42,63,.22);position:relative}
+  .phone .notch{position:absolute;top:0;left:50%;transform:translateX(-50%);width:104px;height:20px;background:#2E2A3F;border-radius:0 0 13px 13px;z-index:3}
+  .phscreen{background:#fff;height:100%;border-radius:35px;overflow:hidden;padding:26px 13px 13px;display:flex;flex-direction:column;gap:11px}
+  .ph-brand{display:flex;align-items:center;gap:6px;font-weight:800;font-size:14px}
+  .ph-brand b{color:var(--pink)}
+  .ph-greet{display:flex;align-items:center;gap:6px}
+  .ph-hi{font-weight:800;font-size:15px;line-height:1.15}
+  .ph-sub{color:var(--muted);font-size:10.5px}
+  .ph-chip{display:inline-flex;align-items:center;gap:3px;font-weight:800;font-size:11px;padding:4px 8px;border-radius:999px;border:1.5px solid}
+  .ph-quest{display:flex;align-items:center;gap:9px;background:var(--purple);border:2px solid #fff;border-radius:16px;padding:9px 10px;box-shadow:0 4px 0 rgba(46,42,63,.14)}
+  .ph-qic{width:32px;height:32px;border-radius:10px;background:rgba(255,255,255,.22);display:flex;align-items:center;justify-content:center;flex:none}
+  .ph-qt{color:#fff;font-weight:800;font-size:12.5px}
+  .ph-qs{color:#fff;opacity:.9;font-size:10px}
+  .ph-qdot{margin-left:auto;background:var(--yellow);color:var(--ink);font-weight:800;font-size:11px;min-width:24px;height:22px;border-radius:11px;display:flex;align-items:center;justify-content:center;padding:0 6px}
+  .ph-hero{background:#F6ECFB;border-radius:18px;padding:11px;border:2px solid #fff;box-shadow:0 4px 0 rgba(46,42,63,.10)}
   .ph-row{display:flex;gap:9px;align-items:center}
-  .ph-bub{background:#fff;border-radius:12px;border-bottom-left-radius:4px;padding:8px 10px;font-size:11px;color:var(--ink);margin-top:9px;box-shadow:0 3px 0 rgba(46,42,63,.08)}
-  .ph-task{display:flex;align-items:center;gap:9px;margin:10px 12px;background:#fff;border:2px solid var(--line);border-radius:16px;padding:9px}
+  .ph-ssr{display:inline-flex;align-items:center;gap:2px;background:var(--pink);color:#fff;font-weight:800;font-size:8px;padding:2px 6px;border-radius:999px}
+  .ph-bub{background:#fff;border-radius:12px;border-bottom-left-radius:4px;padding:8px 10px;font-size:10.5px;line-height:1.4;color:var(--ink);margin-top:9px;box-shadow:0 3px 0 rgba(46,42,63,.08)}
+  .ph-prog{margin-top:9px}
+  .ph-progtop{display:flex;justify-content:space-between;font-weight:700;font-size:9.5px;color:var(--ink);margin-bottom:4px}
+  .ph-bar{height:9px;background:#EFEAF6;border-radius:999px;border:1.5px solid var(--line);overflow:hidden}
+  .ph-bar i{display:block;height:100%;width:64%;background:var(--pink);border-radius:999px}
+  .ph-sec{display:flex;justify-content:space-between;align-items:center;font-weight:800;font-size:12.5px;margin-top:2px}
+  .ph-sec small{color:var(--muted);font-weight:700;font-size:10px}
+  .ph-task{display:flex;align-items:center;gap:9px;background:#fff;border:2px solid var(--line);border-radius:15px;padding:8px;box-shadow:0 3px 0 rgba(46,42,63,.08)}
   .ph-ic{width:34px;height:34px;border-radius:11px;display:flex;align-items:center;justify-content:center;flex:none}
-  .ph-tname{font-weight:700;font-size:12px}.ph-ttime{color:var(--muted);font-size:10px}
-  .ph-khoe{margin-left:auto;background:var(--mint);color:#fff;font-weight:700;font-size:11px;padding:6px 12px;border-radius:999px;border-bottom:2px solid var(--mintd)}
-  .float{position:absolute;background:#fff;border:2px solid var(--line);border-radius:14px;padding:8px 11px;box-shadow:var(--shadow);font-weight:700;font-size:12px;display:flex;align-items:center;gap:6px}
+  .ph-tname{font-weight:700;font-size:12px}.ph-ttime{color:var(--muted);font-size:9.5px}
+  .ph-khoe{margin-left:auto;background:var(--mint);color:#fff;font-weight:800;font-size:11px;padding:6px 12px;border-radius:999px;border-bottom:2px solid var(--mintd)}
+  .float{position:absolute;background:#fff;border:2px solid var(--line);border-radius:14px;padding:8px 11px;box-shadow:var(--shadow);font-weight:700;font-size:12px;display:flex;align-items:center;gap:6px;z-index:4}
 
   /* Trust strip */
   .strip{background:var(--ink);color:#fff;border-radius:22px;display:grid;grid-template-columns:repeat(4,1fr);gap:8px;padding:20px;margin-top:8px}
@@ -189,31 +204,55 @@
     </div>
   </div>
 
-  <!-- Phone preview -->
+  <!-- Phone preview: giống màn Home -->
   <div class="phone">
     <div class="notch"></div>
     <div class="phscreen">
-      <div class="ph-top"><div class="ph-hi">Chào Finn 🐾</div><div class="ph-sub">Hôm nay 1/3 việc · cùng em nhé</div></div>
+      <div class="ph-brand">
+        <svg width="20" height="20" viewBox="0 0 100 100"><path d="M22 34 L26 12 L44 26 Z" fill="#FF9E4D" stroke="#2E2A3F" stroke-width="4" stroke-linejoin="round"/><path d="M78 34 L74 12 L56 26 Z" fill="#FF9E4D" stroke="#2E2A3F" stroke-width="4" stroke-linejoin="round"/><ellipse cx="50" cy="56" rx="34" ry="31" fill="#FF9E4D" stroke="#2E2A3F" stroke-width="4"/><circle cx="38" cy="54" r="6" fill="#2E2A3F"/><circle cx="62" cy="54" r="6" fill="#2E2A3F"/></svg>
+        Purr<b>bo</b>
+      </div>
+      <div class="ph-greet">
+        <div style="flex:1;min-width:0"><div class="ph-hi">Chào Finn</div><div class="ph-sub">Hôm nay 1/3 việc · cùng em nhé</div></div>
+        <span class="ph-chip" style="background:#FFF0E6;color:#E0532F;border-color:#FFD9C7"><svg width="11" height="11" viewBox="0 0 24 24" fill="#E0532F"><path d="M12 2c2 4 5 5 5 9a5 5 0 0 1-10 0c0-2 1-3 2-4 0 2 1 3 2 3 0-3 1-6 1-8z"/></svg>12</span>
+        <span class="ph-chip" style="background:#FFEAF2;color:#D8306F;border-color:#FFCCDF"><svg width="11" height="11" viewBox="0 0 24 24" fill="#D8306F"><path d="M12 21s-7-4.5-9.5-9A5 5 0 0 1 12 6a5 5 0 0 1 9.5 3c-2.5 4.5-9.5 12-9.5 12z"/></svg>Lv.5</span>
+      </div>
+
+      <div class="ph-quest">
+        <div class="ph-qic"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 12v9H4v-9M2 7h20v5H2z"/><path d="M12 22V7"/></svg></div>
+        <div style="flex:1;min-width:0"><div class="ph-qt">Nhiệm vụ hôm nay</div><div class="ph-qs">Có 65 đá quý đang chờ nhận</div></div>
+        <div class="ph-qdot">65</div>
+      </div>
+
       <div class="ph-hero">
         <div class="ph-row">
-          <svg width="44" height="44" viewBox="0 0 64 64"><path d="M18 20 L22 8 L30 18 Z" fill="#FF9E4D" stroke="#2E2A3F" stroke-width="2.5" stroke-linejoin="round"/><path d="M46 20 L42 8 L34 18 Z" fill="#FF9E4D" stroke="#2E2A3F" stroke-width="2.5" stroke-linejoin="round"/><circle cx="32" cy="34" r="22" fill="#FF9E4D" stroke="#2E2A3F" stroke-width="3"/><circle cx="25" cy="33" r="3.4" fill="#2E2A3F"/><circle cx="39" cy="33" r="3.4" fill="#2E2A3F"/><circle cx="20" cy="41" r="3.2" fill="#FF7AA8" opacity=".65"/><circle cx="44" cy="41" r="3.2" fill="#FF7AA8" opacity=".65"/><path d="M27 42 Q32 47 37 42" stroke="#2E2A3F" stroke-width="2.6" fill="none" stroke-linecap="round"/></svg>
-          <div><div style="font-weight:800;font-size:13px">Mochi</div><div style="color:#8A8398;font-size:10px">SSR · thân thiết Lv.5</div></div>
+          <svg width="40" height="40" viewBox="0 0 64 64"><path d="M18 20 L22 8 L30 18 Z" fill="#FF9E4D" stroke="#2E2A3F" stroke-width="2.5" stroke-linejoin="round"/><path d="M46 20 L42 8 L34 18 Z" fill="#FF9E4D" stroke="#2E2A3F" stroke-width="2.5" stroke-linejoin="round"/><circle cx="32" cy="34" r="22" fill="#FF9E4D" stroke="#2E2A3F" stroke-width="3"/><circle cx="25" cy="33" r="3.4" fill="#2E2A3F"/><circle cx="39" cy="33" r="3.4" fill="#2E2A3F"/><circle cx="20" cy="41" r="3.2" fill="#FF7AA8" opacity=".65"/><circle cx="44" cy="41" r="3.2" fill="#FF7AA8" opacity=".65"/><path d="M27 42 Q32 47 37 42" stroke="#2E2A3F" stroke-width="2.6" fill="none" stroke-linecap="round"/></svg>
+          <div style="flex:1;min-width:0">
+            <div style="display:flex;align-items:center;gap:5px"><span style="font-weight:800;font-size:13px">Mochi</span><span class="ph-ssr"><svg width="7" height="7" viewBox="0 0 24 24" fill="#fff"><path d="M12 3l2.5 6 6.5.5-5 4 1.5 6.5L12 17l-5.5 3 1.5-6.5-5-4 6.5-.5z"/></svg>SSR</span></div>
+            <div style="color:#8A8398;font-size:9.5px">soft · ngọt xỉu · thân thiết Lv.5</div>
+          </div>
         </div>
         <div class="ph-bub">Ơ 3 tiếng chưa uống giọt nào? Định làm khô mực cho em buồn hả 🙄💧</div>
+        <div class="ph-prog">
+          <div class="ph-progtop"><span>Độ thân thiết</span><span>320/500 → Lv.6</span></div>
+          <div class="ph-bar"><i></i></div>
+        </div>
       </div>
+
+      <div class="ph-sec">Việc hôm nay <small>14/07</small></div>
       <div class="ph-task">
         <div class="ph-ic" style="background:#E6F7FF"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#1893D1" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3c4 5 6 8 6 11a6 6 0 0 1-12 0c0-3 2-6 6-11z"/></svg></div>
-        <div><div class="ph-tname">Uống nước</div><div class="ph-ttime">08:00 · nhấp môi 1 ngụm</div></div>
+        <div style="flex:1;min-width:0"><div class="ph-tname">Uống nước</div><div class="ph-ttime">08:00 · nhấp môi 1 ngụm</div></div>
         <div class="ph-khoe">Khoe</div>
       </div>
       <div class="ph-task">
         <div class="ph-ic" style="background:#FFEAF2"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#D8306F" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8v8M18 8v8M4 10h2M18 10h2M6 12h12"/></svg></div>
-        <div><div class="ph-tname">Gym</div><div class="ph-ttime">18:00 · trốn là em dỗi</div></div>
+        <div style="flex:1;min-width:0"><div class="ph-tname">Gym</div><div class="ph-ttime">18:00 · trốn là em dỗi</div></div>
         <div class="ph-khoe">Khoe</div>
       </div>
     </div>
-    <div class="float" style="top:74px;left:-14px"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="#E0532F" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" style="color:#E0532F"><path d="M12 3c2 4 5 5 5 9a5 5 0 0 1-10 0c0-2 1-3 2-4 0 2 1 3 2 3 0-3 1-5 1-8z"/></svg> 12 ngày streak</div>
-    <div class="float" style="bottom:60px;right:-16px"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="#D8306F" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="color:#D8306F"><path d="M12 21s-7-4.5-9.5-9A5 5 0 0 1 12 6a5 5 0 0 1 9.5 3c-2.5 4.5-9.5 12-9.5 12z"/></svg> +30 thân thiết</div>
+    <div class="float" style="top:96px;left:-16px"><svg class="ic" viewBox="0 0 24 24" fill="#E0532F" style="color:#E0532F"><path d="M12 2c2 4 5 5 5 9a5 5 0 0 1-10 0c0-2 1-3 2-4 0 2 1 3 2 3 0-3 1-6 1-8z"/></svg> 12 ngày streak</div>
+    <div class="float" style="bottom:80px;right:-18px"><svg class="ic" viewBox="0 0 24 24" fill="#D8306F" style="color:#D8306F"><path d="M12 21s-7-4.5-9.5-9A5 5 0 0 1 12 6a5 5 0 0 1 9.5 3c-2.5 4.5-9.5 12-9.5 12z"/></svg> +30 thân thiết</div>
   </div>
 </section>
 
