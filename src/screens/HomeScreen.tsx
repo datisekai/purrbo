@@ -194,14 +194,16 @@ export default function HomeScreen({ navigation }: any) {
           const ic = istyle(h.icon);
           return (
             <View key={h.id} style={[s.habit, h.done && { opacity: 0.55 }]}>
-              <View style={[s.habitIc, { backgroundColor: ic.bg }]}><Icon name={h.icon} size={24} color={ic.col} /></View>
-              <View style={{ flex: 1 }}>
-                <Text style={[{ fontFamily: fonts.heading, fontSize: 16, color: colors.ink }, h.done && { textDecorationLine: 'line-through' }]}>{h.name}</Text>
-                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
-                  <Icon name={h.done ? 'check' : 'clock'} size={13} color={colors.muted} />
-                  <Text style={{ fontFamily: fonts.body, fontSize: 12, color: colors.muted }}>{h.time} · {h.hint}</Text>
+              <Pressable onPress={() => navigation?.navigate?.('HabitEdit', { habit: h })} style={{ flexDirection: 'row', alignItems: 'center', gap: 12, flex: 1, minWidth: 0 }}>
+                <View style={[s.habitIc, { backgroundColor: ic.bg }]}><Icon name={h.icon} size={24} color={ic.col} /></View>
+                <View style={{ flex: 1, minWidth: 0 }}>
+                  <Text style={[{ fontFamily: fonts.heading, fontSize: 16, color: colors.ink }, h.done && { textDecorationLine: 'line-through' }]}>{h.name}</Text>
+                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
+                    <Icon name={h.done ? 'check' : 'clock'} size={13} color={colors.muted} />
+                    <Text style={{ fontFamily: fonts.body, fontSize: 12, color: colors.muted }}>{h.time} · {h.hint}</Text>
+                  </View>
                 </View>
-              </View>
+              </Pressable>
               {h.done ? (
                 <Button label="Đã khoe" tone="mint" onPress={() => {}} icon={<Icon name="check" size={15} color={colors.mintDark} />} style={{ paddingVertical: 9, paddingHorizontal: 14 }} />
               ) : (

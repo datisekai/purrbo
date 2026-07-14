@@ -23,6 +23,7 @@ import EditProfileScreen from '../screens/EditProfileScreen';
 import RewardsScreen from '../screens/RewardsScreen';
 import ItemsScreen from '../screens/ItemsScreen';
 import GachaResultScreen from '../screens/GachaResultScreen';
+import HabitEditScreen from '../screens/HabitEditScreen';
 
 const Tab = createBottomTabNavigator();
 const Stack = createNativeStackNavigator();
@@ -75,6 +76,7 @@ export default function RootNav() {
           <Stack.Screen name="Rewards" component={RewardsScreen} />
           <Stack.Screen name="Items" component={ItemsScreen} />
           <Stack.Screen name="GachaResult" component={GachaResultScreen} options={{ presentation: 'modal' }} />
+          <Stack.Screen name="HabitEdit" component={HabitEditScreen} />
           <Stack.Screen name="PersonaDetail" component={PersonaScreen} />
           <Stack.Screen name="Winback" component={WinbackScreen} options={{ presentation: 'modal' }} />
         </>

@@ -64,6 +64,8 @@ export const Api = {
   onboardingPick: (key: string) => req('/onboarding', { method: 'POST', body: { key } }),
   habits: () => req('/habits'),
   createHabit: (h: { name: string; icon?: string; time?: string; hint?: string; repeat?: string }) => req('/habits', { method: 'POST', body: h }),
+  updateHabit: (id: number, h: { name: string; icon?: string; time?: string; hint?: string; repeat?: string }) => req(`/habits/${id}`, { method: 'PUT', body: h }),
+  deleteHabit: (id: number) => req(`/habits/${id}`, { method: 'DELETE' }),
   khoe: (id: number) => req(`/habits/${id}/khoe`, { method: 'POST' }),
   gachaOpen: (bag: 'thuong' | 'caocap' = 'thuong') => req(`/gacha/open?bag=${bag}`, { method: 'POST' }),
   gachaOpen10: (bag: 'thuong' | 'caocap' = 'thuong') => req(`/gacha/open10?bag=${bag}`, { method: 'POST' }) as Promise<{ results: { persona: any; is_new: boolean }[]; gems: number }>,

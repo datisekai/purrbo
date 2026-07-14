@@ -101,6 +101,8 @@ function toItem(h) {
     time: h.time || '',
     ampm: ampmOf(h.time),
     ...(HABIT_STYLE[h.icon] || DEFAULT_STYLE),
+    iconKey: h.icon,          // giữ icon gốc để sửa
+    repeat: h.repeat || 'daily',
     name: h.name,
     nudge: h.hint || '',
     done: !!h.done,
@@ -329,26 +331,31 @@ export default function CalendarScreen({ navigation }) {
                 <Text style={s.timeSmall}>{it.ampm}</Text>
               </View>
               <View style={[s.item, it.done && { opacity: 0.55 }]}>
-                <View style={[s.itemIc, { backgroundColor: it.bg }]}>
-                  {SHARED[it.ic]
-                    ? <Icon name={it.ic} size={22} color={it.col} />
-                    : <MiniIcon name={it.ic} size={22} color={it.col} />}
-                </View>
-                <View style={{ flex: 1, minWidth: 0 }}>
-                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
-                    <Text style={[s.itemName, it.done && { textDecorationLine: 'line-through' }]}>{it.name}</Text>
-                    {it.type === 'sync' && (
-                      <View style={s.gtag}>
-                        <Icon name="calendar" size={9} color={colors.skyDark} />
-                        <Text style={s.gtagTxt}>từ Google</Text>
-                      </View>
-                    )}
+                <Pressable
+                  onPress={it.type === 'habit' ? () => navigation?.navigate?.('HabitEdit', { habit: { id: it.hid, name: it.name, icon: it.iconKey, time: it.time, hint: it.nudge, repeat: it.repeat } }) : undefined}
+                  style={{ flexDirection: 'row', alignItems: 'center', gap: 11, flex: 1, minWidth: 0 }}
+                >
+                  <View style={[s.itemIc, { backgroundColor: it.bg }]}>
+                    {SHARED[it.ic]
+                      ? <Icon name={it.ic} size={22} color={it.col} />
+                      : <MiniIcon name={it.ic} size={22} color={it.col} />}
                   </View>
-                  <View style={s.nudge}>
-                    <Icon name="heart" size={11} color={colors.muted} />
-                    <Text style={s.nudgeTxt}>{it.nudge}</Text>
+                  <View style={{ flex: 1, minWidth: 0 }}>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
+                      <Text style={[s.itemName, it.done && { textDecorationLine: 'line-through' }]}>{it.name}</Text>
+                      {it.type === 'sync' && (
+                        <View style={s.gtag}>
+                          <Icon name="calendar" size={9} color={colors.skyDark} />
+                          <Text style={s.gtagTxt}>từ Google</Text>
+                        </View>
+                      )}
+                    </View>
+                    <View style={s.nudge}>
+                      <Icon name="heart" size={11} color={colors.muted} />
+                      <Text style={s.nudgeTxt}>{it.nudge}</Text>
+                    </View>
                   </View>
-                </View>
+                </Pressable>
                 {it.type === 'habit' && (
                   it.done ? (
                     <Button label="Đã khoe" tone="mint" onPress={() => {}} icon={<Icon name="check" size={14} color={colors.mintDark} />} style={s.khoeBtn} />

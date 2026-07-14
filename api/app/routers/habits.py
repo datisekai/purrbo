@@ -47,6 +47,33 @@ async def create_habit(body: HabitCreate, user_id: str = Depends(get_current_use
     return HabitOut(id=h.id, name=h.name, icon=h.icon, time=h.time, hint=h.hint, done=False, repeat=h.repeat)
 
 
+@router.put("/habits/{habit_id}", response_model=HabitOut)
+async def update_habit(habit_id: int, body: HabitCreate, user_id: str = Depends(get_current_user), db: AsyncSession = Depends(get_session)):
+    h = await db.get(Habit, habit_id)
+    if h is None or h.user_id != user_id:
+        raise HTTPException(status_code=404, detail="habit not found")
+    h.name = body.name
+    h.icon = body.icon
+    h.time = body.time
+    h.hint = body.hint
+    h.repeat = body.repeat or "daily"
+    await db.commit()
+    await db.refresh(h)
+    tz = await _user_tz(db, user_id)
+    done = await done_today_ids(db, user_id, tz)
+    return HabitOut(id=h.id, name=h.name, icon=h.icon, time=h.time, hint=h.hint, done=h.id in done, repeat=h.repeat)
+
+
+@router.delete("/habits/{habit_id}")
+async def delete_habit(habit_id: int, user_id: str = Depends(get_current_user), db: AsyncSession = Depends(get_session)):
+    h = await db.get(Habit, habit_id)
+    if h is None or h.user_id != user_id:
+        raise HTTPException(status_code=404, detail="habit not found")
+    await db.delete(h)
+    await db.commit()
+    return {"ok": True}
+
+
 @router.post("/habits/{habit_id}/khoe", response_model=KhoeOut)
 async def khoe(habit_id: int, user_id: str = Depends(get_current_user), db: AsyncSession = Depends(get_session)):
     """Vòng lặp cốt lõi: khoe → ghi completion (1/ngày) → streak thật + persona khen (AI)."""
