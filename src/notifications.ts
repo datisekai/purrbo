@@ -66,7 +66,7 @@ export async function sendTestNotification(): Promise<boolean> {
     if (!ok) return false;
     await Notifications.scheduleNotificationAsync({
       content: { title: 'Purrbo 🐾', body: 'Thử nè cưng! Nhận được là notif đang chạy ngon 💗', data: { target: 'Main' } },
-      trigger: { seconds: 3, channelId: 'purrbo-reminders' } as any,
+      trigger: { type: Notifications.SchedulableTriggerInputTypes.TIME_INTERVAL, seconds: 3, channelId: 'purrbo-reminders' } as any,
     });
     return true;
   } catch {
@@ -111,7 +111,7 @@ export async function scheduleHabitReminders(habits: Habit[]): Promise<void> {
       if (repeat.startsWith('hours:')) {
         const n = Math.max(1, parseInt(repeat.split(':')[1], 10) || 1);
         await Notifications.scheduleNotificationAsync({
-          content, trigger: { seconds: n * 3600, repeats: true, channelId: 'purrbo-reminders' } as any,
+          content, trigger: { type: Notifications.SchedulableTriggerInputTypes.TIME_INTERVAL, seconds: n * 3600, repeats: true, channelId: 'purrbo-reminders' } as any,
         });
         continue;
       }
@@ -126,7 +126,7 @@ export async function scheduleHabitReminders(habits: Habit[]): Promise<void> {
         const days = repeat.split(':')[1].split(',').map((x) => parseInt(x, 10)).filter((x) => x >= 0 && x <= 6);
         for (const d of days) {
           await Notifications.scheduleNotificationAsync({
-            content, trigger: { weekday: expoWeekday(d), hour, minute, repeats: true, channelId: 'purrbo-reminders' } as any,
+            content, trigger: { type: Notifications.SchedulableTriggerInputTypes.WEEKLY, weekday: expoWeekday(d), hour, minute, channelId: 'purrbo-reminders' } as any,
           });
         }
         continue;
@@ -134,7 +134,7 @@ export async function scheduleHabitReminders(habits: Habit[]): Promise<void> {
 
       // daily
       await Notifications.scheduleNotificationAsync({
-        content, trigger: { hour, minute, repeats: true, channelId: 'purrbo-reminders' } as any,
+        content, trigger: { type: Notifications.SchedulableTriggerInputTypes.DAILY, hour, minute, channelId: 'purrbo-reminders' } as any,
       });
     }
   } catch {
