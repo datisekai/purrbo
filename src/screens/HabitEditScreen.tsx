@@ -69,7 +69,7 @@ export default function HabitEditScreen({ navigation, route }) {
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: colors.bg }} edges={['top']}>
-      <ScrollView contentContainerStyle={{ padding: 18, paddingBottom: 40 }} showsVerticalScrollIndicator={false}>
+      <ScrollView contentContainerStyle={{ padding: 18, paddingBottom: 40 }} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
         <View style={s.hdr}>
           <Pressable onPress={() => navigation?.goBack?.()} style={s.back}>
             <Icon name="back" size={20} color={colors.ink} />

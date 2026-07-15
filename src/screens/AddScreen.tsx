@@ -161,7 +161,7 @@ export default function AddScreen({ navigation }) {
         </View>
       )}
 
-      <ScrollView contentContainerStyle={{ padding: 18, paddingBottom: 40 }} showsVerticalScrollIndicator={false}>
+      <ScrollView contentContainerStyle={{ padding: 18, paddingBottom: 40 }} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
         {/* Header */}
         <View style={s.hdr}>
           <Pressable onPress={() => navigation?.goBack?.()} style={s.back}>

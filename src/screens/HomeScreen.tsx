@@ -203,7 +203,7 @@ export default function HomeScreen({ navigation }: any) {
               <PersonaChibi variant={persona?.variant || 'mun'} size={92} items={equipped} expr="happy" />
               <View style={{ flex: 1, minWidth: 0 }}>
                 <Text style={s.nextName} numberOfLines={1}>{nextUp.h.name}</Text>
-                <Text style={s.nextNudge} numberOfLines={2}>{nextUp.h.hint || `${persona?.name || 'Em'} đang canh cưng đó 👀💗`}</Text>
+                <Text style={s.nextNudge} numberOfLines={2}>{personaCopy(persona?.variant).waiting}</Text>
               </View>
             </View>
             <Button
@@ -257,13 +257,6 @@ export default function HomeScreen({ navigation }: any) {
             </View>
           );
         })}
-
-        {/* Nhiệm vụ — strip nhỏ (không tranh chỗ với nhân vật) */}
-        <Pressable style={s.questStrip} onPress={() => navigation?.navigate?.('Rewards')}>
-          <View style={s.questStripIc}><Icon name="gift" size={16} color={colors.purpleDark} /></View>
-          <Text style={s.questStripTxt} numberOfLines={1}>Nhiệm vụ · {claimable > 0 ? `${claimable} đá quý đang chờ cưng 💎` : 'điểm danh & mời bạn nhận đá quý'}</Text>
-          {claimable > 0 && <View style={s.questDot}><Text style={s.questDotTxt}>{claimable}</Text></View>}
-        </Pressable>
 
         {/* Widget màn hình chính — xem trước */}
         <View style={{ marginTop: 10 }}>

@@ -47,6 +47,7 @@ function MainTabs() {
     >
       <Tab.Screen name="Home" component={HomeScreen} options={{ tabBarIcon: tabIcon('home'), tabBarLabel: tabLabel('Home') }} />
       <Tab.Screen name="Lịch" component={CalendarScreen} options={{ tabBarIcon: tabIcon('calendar'), tabBarLabel: tabLabel('Lịch') }} />
+      <Tab.Screen name="Nhiệm vụ" component={RewardsScreen} options={{ tabBarIcon: tabIcon('star'), tabBarLabel: tabLabel('Nhiệm vụ') }} />
       <Tab.Screen name="Shop" component={ShopScreen} options={{ tabBarIcon: tabIcon('gift'), tabBarLabel: tabLabel('Túi mù') }} />
       <Tab.Screen name="Mình" component={ProfileScreen} options={{ tabBarIcon: tabIcon('user'), tabBarLabel: tabLabel('Mình') }} />
     </Tab.Navigator>
