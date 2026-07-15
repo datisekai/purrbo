@@ -4,9 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { colors, fonts, radii, hardShadow } from '../theme';
 import { AnimatedMascot } from '../components/AnimatedMascot';
 import { useAuth } from '../auth';
-import GoogleButton from './GoogleButton';
-
-const GOOGLE_CLIENT_ID = process.env.EXPO_PUBLIC_GOOGLE_CLIENT_ID;
+import GoogleButton, { GOOGLE_LOGIN_READY } from './GoogleButton';
 
 export default function NameScreen() {
   const { loginDev } = useAuth();
@@ -47,10 +45,10 @@ export default function NameScreen() {
           {busy ? <ActivityIndicator color="#fff" /> : <Text style={s.startTxt}>Bắt đầu ngay</Text>}
         </Pressable>
 
-        {GOOGLE_CLIENT_ID ? (
+        {GOOGLE_LOGIN_READY ? (
           <>
             <Text style={s.or}>hoặc</Text>
-            <GoogleButton clientId={GOOGLE_CLIENT_ID} label="Đăng nhập với Google" />
+            <GoogleButton label="Đăng nhập với Google" />
           </>
         ) : null}
 

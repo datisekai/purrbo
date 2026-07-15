@@ -67,8 +67,11 @@ async def google_login(body: GoogleLogin, db: AsyncSession = Depends(get_session
     if r.status_code != 200:
         raise HTTPException(status_code=401, detail="google token invalid")
     info = r.json()
-    if settings.google_client_id and info.get("aud") != settings.google_client_id:
-        raise HTTPException(status_code=401, detail="google token aud mismatch")  # AD-8
+    # AD-8: aud của id_token = client id của NỀN TẢNG đăng nhập (iOS/Android/Web
+    # khác nhau). Chấp nhận nếu aud nằm trong danh sách client id hợp lệ.
+    allowed = {c.strip() for c in (settings.google_client_ids or settings.google_client_id).split(",") if c.strip()}
+    if allowed and info.get("aud") not in allowed:
+        raise HTTPException(status_code=401, detail="google token aud mismatch")
     email = info.get("email")
     if not email:
         raise HTTPException(status_code=401, detail="google token missing email")

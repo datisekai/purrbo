@@ -8,7 +8,8 @@ import { colors, fonts, radii, hardShadow } from '../theme';
 import { Api } from '../api';
 import { useAuth } from '../auth';
 import { ensureNotifPermission, sendTestNotification } from '../notifications';
-import { getGcalToken, setGcalToken, GOOGLE_CLIENT_ID, getLarkToken, setLarkToken, LARK_APP_ID } from '../googleCalendar';
+import { getGcalToken, setGcalToken, getLarkToken, setLarkToken, LARK_APP_ID } from '../googleCalendar';
+import { GOOGLE_LOGIN_READY } from './GoogleButton';
 import { isSfxOn, isBgOn, setSfx, setBg } from '../sound';
 import GcalConnectButton from './GcalConnectButton';
 import { Icon } from '../components/Icon';
@@ -342,13 +343,13 @@ export default function SettingsScreen({ navigation }) {
             <Pressable onPress={disconnectGcal} style={s.disconnect}>
               <Text style={s.disconnectTxt}>Ngắt kết nối</Text>
             </Pressable>
-          ) : GOOGLE_CLIENT_ID ? (
-            <GcalConnectButton clientId={GOOGLE_CLIENT_ID} onConnected={() => setGcalOn(true)} />
+          ) : GOOGLE_LOGIN_READY ? (
+            <GcalConnectButton onConnected={() => setGcalOn(true)} />
           ) : (
             <View style={s.cfgNote}>
               <Icon name="info" size={14} color={colors.coralDark} />
               <Text style={s.cfgNoteTxt}>
-                Cần cấu hình EXPO_PUBLIC_GOOGLE_CLIENT_ID để bật đồng bộ Google Calendar.
+                Cần cấu hình client ID Google (iOS/Android/Web) để bật đồng bộ Google Calendar.
               </Text>
             </View>
           )}

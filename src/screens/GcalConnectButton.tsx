@@ -5,23 +5,24 @@ import * as Google from 'expo-auth-session/providers/google';
 import { colors, fonts, radii, hardShadow } from '../theme';
 import { Icon } from '../components/Icon';
 import { GCAL_SCOPE, setGcalToken } from '../googleCalendar';
+import { GOOGLE_IDS } from './GoogleButton';
 
 WebBrowser.maybeCompleteAuthSession();
 
-// CHỈ render khi đã có EXPO_PUBLIC_GOOGLE_CLIENT_ID → hook luôn nhận clientId hợp lệ.
+// CHỈ render khi GOOGLE_LOGIN_READY → hook luôn có ít nhất 1 client id.
 // OAuth lấy access_token (không phải id_token) để gọi Calendar API read-only.
 export default function GcalConnectButton({
-  clientId,
   label = 'Kết nối Google Calendar',
   onConnected,
 }: {
-  clientId: string;
   label?: string;
   onConnected?: () => void;
 }) {
   const [busy, setBusy] = useState(false);
   const [request, response, promptAsync] = Google.useAuthRequest({
-    clientId,
+    iosClientId: GOOGLE_IDS.ios,
+    androidClientId: GOOGLE_IDS.android,
+    webClientId: GOOGLE_IDS.web,
     scopes: [GCAL_SCOPE],
   });
 

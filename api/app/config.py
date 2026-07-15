@@ -24,7 +24,8 @@ class Settings(BaseSettings):
     jwt_alg: str = "HS256"
     cors_origins: str = "*"
     allow_dev_login: bool = True          # AD-8: prod đặt False (tắt /auth/dev)
-    google_client_id: str = ""            # AD-8: verify aud của Google id_token
+    google_client_id: str = ""            # AD-8: (cũ) 1 client id để verify aud
+    google_client_ids: str = ""           # AD-8: nhiều client id (web,ios,android) — phẩy ngăn cách
     admin_token: str = "purrbo-admin-doi-truoc-khi-len-prod"  # (legacy) header X-Admin-Token cho script
     admin_username: str = "admin"                             # đăng nhập web admin
     admin_password: str = "purrbo-doi-truoc-khi-len-prod"     # ĐỔI trước khi lên prod

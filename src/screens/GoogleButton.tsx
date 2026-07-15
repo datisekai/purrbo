@@ -7,12 +7,24 @@ import { useAuth } from '../auth';
 
 WebBrowser.maybeCompleteAuthSession();
 
-// Component này CHỈ được render khi đã có EXPO_PUBLIC_GOOGLE_CLIENT_ID
-// → hook useIdTokenAuthRequest luôn nhận clientId hợp lệ, không crash.
-export default function GoogleButton({ clientId, label = 'Đăng nhập với Google' }: { clientId: string; label?: string }) {
+// 3 client id theo nền tảng — expo-auth-session tự chọn đúng cái khi chạy.
+// aud của id_token = client id của nền tảng đó → backend nhận cả 3 (GOOGLE_CLIENT_IDS).
+export const GOOGLE_IDS = {
+  ios: process.env.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID,
+  android: process.env.EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID,
+  web: process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID || process.env.EXPO_PUBLIC_GOOGLE_CLIENT_ID,
+};
+export const GOOGLE_LOGIN_READY = !!(GOOGLE_IDS.ios || GOOGLE_IDS.android || GOOGLE_IDS.web);
+
+// Chỉ render khi GOOGLE_LOGIN_READY = true → hook luôn có ít nhất 1 client id.
+export default function GoogleButton({ label = 'Đăng nhập với Google' }: { label?: string }) {
   const { loginGoogle } = useAuth();
   const [busy, setBusy] = useState(false);
-  const [request, response, promptAsync] = Google.useIdTokenAuthRequest({ clientId });
+  const [request, response, promptAsync] = Google.useIdTokenAuthRequest({
+    iosClientId: GOOGLE_IDS.ios,
+    androidClientId: GOOGLE_IDS.android,
+    webClientId: GOOGLE_IDS.web,
+  });
 
   useEffect(() => {
     if (response?.type === 'success' && response.params?.id_token) {
