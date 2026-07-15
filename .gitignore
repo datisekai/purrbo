@@ -14,3 +14,7 @@ data/
 # Secrets / env (KHÔNG commit)
 .env
 api/.env
+
+# Native — sinh lại từ app.json qua prebuild (CNG). targets/ giữ lại (nguồn widget).
+/ios
+/android

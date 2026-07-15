@@ -33,10 +33,13 @@
     "react-native": "0.85.3",
     "react-native-safe-area-context": "~5.7.0",
     "react-native-screens": "4.25.2",
-    "react-native-svg": "15.15.4"
+    "react-native-shared-group-preferences": "^1.1.24",
+    "react-native-svg": "15.15.4",
+    "react-native-widgetkit": "^1.0.9"
   },
   "private": true,
   "devDependencies": {
+    "@bacons/apple-targets": "^4.0.7",
     "@types/react": "~19.2.14",
     "typescript": "~6.0.3"
   }

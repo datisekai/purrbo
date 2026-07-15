@@ -13,6 +13,7 @@ import { Api } from '../api';
 import { useAuth } from '../auth';
 import { scheduleHabitReminders } from '../notifications';
 import { personaCopy, personaHomeLine } from '../personaCopy';
+import { pushWidget } from '../widget';
 import { personaTheme } from '../personaTheme';
 import { playSuccess } from '../sound';
 
@@ -157,6 +158,20 @@ export default function HomeScreen({ navigation }: any) {
   })();
   const dateLabel = `Hôm nay · ${String(nowD.getDate()).padStart(2, '0')}/${String(nowD.getMonth() + 1).padStart(2, '0')}`;
 
+  // Đẩy dữ liệu sang Widget iOS mỗi khi tiến độ / persona / streak đổi.
+  const widgetLine = line || personaHomeLine(persona?.variant, { done: doneCount, total: todayHabits.length, next: nextUp?.h?.name });
+  useEffect(() => {
+    pushWidget({
+      personaName: persona?.name || 'Purrbo',
+      line: widgetLine,
+      nextName: nextUp?.h?.name || '',
+      nextTime: nextUp?.h?.time || '',
+      done: doneCount,
+      total: todayHabits.length,
+      streak,
+    });
+  }, [widgetLine, nextUp?.h?.name, nextUp?.h?.time, doneCount, todayHabits.length, streak, persona?.name]);
+
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: colors.bg }} edges={['top']}>
       <ScrollView
@@ -201,7 +216,7 @@ export default function HomeScreen({ navigation }: any) {
           </View>
           <Text style={s.pTag}>bạn đồng hành · {persona?.tag || 'cà khịa yêu'}</Text>
 
-          <View style={[s.bubble, { marginTop: 12, alignSelf: 'stretch' }]}><Text style={{ fontFamily: fonts.body, fontSize: 14, color: colors.ink, lineHeight: 21 }}>{line || personaHomeLine(persona?.variant, { done: doneCount, total: todayHabits.length, next: nextUp?.h?.name })}</Text></View>
+          <View style={[s.bubble, { marginTop: 12, alignSelf: 'stretch' }]}><Text style={{ fontFamily: fonts.body, fontSize: 14, color: colors.ink, lineHeight: 21 }}>{widgetLine}</Text></View>
         </View>
 
         {/* SẮP TỚI — spotlight: người đồng hành đang đợi cưng làm việc kế tiếp */}
