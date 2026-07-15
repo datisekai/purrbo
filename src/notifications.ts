@@ -99,7 +99,13 @@ const expoWeekday = (d: number) => ((d + 1) % 7) + 1;
 
 // Đặt lại toàn bộ nhắc theo lịch lặp của từng habit.
 //  repeat: "daily" | "weekly:0,2,4" (0=T2..6=CN) | "hours:2" (mỗi 2 tiếng)
+let _lastSig = '';
 export async function scheduleHabitReminders(habits: Habit[]): Promise<void> {
+  // Chỉ lên lịch LẠI khi danh sách habit thực sự đổi — tránh reschedule (và trên
+  // simulator là re-bắn) mỗi lần Home focus.
+  const sig = JSON.stringify((habits || []).map((h) => [h.name, h.time, h.repeat]));
+  if (sig === _lastSig) return;
+  _lastSig = sig;
   try {
     await Notifications.cancelAllScheduledNotificationsAsync();
     for (const h of habits) {
