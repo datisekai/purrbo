@@ -1,6 +1,7 @@
-import React, { useEffect, useState, useCallback } from 'react';
-import { View, Text, ScrollView, Pressable, RefreshControl, StyleSheet } from 'react-native';
+import React, { useEffect, useState, useCallback, useRef } from 'react';
+import { View, Text, ScrollView, Pressable, RefreshControl, Animated, Easing, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import Svg, { Circle } from 'react-native-svg';
 import { useFocusEffect } from '@react-navigation/native';
 import { colors, fonts, radii, hardShadow } from '../theme';
 import { Icon } from '../components/Icon';
@@ -24,6 +25,12 @@ const ICON_STYLE: Record<string, { bg: string; col: string }> = {
 };
 const istyle = (ic: string) => ICON_STYLE[ic] ?? { bg: '#F1ECF6', col: colors.muted };
 
+// Vòng thân thiết quanh chibi (game-y)
+const AnimatedCircle = Animated.createAnimatedComponent(Circle);
+const RING = 74;            // bán kính vòng
+const RING_C = 2 * Math.PI * RING;
+const AFF_MAX = 500;        // điểm cần cho cấp thân thiết tiếp theo
+
 export default function HomeScreen({ navigation }: any) {
   const { user } = useAuth();
   const [st, setSt] = useState<any>(null);
@@ -35,6 +42,11 @@ export default function HomeScreen({ navigation }: any) {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [celebration, setCelebration] = useState<any>(null);
+  // Vòng thân thiết + thưởng lean
+  const dispAff = useRef(new Animated.Value(0)).current;
+  const floatY = useRef(new Animated.Value(0)).current;
+  const [floatTxt, setFloatTxt] = useState('');
+  const [heroExpr, setHeroExpr] = useState<'love' | 'happy'>('happy');
 
   // Nạp toàn bộ dữ liệu Home (dùng cho mount + kéo làm mới).
   const loadCore = useCallback(async () => {
@@ -80,6 +92,25 @@ export default function HomeScreen({ navigation }: any) {
     }, [])
   );
 
+  // Vòng thân thiết chạy tới giá trị hiện tại (lúc load + sau khi Khoe).
+  useEffect(() => {
+    Animated.timing(dispAff, {
+      toValue: Math.min(st?.affinity_points ?? 0, AFF_MAX),
+      duration: 700, easing: Easing.out(Easing.cubic), useNativeDriver: false,
+    }).start();
+  }, [st?.affinity_points]);
+
+  // Thưởng LEAN: "+N 💗" bay lên + mèo nhảy đổi biểu cảm love.
+  const rewardBurst = (gain: number) => {
+    if (gain > 0) {
+      setFloatTxt(`+${gain} 💗`);
+      floatY.setValue(0);
+      Animated.timing(floatY, { toValue: 1, duration: 1300, easing: Easing.out(Easing.quad), useNativeDriver: true }).start();
+    }
+    setHeroExpr('love');
+    setTimeout(() => setHeroExpr('happy'), 1500);
+  };
+
   const STREAK_MILESTONES = [3, 7, 14, 30, 50, 100];
 
   const khoe = async (h: any) => {
@@ -87,11 +118,13 @@ export default function HomeScreen({ navigation }: any) {
     playSuccess();
     const prevLevel = st?.affinity_level ?? 1;
     const prevStreak = st?.streak ?? 0;
+    const prevAff = st?.affinity_points ?? 0;
     setHabits((hs) => hs.map((x) => (x.id === h.id ? { ...x, done: true } : x)));
     try {
       const r = await Api.khoe(h.id);
       setLine(r.line);
       setSt((s: any) => ({ ...(s || {}), affinity_points: r.affinity_points, affinity_level: r.affinity_level, streak: r.streak }));
+      rewardBurst((r.affinity_points ?? prevAff) - prevAff);
       // Ăn mừng: lên cấp thân thiết hoặc chạm mốc streak (chỉ khi tăng thật)
       if (r.affinity_level > prevLevel) {
         setCelebration({ type: 'level', value: r.affinity_level, persona, items: equipped });
@@ -151,43 +184,34 @@ export default function HomeScreen({ navigation }: any) {
           </Chip>
         </View>
 
-        {/* Nhiệm vụ & thưởng — giữ chân, ghé mỗi ngày */}
-        <Pressable style={s.quest} onPress={() => navigation?.navigate?.('Rewards')}>
-          <View style={s.questIc}><Icon name="gift" size={22} color="#fff" /></View>
-          <View style={{ flex: 1, minWidth: 0 }}>
-            <Text style={s.questTitle}>Nhiệm vụ hôm nay</Text>
-            <Text style={s.questSub}>{claimable > 0 ? `Có ${claimable} đá quý đang chờ cưng nhận 💎` : 'Điểm danh & mời bạn nhận đá quý'}</Text>
-          </View>
-          {claimable > 0 && <View style={s.questDot}><Text style={s.questDotTxt}>{claimable}</Text></View>}
-        </Pressable>
-
         <View style={s.hero}>
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12, marginBottom: 12 }}>
-            <PersonaFace variant={persona?.variant || 'mun'} ring={(persona?.rarity || 'SSR') === 'SSR' ? 'ssr' : undefined} size={54} items={equipped} expr="love" />
-            <View style={{ flex: 1 }}>
-              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-                <Text style={{ fontFamily: fonts.display, fontSize: 19, color: colors.ink }}>{persona?.name || 'Mèo Mun'}</Text>
-                <View style={s.ssr}>
-                  <Icon name="star" size={9} color="#fff" />
-                  <Text style={{ fontFamily: fonts.heading, fontSize: 10, color: '#fff' }}>{persona?.rarity || 'SSR'}</Text>
-                </View>
-              </View>
-              <Text style={{ fontFamily: fonts.body, fontSize: 12, color: colors.muted }}>bạn đồng hành · {persona?.tag || 'cà khịa yêu'} · thân thiết Lv.{lvl}</Text>
-            </View>
+          {/* Vòng thân thiết bao quanh chibi (game-y) */}
+          <View style={{ width: 168, height: 168, alignItems: 'center', justifyContent: 'center' }}>
+            <Svg width={168} height={168} style={{ position: 'absolute' }}>
+              <Circle cx={84} cy={84} r={RING} stroke="#E7DAF5" strokeWidth={9} fill="none" />
+              <AnimatedCircle
+                cx={84} cy={84} r={RING} stroke={colors.purple} strokeWidth={9} fill="none" strokeLinecap="round"
+                strokeDasharray={RING_C}
+                strokeDashoffset={dispAff.interpolate({ inputRange: [0, AFF_MAX], outputRange: [RING_C, 0], extrapolate: 'clamp' })}
+                transform="rotate(-90 84 84)"
+              />
+            </Svg>
+            <PersonaChibi variant={persona?.variant || 'mun'} size={132} items={equipped} expr={heroExpr} />
+            <Animated.View
+              pointerEvents="none"
+              style={{ position: 'absolute', top: 26, opacity: floatY.interpolate({ inputRange: [0, 0.15, 1], outputRange: [0, 1, 0] }), transform: [{ translateY: floatY.interpolate({ inputRange: [0, 1], outputRange: [0, -48] }) }] }}
+            >
+              <Text style={s.float}>{floatTxt}</Text>
+            </Animated.View>
           </View>
 
-          <View style={s.bubble}><Text style={{ fontFamily: fonts.body, fontSize: 14, color: colors.ink, lineHeight: 21 }}>{line || personaCopy(persona?.variant).home}</Text></View>
-
-          <View style={{ marginTop: 12 }}>
-            <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 5 }}>
-              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
-                <Icon name="heart" size={13} color={colors.ink} />
-                <Text style={{ fontFamily: fonts.heading, fontSize: 12, color: colors.ink }}>Độ thân thiết</Text>
-              </View>
-              <Text style={{ fontFamily: fonts.heading, fontSize: 12, color: colors.ink }}>{aff}/500 → Lv.{lvl + 1}</Text>
-            </View>
-            <ProgressBar pct={(aff / 500) * 100} />
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 4 }}>
+            <Text style={s.pName}>{persona?.name || 'Mèo Mun'}</Text>
+            <View style={s.ssr}><Icon name="star" size={9} color="#fff" /><Text style={{ fontFamily: fonts.heading, fontSize: 10, color: '#fff' }}>{persona?.rarity || 'SSR'}</Text></View>
           </View>
+          <Text style={s.pTag}>Thân thiết Lv.{lvl} · {aff}/{AFF_MAX} · {persona?.tag || 'cà khịa yêu'}</Text>
+
+          <View style={[s.bubble, { marginTop: 12, alignSelf: 'stretch' }]}><Text style={{ fontFamily: fonts.body, fontSize: 14, color: colors.ink, lineHeight: 21 }}>{line || personaCopy(persona?.variant).home}</Text></View>
         </View>
 
         {/* SẮP TỚI — spotlight: người đồng hành đang đợi cưng làm việc kế tiếp */}
@@ -256,6 +280,13 @@ export default function HomeScreen({ navigation }: any) {
           );
         })}
 
+        {/* Nhiệm vụ — strip nhỏ (không tranh chỗ với nhân vật) */}
+        <Pressable style={s.questStrip} onPress={() => navigation?.navigate?.('Rewards')}>
+          <View style={s.questStripIc}><Icon name="gift" size={16} color={colors.purpleDark} /></View>
+          <Text style={s.questStripTxt} numberOfLines={1}>Nhiệm vụ · {claimable > 0 ? `${claimable} đá quý đang chờ cưng 💎` : 'điểm danh & mời bạn nhận đá quý'}</Text>
+          {claimable > 0 && <View style={s.questDot}><Text style={s.questDotTxt}>{claimable}</Text></View>}
+        </Pressable>
+
         {/* Widget màn hình chính — xem trước */}
         <View style={{ marginTop: 10 }}>
           <WidgetPreview habits={habits} dateLabel={dateLabel} />
@@ -282,9 +313,15 @@ const s = StyleSheet.create({
   hi: { fontFamily: fonts.display, fontSize: 22, color: colors.ink },
   sub: { fontFamily: fonts.body, fontSize: 13, color: colors.muted },
   hero: {
-    backgroundColor: '#F6ECFB', borderRadius: 28, padding: 18, marginBottom: 20,
-    borderWidth: 2, borderColor: '#fff', ...hardShadow(5, 0.14),
+    backgroundColor: '#F1E7FA', borderRadius: 28, padding: 18, marginBottom: 20,
+    borderWidth: 2, borderColor: '#fff', alignItems: 'center', ...hardShadow(5, 0.14),
   },
+  pName: { fontFamily: fonts.display, fontSize: 22, color: colors.ink },
+  pTag: { fontFamily: fonts.body, fontSize: 12, color: colors.muted, marginTop: 2, textAlign: 'center' },
+  float: { fontFamily: fonts.display, fontSize: 22, color: colors.pinkDark },
+  questStrip: { flexDirection: 'row', alignItems: 'center', gap: 9, backgroundColor: '#EDE9FB', borderRadius: 16, paddingVertical: 10, paddingHorizontal: 12, marginTop: 8 },
+  questStripIc: { width: 28, height: 28, borderRadius: 9, backgroundColor: '#fff', alignItems: 'center', justifyContent: 'center' },
+  questStripTxt: { flex: 1, fontFamily: fonts.heading, fontSize: 12.5, color: colors.purpleDark },
   ssr: { flexDirection: 'row', alignItems: 'center', gap: 3, backgroundColor: colors.pink, borderRadius: radii.pill, paddingVertical: 2, paddingHorizontal: 8 },
   bubble: { backgroundColor: '#fff', borderRadius: 18, borderBottomLeftRadius: 5, padding: 12, ...hardShadow(3, 0.12) },
   next: {
