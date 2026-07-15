@@ -151,13 +151,14 @@ export default function ShopScreen({ navigation }) {
   const [pkgs, setPkgs] = useState(PKGS);
   const [loadingShop, setLoadingShop] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [buyingKey, setBuyingKey] = useState<string | null>(null);
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
     try { const st = await Api.state(); if (typeof st?.gems === 'number') setBalance(st.gems); } catch {}
     try {
       const col = await Api.collection();
-      if (Array.isArray(col)) setShop(col.map((c) => ({ variant: c.variant, name: c.name, rar: c.rarity, owned: c.owned, price: PRICE_BY_VARIANT[c.variant] ?? '420' })));
+      if (Array.isArray(col)) setShop(col.map((c) => ({ key: c.key, variant: c.variant, name: c.name, rar: c.rarity, owned: c.owned, price: PRICE_BY_VARIANT[c.variant] ?? '420' })));
     } catch {}
     setRefreshing(false);
   }, []);
@@ -171,6 +172,7 @@ export default function ShopScreen({ navigation }) {
         if (alive && Array.isArray(col)) {
           setShop(
             col.map((c) => ({
+              key: c.key,
               variant: c.variant,
               name: c.name,
               rar: c.rarity,
@@ -192,6 +194,28 @@ export default function ShopScreen({ navigation }) {
       alive = false;
     };
   }, []);
+
+  const buyPersona = async (p) => {
+    if (buyingKey || !p?.key) return;
+    setBuyingKey(p.key);
+    try {
+      const res = await Api.buyPersona(p.key);
+      playSuccess();
+      if (typeof res?.gems === 'number') setBalance(res.gems);
+      setShop((xs) => xs.map((x) => (x.key === p.key ? { ...x, owned: true } : x)));
+      Alert.alert('Mua thành công 🎉', `${p.name} về nhà với cưng rồi! Vào Hồ sơ để chọn làm bạn đồng hành nha.`);
+    } catch (e: any) {
+      const msg = String(e?.message ?? e);
+      Alert.alert(
+        'Chưa mua được',
+        msg.includes('402') ? 'Không đủ đá quý — nạp thêm nha 💎'
+          : msg.includes('409') ? 'Cưng đã sở hữu bạn này rồi 😽'
+          : 'Thử lại sau nha.'
+      );
+    } finally {
+      setBuyingKey(null);
+    }
+  };
 
   const openBag = async (bag = 'thuong') => {
     playOpen();
@@ -416,10 +440,11 @@ export default function ShopScreen({ navigation }) {
                 />
               ) : (
                 <Button
-                  label={p.price}
+                  label={buyingKey === p.key ? 'Đang mua…' : p.price}
                   tone="purple"
-                  onPress={() => {}}
-                  icon={<MiniIcon name="gem" size={14} color="#fff" />}
+                  disabled={buyingKey === p.key}
+                  onPress={() => buyPersona(p)}
+                  icon={buyingKey === p.key ? null : <MiniIcon name="gem" size={14} color="#fff" />}
                   style={{ paddingVertical: 9, paddingHorizontal: 12, alignSelf: 'stretch' }}
                 />
               )}

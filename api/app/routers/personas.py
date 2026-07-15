@@ -30,6 +30,33 @@ async def list_personas(db: AsyncSession = Depends(get_session)):
     return list(rows)
 
 
+# Giá mua persona (nguồn chân lý ở server — client KHÔNG được tự quyết giá).
+# Theo variant để khớp hiển thị app; fallback theo rarity.
+_PERSONA_PRICE = {"mun": 600, "cam": 600, "ly": 600, "sep": 420, "bong": 420, "xu": 420, "bo": 150, "sin": 150}
+_RARITY_PRICE = {"SSR": 600, "Hiếm": 420, "Thường": 150}
+
+
+@router.post("/personas/{key}/buy")
+async def buy_persona(key: str, user_id: str = Depends(get_current_user), db: AsyncSession = Depends(get_session)):
+    """Mua thẳng 1 persona theo giá cố định (khác gacha ngẫu nhiên). Trừ đá quý server-side."""
+    persona = (await db.execute(select(Persona).where(Persona.key == key))).scalar_one_or_none()
+    if persona is None:
+        raise HTTPException(status_code=404, detail="không có persona này")
+    already = (
+        await db.execute(select(OwnedPersona).where(OwnedPersona.user_id == user_id, OwnedPersona.persona_key == key))
+    ).scalar_one_or_none()
+    if already is not None:
+        raise HTTPException(status_code=409, detail="đã sở hữu")
+    price = _PERSONA_PRICE.get(persona.variant) or _RARITY_PRICE.get(persona.rarity, 420)
+    st = await _state(db, user_id)
+    if st.gems < price:
+        raise HTTPException(status_code=402, detail="không đủ đá quý")
+    st.gems -= price
+    db.add(OwnedPersona(user_id=user_id, persona_key=key))
+    await db.commit()
+    return {"ok": True, "gems": st.gems, "persona_key": key}
+
+
 @router.get("/state", response_model=StateOut)
 async def get_state(user_id: str = Depends(get_current_user), db: AsyncSession = Depends(get_session)):
     st = await _state(db, user_id)

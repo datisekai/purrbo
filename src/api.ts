@@ -70,6 +70,7 @@ export const Api = {
   state: () => req('/state'),
   collection: () => req('/me/personas'),
   setPersona: (key: string) => req('/state/persona', { method: 'PUT', body: { key } }),
+  buyPersona: (key: string) => req(`/personas/${key}/buy`, { method: 'POST' }) as Promise<{ ok: boolean; gems: number; persona_key: string }>,
   onboardingPick: (key: string) => req('/onboarding', { method: 'POST', body: { key } }),
   habits: () => req('/habits'),
   createHabit: (h: { name: string; icon?: string; time?: string; hint?: string; repeat?: string }) => req('/habits', { method: 'POST', body: h }),
