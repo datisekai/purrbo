@@ -1,5 +1,8 @@
 {
-  "cli": { "version": ">= 5.0.0", "appVersionSource": "remote" },
+  "cli": {
+    "version": ">= 5.0.0",
+    "appVersionSource": "remote"
+  },
   "build": {
     "development": {
       "developmentClient": true,
@@ -10,16 +13,26 @@
     },
     "preview": {
       "distribution": "internal",
-      "android": { "buildType": "apk" },
+      "android": {
+        "buildType": "apk"
+      },
       "env": {
-        "EXPO_PUBLIC_API_URL": "https://purrbo.fun"
+        "EXPO_PUBLIC_API_URL": "https://purrbo.fun",
+        "EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID": "962322856355-oni7u59bvn6v1d7ki502fh1lcphhvaol.apps.googleusercontent.com",
+        "EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID": "962322856355-5osgeegap1u53s1pbsbqmvgia5elo1vl.apps.googleusercontent.com",
+        "EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID": "962322856355-evb26cqhpv9mftc53kvhiff9mgjfjf3j.apps.googleusercontent.com"
       }
     },
     "production": {
       "autoIncrement": true,
-      "android": { "buildType": "app-bundle" },
+      "android": {
+        "buildType": "app-bundle"
+      },
       "env": {
-        "EXPO_PUBLIC_API_URL": "https://purrbo.fun"
+        "EXPO_PUBLIC_API_URL": "https://purrbo.fun",
+        "EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID": "962322856355-oni7u59bvn6v1d7ki502fh1lcphhvaol.apps.googleusercontent.com",
+        "EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID": "962322856355-5osgeegap1u53s1pbsbqmvgia5elo1vl.apps.googleusercontent.com",
+        "EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID": "962322856355-evb26cqhpv9mftc53kvhiff9mgjfjf3j.apps.googleusercontent.com"
       }
     }
   },
