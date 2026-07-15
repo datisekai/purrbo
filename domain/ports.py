@@ -18,6 +18,7 @@ class DialogueContext:
     mood: str                 # "gắt" | "dịu" | "vừa"
     intimacy_level: int       # 1..10 (Lv thân thiết)
     event: str                # "nudge_water" | "praise" | "reply" | "winback" ...
+    persona_variant: str = "" # mun/cam/ly/sep/bong/xu/bo/sin → chọn VOICE riêng
     detail: str = ""          # việc cụ thể / tin nhắn user
     memory: list[str] | None = None   # vài kỷ niệm/chuyện cũ để nhắc lại
 

@@ -59,6 +59,7 @@ async def send(payload: ChatIn, user_id: str = Depends(get_current_user), db: As
     reply = await dialogue.generate(DialogueContext(
         persona_name=pname,
         persona_tag=persona.tag if persona else "cà khịa yêu",
+        persona_variant=persona.variant if persona else "mun",
         mood=st.mood,
         intimacy_level=st.affinity_level,
         event="reply",
