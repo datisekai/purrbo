@@ -29,8 +29,8 @@ export default function ItemsScreen({ navigation }) {
   const [items, setItems] = useState<any[]>([]);
   const [equipped, setEquipped] = useState<Record<string, string>>({});
   const [balance, setBalance] = useState<number | null>(null);
-  const [variant, setVariant] = useState('cam');
-  const [personaName, setPersonaName] = useState('Mochi');
+  const [variant, setVariant] = useState('mun');
+  const [personaName, setPersonaName] = useState('bạn đồng hành');
   const [busy, setBusy] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 

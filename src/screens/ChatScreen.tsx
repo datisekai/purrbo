@@ -138,7 +138,7 @@ export default function ChatScreen({ navigation, route }) {
   const [typing, setTyping] = useState(false);
   // Persona đang nhắn — từ param (chọn ở hồ sơ) hoặc persona đang active.
   const [persona, setPersona] = useState(
-    route?.params?.persona || { key: 'mun', name: 'Mun', variant: 'mun', level: 5 }
+    route?.params?.persona || { key: 'mun', name: 'Mun', variant: 'mun', level: 1 }
   );
   const listRef = useRef(null);
   const idRef = useRef(100);

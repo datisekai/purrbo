@@ -38,12 +38,12 @@ type CollItem = {
   owned?: boolean; active?: boolean; placeholder?: boolean; hint?: string;
 };
 
-// Fallback đúng design gốc khi backend chết (giữ nguyên UI).
+// Fallback khi backend chết — KHÔNG bịa persona đã sở hữu, chỉ ô trống.
 const FALLBACK_COLLECTION: CollItem[] = [
-  { key: 'mun', name: 'Mèo Mun', variant: 'mun', rarity: 'SSR', owned: true, active: true },
-  { key: 'gau', name: 'Gấu Bông', variant: 'gau', rarity: 'Hiếm', owned: true, active: false },
+  { placeholder: true, hint: 'SSR' },
   { placeholder: true, hint: 'Hiếm' },
   { placeholder: true, hint: 'Thường' },
+  { placeholder: true, hint: 'Hiếm' },
   { placeholder: true, hint: 'SSR' },
   { placeholder: true, hint: 'Thường' },
 ];
@@ -103,7 +103,7 @@ export default function ProfileScreen({ navigation }: any) {
   };
 
   // ----- Header -----
-  const name = profile?.name ?? 'Finn';
+  const name = profile?.name ?? user?.name ?? 'Bạn';
   const handleName = (user?.email ?? profile?.email ?? name)
     .split('@')[0]
     .toLowerCase()
@@ -149,7 +149,7 @@ export default function ProfileScreen({ navigation }: any) {
           </View>
           <View style={{ flex: 1, minWidth: 0 }}>
             <Text style={s.name}>{name}</Text>
-            <Text style={s.handle}>@{handleName} · Thành viên từ T7/2026</Text>
+            <Text style={s.handle}>@{handleName}</Text>
           </View>
           <Pressable style={s.iconbtn} onPress={() => navigation.navigate('EditProfile')}>
             <LocalIcon name="pencil" size={19} color={colors.purpleDark} />

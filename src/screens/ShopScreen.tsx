@@ -90,45 +90,9 @@ const SHOP = [
 // Giá bán persona (backend không trả giá) — tra theo variant, mặc định theo rarity.
 const PRICE_BY_VARIANT = { mun: '600', cam: '600', ly: '600', sep: '420', bong: '420', xu: '420', bo: '150', sin: '150' };
 
-const PKGS = [
-  {
-    id: 'nuoi',
-    ic: 'heart',
-    mini: false,
-    bg: '#FFEAF2',
-    col: colors.pinkDark,
-    name: 'Nuôi 3 bạn đồng hành cùng lúc',
-    sub: 'Mở 3 slot persona song song — mỗi em một tính cách, một câu chuyện.',
-    tag: 'bán chiều sâu, không bán may rủi',
-    price: 'Gói tháng · 79k',
-  },
-  {
-    id: 'doi',
-    ic: 'shuffle',
-    mini: true,
-    bg: '#EEE7FF',
-    col: colors.purpleDark,
-    name: 'Đổi persona không giới hạn',
-    sub: 'Hôm nay muốn tổng tài, mai muốn bé xu — đổi thoải mái, không tốn túi mù.',
-    tag: 'tự do, không FOMO',
-    price: 'Gói tháng · 59k',
-  },
-  {
-    id: 'chuong',
-    ic: 'lock',
-    mini: true,
-    bg: '#E6F7FF',
-    col: colors.skyDark,
-    name: 'Mở khoá chương "Bạn đồng hành"',
-    sub: 'Cốt truyện dài tập, hội thoại sâu & những cột mốc thân thiết mới.',
-    tag: 'nội dung, không loot box',
-    price: 'Trọn gói · 129k',
-  },
-];
-
 export default function ShopScreen({ navigation }) {
   const insets = useSafeAreaInsets();
-  const [balance, setBalance] = useState(1250);
+  const [balance, setBalance] = useState(0);
   const [shop, setShop] = useState(SHOP);
   const [reveal, setReveal] = useState(null);
   const anim = useRef(new Animated.Value(0)).current;
@@ -148,7 +112,6 @@ export default function ShopScreen({ navigation }) {
     }, [])
   );
 
-  const [pkgs, setPkgs] = useState(PKGS);
   const [loadingShop, setLoadingShop] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [buyingKey, setBuyingKey] = useState<string | null>(null);
@@ -180,12 +143,6 @@ export default function ShopScreen({ navigation }) {
               price: PRICE_BY_VARIANT[c.variant] ?? '420',
             }))
           );
-        }
-      } catch {}
-      try {
-        const cfg = await Api.config();   // gói đặc biệt sửa được ở web admin
-        if (alive && Array.isArray(cfg?.packages) && cfg.packages.length) {
-          setPkgs(cfg.packages.map((p, i) => ({ ...PKGS[i % PKGS.length], ...p })));
         }
       } catch {}
       if (alive) setLoadingShop(false);
@@ -452,31 +409,6 @@ export default function ShopScreen({ navigation }) {
           ))}
         </View>
 
-        {/* Gói đặc biệt */}
-        <View style={s.stitle}>
-          <Text style={s.stitleTxt}>Gói đặc biệt</Text>
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
-            <Icon name="heart" size={12} color={colors.muted} />
-            <Text style={s.stitleHint}>bán chiều sâu</Text>
-          </View>
-        </View>
-
-        {pkgs.map((k) => (
-          <View key={k.id} style={s.pkg}>
-            <View style={[s.pkgIc, { backgroundColor: k.bg }]}>
-              {k.mini ? <MiniIcon name={k.ic} size={24} color={k.col} /> : <Icon name={k.ic} size={24} color={k.col} />}
-            </View>
-            <View style={{ flex: 1, minWidth: 0 }}>
-              <Text style={s.pkgName}>{k.name}</Text>
-              <Text style={s.pkgSub}>{k.sub}</Text>
-              <View style={s.pkgTag}>
-                <Icon name="heartfill" size={11} color={colors.purpleDark} />
-                <Text style={s.pkgTagTxt}>{k.tag}</Text>
-              </View>
-              <Text style={s.pkgPrice}>{k.price}</Text>
-            </View>
-          </View>
-        ))}
 
         {/* Ethic note — chơi vui, không móc túi */}
         <View style={s.ethic}>

@@ -32,18 +32,12 @@ function AnyIcon({ ic, local, size, color }) {
   return local ? <LocalIcon name={ic} size={size} color={color} /> : <Icon name={ic} size={size} color={color} />;
 }
 
-const STAGES = [
-  { key: 'quen', label: 'Mới quen', state: 'done' },
-  { key: 'than', label: 'Thân', state: 'cur' },
-  { key: 'yeu', label: 'Bạn đồng hành', state: 'todo' },
-  { key: 'triky', label: 'Tri kỷ', state: 'todo' },
-];
-
-const MEMORIES = [
-  { ic: 'heartfill', local: false, bg: '#FFEAF2', col: colors.pinkDark, title: 'Ngày đầu gặp nhau', date: '2/7 · lần đầu "mở hộp" trúng SSR' },
-  { ic: 'flamefill', local: false, bg: '#FFF0E6', col: colors.coralDark, title: 'Streak 7 ngày đầu tiên', date: '9/7 · Mèo Mun bắt đầu tin cưng' },
-  { ic: 'camera', local: true, bg: '#E6F7FF', col: colors.skyDark, title: 'Lần đầu cưng khoe ảnh uống nước', date: '10/7 · "ưng cái bụng ghê" 💧' },
-  { ic: 'medal', local: true, bg: '#EEE7FF', col: colors.purpleDark, title: 'Đạt Lv.5 thân thiết', date: '12/7 · mở khóa chương Bạn đồng hành sắp tới' },
+// Nhãn các chặng thân thiết — chặng HIỆN TẠI tính theo level (không hardcode).
+const STAGE_LABELS = [
+  { key: 'quen', label: 'Mới quen' },
+  { key: 'than', label: 'Thân' },
+  { key: 'yeu', label: 'Bạn đồng hành' },
+  { key: 'triky', label: 'Tri kỷ' },
 ];
 
 // Câu chuyện theo từng persona (fallback nếu backend chưa trả intro dài).
@@ -88,6 +82,17 @@ export default function PersonaScreen({ navigation, route }) {
   const story = p.intro && p.intro.length > 60 ? p.intro : (STORY[variant] || STORY.mun);
   const [active, setActive] = React.useState(!!route?.params?.active);
 
+  // Chặng thân thiết hiện tại tính theo level (không hardcode 'Thân').
+  const curStage = lvl <= 1 ? 0 : lvl <= 3 ? 1 : lvl <= 5 ? 2 : 3;
+  // Kỷ niệm TỪ SỐ THẬT (không bịa ngày/sự kiện).
+  const memories: any[] = [
+    { ic: 'heartfill', local: false, bg: '#FFEAF2', col: colors.pinkDark, title: `Thân thiết Lv.${lvl}`, date: `${aff}/${max} điểm thân thiết` },
+  ];
+  if (stats?.best_streak) memories.push({ ic: 'flamefill', local: false, bg: '#FFF0E6', col: colors.coralDark, title: `Streak dài nhất ${stats.best_streak} ngày`, date: 'kỷ lục cùng nhau 🔥' });
+  if (stats?.total_done) memories.push({ ic: 'check', local: false, bg: '#EAF7F1', col: colors.mintDark, title: `Đã cùng làm ${stats.total_done} việc`, date: 'và còn tiếp tục 💪' });
+  if (stats?.active_days) memories.push({ ic: 'calendar', local: false, bg: '#EEE7FF', col: colors.purpleDark, title: `${stats.active_days} ngày bên nhau`, date: 'cảm ơn cưng đã ở lại 🐾' });
+  const moodLabel = st?.mood || 'bình thường';
+
   const [saving, setSaving] = React.useState(false);
   const useThis = async () => {
     if (active || !p.key || saving) return;
@@ -126,7 +131,7 @@ export default function PersonaScreen({ navigation, route }) {
         <View style={s.hero}>
           <View style={s.moodtag}>
             <Icon name="flame" size={13} color={colors.purpleDark} />
-            <Text style={{ fontFamily: fonts.heading, fontSize: 12, color: colors.purpleDark }}>Mood: gắt</Text>
+            <Text style={{ fontFamily: fonts.heading, fontSize: 12, color: colors.purpleDark }}>Mood: {moodLabel}</Text>
           </View>
 
           <View style={{ alignItems: 'center' }}>
@@ -155,20 +160,23 @@ export default function PersonaScreen({ navigation, route }) {
           <View style={s.stepper}>
             <View style={s.track} />
             <View style={s.trackfill} />
-            {STAGES.map((st) => (
-              <View style={s.step} key={st.key}>
-                <View style={[s.dot, st.state === 'done' && s.dotDone, st.state === 'cur' && s.dotCur]}>
-                  {st.state === 'done' ? (
+            {STAGE_LABELS.map((stg, i) => {
+              const state = i < curStage ? 'done' : i === curStage ? 'cur' : 'todo';
+              return (
+              <View style={s.step} key={stg.key}>
+                <View style={[s.dot, state === 'done' && s.dotDone, state === 'cur' && s.dotCur]}>
+                  {state === 'done' ? (
                     <Icon name="check" size={16} color={colors.pinkDark} />
-                  ) : st.state === 'cur' ? (
+                  ) : state === 'cur' ? (
                     <Icon name="heartfill" size={15} color="#fff" />
                   ) : (
                     <Icon name="star" size={13} color={colors.muted} />
                   )}
                 </View>
-                <Text style={[s.stepLabel, st.state === 'cur' && { color: colors.pinkDark }]}>{st.label}</Text>
+                <Text style={[s.stepLabel, state === 'cur' && { color: colors.pinkDark }]}>{stg.label}</Text>
               </View>
-            ))}
+              );
+            })}
           </View>
 
           <View style={s.progline}>
@@ -197,16 +205,16 @@ export default function PersonaScreen({ navigation, route }) {
             <Icon name="calendar" size={16} color={colors.ink} />
             <Text style={s.stitleTxt}>Kỷ niệm cùng nhau</Text>
           </View>
-          <Text style={s.stitleSub}>4 cột mốc</Text>
+          <Text style={s.stitleSub}>{memories.length} cột mốc</Text>
         </View>
         <Card style={{ marginBottom: 20 }}>
-          {MEMORIES.map((m, i) => (
-            <View style={[s.mem, i === MEMORIES.length - 1 && { paddingBottom: 0 }]} key={i}>
+          {memories.map((m, i) => (
+            <View style={[s.mem, i === memories.length - 1 && { paddingBottom: 0 }]} key={i}>
               <View style={s.rail}>
                 <View style={[s.mdot, { backgroundColor: m.bg }]}>
                   <AnyIcon ic={m.ic} local={m.local} size={18} color={m.col} />
                 </View>
-                {i < MEMORIES.length - 1 && <View style={s.mline} />}
+                {i < memories.length - 1 && <View style={s.mline} />}
               </View>
               <View style={{ flex: 1, paddingTop: 3 }}>
                 <Text style={{ fontFamily: fonts.heading, fontSize: 14, color: colors.ink, lineHeight: 18 }}>{m.title}</Text>

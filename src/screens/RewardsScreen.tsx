@@ -149,7 +149,7 @@ export default function RewardsScreen({ navigation }) {
 
         <View style={s.refCard}>
           <Text style={s.refLead}>
-            Rủ bạn vào Purrbo: bạn nhập mã của cưng → <Text style={{ color: colors.pinkDark }}>cưng +{ref?.reward_owner ?? 150}</Text>, bạn ấy <Text style={{ color: colors.pinkDark }}>+{ref?.reward_new ?? 100}</Text> 💗
+            Rủ bạn vào Purrbo: bạn nhập mã của cưng → <Text style={{ color: colors.pinkDark }}>cưng +{ref?.reward_owner ?? 0}</Text>, bạn ấy <Text style={{ color: colors.pinkDark }}>+{ref?.reward_new ?? 0}</Text> 💗
           </Text>
 
           <View style={s.codeRow}>
@@ -169,7 +169,7 @@ export default function RewardsScreen({ navigation }) {
         {/* Redeem a code */}
         {!ref?.already_redeemed && (
           <View style={s.redeemCard}>
-            <Text style={s.redeemLabel}>Có mã của bạn bè? Nhập vào nhận {ref?.reward_new ?? 100} đá quý</Text>
+            <Text style={s.redeemLabel}>Có mã của bạn bè? Nhập vào nhận {ref?.reward_new ?? 0} đá quý</Text>
             <View style={{ flexDirection: 'row', gap: 8 }}>
               <TextInput
                 value={code}
