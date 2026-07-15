@@ -10,6 +10,21 @@ import os
 from domain.ports import DialogueContext, DialoguePort
 
 
+class _HonestFallback:
+    """Khi provider thật lỗi/timeout — nói THẬT là đang lag, KHÔNG giả vờ trả lời
+    bằng câu mẫu cứng (tránh persona 'bịa' nội dung không đúng ngữ cảnh)."""
+
+    _LAG = {
+        "praise": "Cưng vừa làm xong hả 🥹 mạng em lag mất câu khen rồi — nhưng cưng giỏi lắm nha, thử lại để em nói tử tế hơn 💗",
+        "reply": "Em hơi lag xíu 😿 nhắn lại giúp em nha~",
+        "nudge_water": "Nhớ chăm bản thân nha cưng 💧 (em đang lag chút, lát nhắc kỹ hơn)",
+        "winback": "Em vẫn nhớ cưng lắm 🥺 (mạng hơi lag — quay lại với em nha)",
+    }
+
+    async def generate(self, ctx: DialogueContext) -> str:
+        return self._LAG.get(ctx.event, "Em hơi lag xíu 😿 thử lại giúp em nha~")
+
+
 class _Resilient:
     def __init__(self, primary: DialoguePort, fallback: DialoguePort) -> None:
         self._p = primary
@@ -24,16 +39,22 @@ class _Resilient:
 
 
 def make_dialogue() -> DialoguePort:
-    from adapters.dialogue_mock import MockDialogue
-    mock = MockDialogue()
     provider = os.environ.get("DIALOGUE_PROVIDER", "openai").lower()
 
+    # provider=mock (dev không key) → dùng câu mẫu thật sự.
     if provider == "mock":
-        return mock
+        from adapters.dialogue_mock import MockDialogue
+        return MockDialogue()
+
+    # provider thật → fallback lỗi là câu "đang lag" HONEST, không bịa nội dung.
+    honest = _HonestFallback()
     if provider == "claude" and os.environ.get("ANTHROPIC_API_KEY"):
         from adapters.dialogue_claude import ClaudeDialogue
-        return _Resilient(ClaudeDialogue(), mock)
+        return _Resilient(ClaudeDialogue(), honest)
     if os.environ.get("OPENAI_API_KEY"):
         from adapters.dialogue_openai import OpenAIDialogue
-        return _Resilient(OpenAIDialogue(), mock)
-    return mock
+        return _Resilient(OpenAIDialogue(), honest)
+
+    # Không có key nào → về mock (dev).
+    from adapters.dialogue_mock import MockDialogue
+    return MockDialogue()

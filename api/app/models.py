@@ -65,7 +65,7 @@ class UserState(Base):
     affinity_points: Mapped[int] = mapped_column(Integer, default=0)   # user MỚI bắt đầu từ 0
     affinity_level: Mapped[int] = mapped_column(Integer, default=1)
     streak: Mapped[int] = mapped_column(Integer, default=0)
-    gems: Mapped[int] = mapped_column(Integer, default=1250)           # đá quý khởi đầu
+    gems: Mapped[int] = mapped_column(Integer, default=0)              # user mới bắt đầu 0, kiếm qua nhiệm vụ / nạp
     intimacy: Mapped[int] = mapped_column(Integer, default=1)          # 0 nhẹ · 1 vừa · 2 đắm
     lay: Mapped[int] = mapped_column(Integer, default=2)               # 0 dịu · 1 vừa · 2 gắt
     freq: Mapped[int] = mapped_column(Integer, default=1)              # 0 ít · 1 vừa · 2 nhiều
