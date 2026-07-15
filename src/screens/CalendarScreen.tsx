@@ -140,12 +140,8 @@ export default function CalendarScreen({ navigation }) {
   const [st, setSt] = useState(null);
   const [activePersona, setActivePersona] = useState({ variant: 'mun', name: 'Bạn đồng hành' });
   const [celebration, setCelebration] = useState(null);
-  // Mặc định (offline): chỉ habit mẫu — KHÔNG bịa event Google.
-  const [items, setItems] = useState([
-    { id: 'water', type: 'habit', time: '08:00', ampm: 'SA', ic: 'droplet', bg: '#E6F7FF', col: colors.skyDark, name: 'Uống nước', nudge: 'cưng nhấp môi 1 ngụm cho em vui nha', done: false },
-    { id: 'gym', type: 'habit', time: '18:00', ampm: 'CH', ic: 'dumbbell', bg: '#FFEAF2', col: colors.pinkDark, name: 'Gym', nudge: 'trốn tập là em dỗi cả tối', done: false },
-    { id: 'book', type: 'habit', time: '21:00', ampm: 'TỐI', ic: 'book', bg: '#EEE7FF', col: colors.purpleDark, name: 'Đọc sách', nudge: '10 trang thôi, xong em ôm cưng ngủ', done: false },
-  ]);
+  // KHÔNG bịa habit mẫu — chỉ hiện việc thật từ backend (rỗng → empty state).
+  const [items, setItems] = useState<any[]>([]);
 
   // Nạp lại mỗi lần vào màn (đổi sau khi thêm lịch / kết nối Google ở Cài đặt).
   // Habit thật từ backend; event Google CHỈ khi đã kết nối (có access_token).

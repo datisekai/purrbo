@@ -101,9 +101,9 @@ export default function HomeScreen({ navigation }: any) {
     }
   };
 
-  const aff = st?.affinity_points ?? 320;
-  const lvl = st?.affinity_level ?? 5;
-  const streak = st?.streak ?? 12;
+  const aff = st?.affinity_points ?? 0;
+  const lvl = st?.affinity_level ?? 1;
+  const streak = st?.streak ?? 0;
   const doneCount = habits.filter((h) => h.done).length;
 
   // ── Việc SẮP TỚI: undone gần giờ hiện tại nhất (ưu tiên còn phía trước trong ngày) ──
