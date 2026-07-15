@@ -129,7 +129,6 @@ export default function HomeScreen({ navigation }: any) {
   const aff = st?.affinity_points ?? 0;
   const lvl = st?.affinity_level ?? 1;
   const streak = st?.streak ?? 0;
-  const doneCount = todayHabits.filter((h) => h.done).length;
 
   // ── Việc SẮP TỚI: undone gần giờ hiện tại nhất (ưu tiên còn phía trước trong ngày) ──
   const parseHM = (t: string) => { const m = String(t || '').match(/(\d{1,2})[:h](\d{0,2})/); return m ? Number(m[1]) * 60 + Number(m[2] || 0) : null; };
@@ -144,6 +143,7 @@ export default function HomeScreen({ navigation }: any) {
     return true;
   };
   const todayHabits = habits.filter(showsToday);
+  const doneCount = todayHabits.filter((h) => h.done).length;
   const undone = todayHabits.filter((h) => !h.done);
   const timed = undone.map((h) => ({ h, t: parseHM(h.time) })).filter((x) => x.t != null) as { h: any; t: number }[];
   const future = timed.filter((x) => x.t >= nowMin).sort((a, b) => a.t - b.t);
