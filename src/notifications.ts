@@ -16,13 +16,19 @@ try {
     // Handler này CHỈ chạy khi noti tới lúc app đang MỞ (foreground). Lúc đó
     // KHÔNG hiện banner/âm thanh — đang dùng app thì khỏi nhắc, tránh "mở app là
     // bị noti". Nhắc lịch thật vẫn hiện khi app ĐÓNG/nền (handler không can thiệp).
-    handleNotification: async () => ({
-      shouldShowAlert: false,
-      shouldPlaySound: false,
-      shouldSetBadge: false,
-      shouldShowBanner: false,
-      shouldShowList: false,
-    }),
+    handleNotification: async (notification) => {
+      // Noti TEST (data.foregroundTest) → hiện cả khi app đang mở (user chủ động
+      // bấm "Gửi thử", cần thấy ngay). Noti nhắc lịch thật vẫn im khi foreground
+      // (tránh "mở app là bị noti") — vẫn hiện bình thường khi app đóng/nền.
+      const fg = !!(notification?.request?.content?.data as any)?.foregroundTest;
+      return {
+        shouldShowAlert: fg,
+        shouldPlaySound: fg,
+        shouldSetBadge: false,
+        shouldShowBanner: fg,
+        shouldShowList: fg,
+      };
+    },
   });
 } catch {}
 
@@ -69,8 +75,8 @@ export async function sendTestNotification(): Promise<boolean> {
     const ok = await ensureNotifPermission();
     if (!ok) return false;
     await Notifications.scheduleNotificationAsync({
-      content: { title: 'Purrbo 🐾', body: 'Thử nè cưng! Nhận được là notif đang chạy ngon 💗', data: { target: 'Main' } },
-      trigger: { type: Notifications.SchedulableTriggerInputTypes.TIME_INTERVAL, seconds: 3, channelId: 'purrbo-reminders' } as any,
+      content: { title: 'Purrbo 🐾', body: 'Thử nè cưng! Nhận được là notif đang chạy ngon 💗', data: { target: 'Main', foregroundTest: true } },
+      trigger: { type: Notifications.SchedulableTriggerInputTypes.TIME_INTERVAL, seconds: 2, channelId: 'purrbo-reminders' } as any,
     });
     return true;
   } catch {
