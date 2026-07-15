@@ -4,7 +4,10 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { colors, fonts, radii, hardShadow } from '../theme';
 import { Icon } from '../components/Icon';
 import { Button } from '../components/ui';
+import { DatePickerModal } from '../components/DatePickerModal';
 import { Api } from '../api';
+
+const DDMM = (d: Date) => `${d.getDate()}/${d.getMonth() + 1}`;
 
 const ICON_CHOICES = [
   { key: 'droplet', bg: '#E6F7FF', col: colors.skyDark },
@@ -36,6 +39,7 @@ export default function HabitEditScreen({ navigation, route }) {
   const [rDays, setRDays] = useState<number[]>(init.days.length ? init.days : [0, 2, 4]);
   const [rEvery, setREvery] = useState(init.every);
   const [rDate, setRDate] = useState<Date>(() => (init.date ? new Date(init.date + 'T00:00:00') : new Date()));
+  const [pickerOpen, setPickerOpen] = useState(false);
   const [busy, setBusy] = useState(false);
 
   const valid = name.trim().length > 0 && (rMode === 'hours' ? rEvery >= 1 : /^\d{1,2}:\d{2}$/.test(time.trim())) && (rMode !== 'weekly' || rDays.length > 0);
@@ -114,7 +118,7 @@ export default function HabitEditScreen({ navigation, route }) {
 
           {rMode === 'once' && (
             <View style={s.qr}>
-              {[{ lbl: 'Hôm nay', n: 0 }, { lbl: 'Ngày mai', n: 1 }, { lbl: 'Mốt', n: 2 }].map((o) => {
+              {[{ lbl: 'Hôm nay', n: 0 }, { lbl: 'Mai', n: 1 }, { lbl: 'Mốt', n: 2 }].map((o) => {
                 const on = ymd(rDate) === ymd(addDays(o.n));
                 return (
                   <Pressable key={o.n} onPress={() => setRDate(addDays(o.n))} style={[s.qrChip, on && s.qrChipOn]}>
@@ -122,6 +126,15 @@ export default function HabitEditScreen({ navigation, route }) {
                   </Pressable>
                 );
               })}
+              {(() => {
+                const preset = [0, 1, 2].some((n) => ymd(rDate) === ymd(addDays(n)));
+                return (
+                  <Pressable onPress={() => setPickerOpen(true)} style={[s.qrChip, !preset && s.qrChipOn, { flexDirection: 'row', gap: 4 }]}>
+                    <Icon name="calendar" size={14} color={colors.purpleDark} />
+                    <Text style={[s.qrChipTxt, { color: colors.purpleDark }]}>{preset ? 'Ngày khác' : DDMM(rDate)}</Text>
+                  </Pressable>
+                );
+              })()}
             </View>
           )}
 
@@ -168,6 +181,12 @@ export default function HabitEditScreen({ navigation, route }) {
           <Text style={s.delTxt}>Xoá việc này</Text>
         </Pressable>
       </ScrollView>
+      <DatePickerModal
+        visible={pickerOpen}
+        value={rDate}
+        onSelect={setRDate}
+        onClose={() => setPickerOpen(false)}
+      />
     </SafeAreaView>
   );
 }

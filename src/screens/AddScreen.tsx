@@ -5,8 +5,11 @@ import Svg, { Path, Circle } from 'react-native-svg';
 import { colors, fonts, radii, hardShadow } from '../theme';
 import { Icon } from '../components/Icon';
 import { PersonaFace } from '../components/PersonaFace';
+import { DatePickerModal } from '../components/DatePickerModal';
 import { Button, Bubble } from '../components/ui';
 import { Api } from '../api';
+
+const DDMM = (d: Date) => `${d.getDate()}/${d.getMonth() + 1}`;
 
 // Icon còn thiếu (coffee/pin/wand/bell) — vẽ inline tại đây, KHÔNG sửa Icon.js.
 function IconX({ name, size = 20, color = colors.ink, stroke = 2.4 }) {
@@ -28,14 +31,58 @@ function IconX({ name, size = 20, color = colors.ink, stroke = 2.4 }) {
   }
 }
 
-// Mẫu lịch nhanh — chạm để điền sẵn form (user tinh chỉnh rồi tạo).
-const TEMPLATES = [
-  { name: 'Uống nước', icon: 'droplet', mode: 'hours', every: 2, time: '' },
-  { name: 'Đi làm', icon: 'star', mode: 'daily', time: '08:00' },
-  { name: 'Ăn trưa', icon: 'heart', mode: 'daily', time: '12:00' },
-  { name: 'Tập gym', icon: 'dumbbell', mode: 'daily', time: '18:00' },
-  { name: 'Đọc sách', icon: 'book', mode: 'daily', time: '21:00' },
-  { name: 'Ngủ sớm', icon: 'star', mode: 'daily', time: '23:00' },
+// Mẫu lịch nhanh theo nhóm — chạm để điền sẵn form (user tinh chỉnh rồi tạo).
+// days: 0=T2..6=CN (chỉ dùng khi mode='weekly').
+const TEMPLATE_CATS: {
+  key: string; label: string;
+  items: { name: string; icon: string; mode: string; time?: string; every?: number; days?: number[] }[];
+}[] = [
+  {
+    key: 'health', label: '💧 Sức khoẻ',
+    items: [
+      { name: 'Uống nước', icon: 'droplet', mode: 'hours', every: 2 },
+      { name: 'Uống vitamin', icon: 'heart', mode: 'daily', time: '09:00' },
+      { name: 'Skincare', icon: 'sparkles', mode: 'daily', time: '22:00' },
+      { name: 'Thiền 10 phút', icon: 'star', mode: 'daily', time: '06:30' },
+      { name: 'Ngủ sớm', icon: 'star', mode: 'daily', time: '23:00' },
+    ],
+  },
+  {
+    key: 'gym', label: '💪 Gym & vận động',
+    items: [
+      { name: 'Gym 3 buổi/tuần', icon: 'dumbbell', mode: 'weekly', time: '18:00', days: [0, 2, 4] },
+      { name: 'Chạy bộ sáng', icon: 'dumbbell', mode: 'daily', time: '06:00' },
+      { name: 'Yoga tối', icon: 'dumbbell', mode: 'weekly', time: '20:00', days: [1, 3, 6] },
+      { name: 'Đi 10k bước', icon: 'dumbbell', mode: 'daily', time: '19:00' },
+    ],
+  },
+  {
+    key: 'meal', label: '🍜 Ăn uống',
+    items: [
+      { name: 'Ăn sáng', icon: 'heart', mode: 'daily', time: '07:00' },
+      { name: 'Ăn trưa', icon: 'heart', mode: 'daily', time: '12:00' },
+      { name: 'Ăn tối', icon: 'heart', mode: 'daily', time: '19:00' },
+      { name: 'Meal prep CN', icon: 'heart', mode: 'weekly', time: '10:00', days: [6] },
+    ],
+  },
+  {
+    key: 'study', label: '📚 Học tập',
+    items: [
+      { name: 'Đọc sách', icon: 'book', mode: 'daily', time: '21:00' },
+      { name: 'Học tiếng Anh', icon: 'book', mode: 'daily', time: '20:00' },
+      { name: 'Ôn bài', icon: 'book', mode: 'weekly', time: '19:30', days: [0, 2, 4] },
+      { name: 'Viết nhật ký', icon: 'book', mode: 'daily', time: '22:30' },
+    ],
+  },
+  {
+    key: 'life', label: '🌙 Sinh hoạt',
+    items: [
+      { name: 'Đi làm', icon: 'star', mode: 'daily', time: '08:00' },
+      { name: 'Dọn nhà', icon: 'star', mode: 'weekly', time: '09:00', days: [5] },
+      { name: 'Gọi về nhà', icon: 'heart', mode: 'weekly', time: '20:00', days: [6] },
+      { name: 'Tưới cây', icon: 'droplet', mode: 'daily', time: '07:30' },
+    ],
+  },
 ];
 
 // Icon chọn được ở chế độ tự nhập (dùng Icon.js có sẵn)
@@ -89,6 +136,8 @@ export default function AddScreen({ navigation }) {
   const [rDays, setRDays] = useState([0, 2, 4]);  // 0=T2..6=CN
   const [rEvery, setREvery] = useState(2);        // mỗi X giờ
   const [rDate, setRDate] = useState(() => new Date());  // 'once' → ngày cụ thể
+  const [pickerOpen, setPickerOpen] = useState(false);
+  const [tplCat, setTplCat] = useState(TEMPLATE_CATS[0].key);
   const ymd = (d: Date) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
   const addDays = (n: number) => { const d = new Date(); d.setDate(d.getDate() + n); return d; };
   const mValid =
@@ -118,7 +167,9 @@ export default function AddScreen({ navigation }) {
 
   const applyTemplate = (t: any) => {
     setMName(t.name); setMIcon(t.icon); setRMode(t.mode);
-    if (t.mode === 'hours') setREvery(t.every); else setMTime(t.time);
+    if (t.mode === 'hours') setREvery(t.every || 2);
+    else setMTime(t.time || '');
+    if (t.mode === 'weekly' && Array.isArray(t.days)) setRDays(t.days);
   };
 
   const createManual = async () => {
@@ -232,8 +283,18 @@ export default function AddScreen({ navigation }) {
         {mode === 'manual' && (
           <View style={s.mcard}>
             <Text style={s.mLabel}>Mẫu nhanh</Text>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} keyboardShouldPersistTaps="always" style={{ marginBottom: 10 }} contentContainerStyle={{ gap: 6 }}>
+              {TEMPLATE_CATS.map((c) => {
+                const on = tplCat === c.key;
+                return (
+                  <Pressable key={c.key} onPress={() => setTplCat(c.key)} style={[s.tplCat, on && s.tplCatOn]}>
+                    <Text style={[s.tplCatTxt, on && s.tplCatTxtOn]}>{c.label}</Text>
+                  </Pressable>
+                );
+              })}
+            </ScrollView>
             <ScrollView horizontal showsHorizontalScrollIndicator={false} keyboardShouldPersistTaps="always" style={{ marginBottom: 16 }} contentContainerStyle={{ gap: 8 }}>
-              {TEMPLATES.map((t) => (
+              {(TEMPLATE_CATS.find((c) => c.key === tplCat)?.items || []).map((t) => (
                 <Pressable key={t.name} onPress={() => applyTemplate(t)} style={s.tpl}>
                   <Icon name={t.icon} size={15} color={colors.purpleDark} />
                   <Text style={s.tplTxt}>{t.name}</Text>
@@ -285,7 +346,7 @@ export default function AddScreen({ navigation }) {
 
             {rMode === 'once' && (
               <View style={s.qr}>
-                {[{ lbl: 'Hôm nay', n: 0 }, { lbl: 'Ngày mai', n: 1 }, { lbl: 'Mốt', n: 2 }].map((o) => {
+                {[{ lbl: 'Hôm nay', n: 0 }, { lbl: 'Mai', n: 1 }, { lbl: 'Mốt', n: 2 }].map((o) => {
                   const on = ymd(rDate) === ymd(addDays(o.n));
                   return (
                     <Pressable key={o.n} onPress={() => setRDate(addDays(o.n))} style={[s.qrChip, on && s.qrChipOn]}>
@@ -293,6 +354,15 @@ export default function AddScreen({ navigation }) {
                     </Pressable>
                   );
                 })}
+                {(() => {
+                  const preset = [0, 1, 2].some((n) => ymd(rDate) === ymd(addDays(n)));
+                  return (
+                    <Pressable onPress={() => setPickerOpen(true)} style={[s.qrChip, !preset && s.qrChipOn, { flexDirection: 'row', gap: 4 }]}>
+                      <Icon name="calendar" size={14} color={colors.purpleDark} />
+                      <Text style={[s.qrChipTxt, !preset && s.qrChipTxtOn]}>{preset ? 'Ngày khác' : DDMM(rDate)}</Text>
+                    </Pressable>
+                  );
+                })()}
               </View>
             )}
 
@@ -499,6 +569,12 @@ export default function AddScreen({ navigation }) {
         </>
         )}
       </ScrollView>
+      <DatePickerModal
+        visible={pickerOpen}
+        value={rDate}
+        onSelect={setRDate}
+        onClose={() => setPickerOpen(false)}
+      />
     </SafeAreaView>
   );
 }
@@ -539,6 +615,10 @@ const s = StyleSheet.create({
     paddingVertical: 8, paddingHorizontal: 12,
   },
   tplTxt: { fontFamily: fonts.heading, fontSize: 13, color: colors.purpleDark },
+  tplCat: { backgroundColor: colors.bg, borderWidth: 1.5, borderColor: colors.line, borderRadius: radii.pill, paddingVertical: 6, paddingHorizontal: 11 },
+  tplCatOn: { backgroundColor: colors.ink, borderColor: colors.ink },
+  tplCatTxt: { fontFamily: fonts.heading, fontSize: 12.5, color: colors.muted },
+  tplCatTxtOn: { color: '#fff' },
   exChipTxt: { fontFamily: fonts.heading, fontSize: 12, color: colors.purpleDark },
 
   // Section
