@@ -63,15 +63,19 @@ export default function AddScreen({ navigation }) {
   const [mTime, setMTime] = useState('');
   const [mRemind, setMRemind] = useState('15 phút');
   // Lặp lại
-  const [rMode, setRMode] = useState('daily');   // daily | weekly | hours
+  const [rMode, setRMode] = useState('daily');   // daily | weekly | hours | once
   const [rDays, setRDays] = useState([0, 2, 4]);  // 0=T2..6=CN
   const [rEvery, setREvery] = useState(2);        // mỗi X giờ
+  const [rDate, setRDate] = useState(() => new Date());  // 'once' → ngày cụ thể
+  const ymd = (d: Date) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+  const addDays = (n: number) => { const d = new Date(); d.setDate(d.getDate() + n); return d; };
   const mValid =
     mName.trim().length > 0 &&
     (rMode === 'hours' ? rEvery >= 1 : /^\d{1,2}:\d{2}$/.test(mTime.trim())) &&
     (rMode !== 'weekly' || rDays.length > 0);
 
   const buildRepeat = () => {
+    if (rMode === 'once') return 'once:' + ymd(rDate);
     if (rMode === 'weekly') return 'weekly:' + [...rDays].sort((a, b) => a - b).join(',');
     if (rMode === 'hours') return 'hours:' + rEvery;
     return 'daily';
@@ -228,6 +232,7 @@ export default function AddScreen({ navigation }) {
             <Text style={[s.mLabel, { marginTop: 16 }]}>Lặp lại</Text>
             <View style={s.rSeg}>
               {[
+                { k: 'once', label: 'Một lần' },
                 { k: 'daily', label: 'Hằng ngày' },
                 { k: 'weekly', label: 'Hằng tuần' },
                 { k: 'hours', label: 'Mỗi X giờ' },
@@ -240,6 +245,19 @@ export default function AddScreen({ navigation }) {
                 );
               })}
             </View>
+
+            {rMode === 'once' && (
+              <View style={s.qr}>
+                {[{ lbl: 'Hôm nay', n: 0 }, { lbl: 'Ngày mai', n: 1 }, { lbl: 'Mốt', n: 2 }].map((o) => {
+                  const on = ymd(rDate) === ymd(addDays(o.n));
+                  return (
+                    <Pressable key={o.n} onPress={() => setRDate(addDays(o.n))} style={[s.qrChip, on && s.qrChipOn]}>
+                      <Text style={[s.qrChipTxt, on && s.qrChipTxtOn]}>{o.lbl}</Text>
+                    </Pressable>
+                  );
+                })}
+              </View>
+            )}
 
             {rMode === 'weekly' && (
               <View style={s.daysRow}>

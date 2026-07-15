@@ -131,6 +131,7 @@ export default function SettingsScreen({ navigation }) {
   const [sfx, setSfxState] = useState(isSfxOn());
   const [bgm, setBgmState] = useState(isBgOn());
 
+  const [pVariant, setPVariant] = useState('mun');  // persona active cho preview
   const onSfx = (v: boolean) => { setSfxState(v); setSfx(v); };
   const onBgm = (v: boolean) => { setBgmState(v); setBg(v); };
 
@@ -142,6 +143,7 @@ export default function SettingsScreen({ navigation }) {
         if (typeof st?.intimacy === 'number') setIntimacy(st.intimacy);
         if (typeof st?.lay === 'number') setLay(st.lay);
         if (typeof st?.freq === 'number') setFreq(st.freq);
+        try { const cat = await Api.personas(); const a = Array.isArray(cat) ? cat.find((x: any) => x.key === st.persona_key) : null; if (a?.variant) setPVariant(a.variant); } catch {}
       } catch {
         // backend không kết nối được → giữ nguyên state cục bộ
       }
@@ -260,7 +262,7 @@ export default function SettingsScreen({ navigation }) {
           </View>
 
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12, marginBottom: 12 }}>
-            <PersonaFace variant="mun" ring="ssr" size={54} expr={lay === 0 ? 'love' : lay === 2 ? 'gat' : 'happy'} />
+            <PersonaFace variant={pVariant} ring="ssr" size={54} expr={lay === 0 ? 'love' : lay === 2 ? 'gat' : 'happy'} />
             <View style={{ flex: 1 }}>
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
                 <Text style={{ fontFamily: fonts.display, fontSize: 19, color: colors.ink }}>Mèo Mun</Text>

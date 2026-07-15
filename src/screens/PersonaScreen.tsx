@@ -60,7 +60,12 @@ const STORY = {
 };
 
 export default function PersonaScreen({ navigation, route }) {
-  const aff = 320, max = 500;
+  // Thân thiết THẬT (dời khỏi Home → sống ở đây).
+  const [st, setSt] = React.useState<any>(null);
+  React.useEffect(() => { Api.state().then(setSt).catch(() => {}); }, []);
+  const max = 500;
+  const aff = st?.affinity_points ?? 0;
+  const lvl = st?.affinity_level ?? 1;
   const p = route?.params?.persona || {};
   const variant = p.variant || 'mun';
   const name = p.name || 'Mèo Mun';
@@ -150,7 +155,7 @@ export default function PersonaScreen({ navigation, route }) {
           </View>
 
           <View style={s.progline}>
-            <Text style={{ fontFamily: fonts.heading, fontSize: 12, color: colors.pinkDark }}>Thân thiết Lv.5</Text>
+            <Text style={{ fontFamily: fonts.heading, fontSize: 12, color: colors.pinkDark }}>Thân thiết Lv.{lvl}</Text>
             <Text style={{ fontFamily: fonts.heading, fontSize: 12, color: colors.muted }}>{aff} / {max} → Bạn đồng hành</Text>
           </View>
           <ProgressBar pct={(aff / max) * 100} />

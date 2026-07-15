@@ -18,10 +18,13 @@ const DOW = ['T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'CN'];
 // parse "daily" | "weekly:0,2,4" | "hours:2"
 function parseRepeat(rep?: string) {
   const r = String(rep || 'daily');
-  if (r.startsWith('weekly:')) return { mode: 'weekly', days: r.split(':')[1].split(',').map(Number).filter((n) => n >= 0 && n <= 6), every: 2 };
-  if (r.startsWith('hours:')) return { mode: 'hours', days: [0, 2, 4], every: parseInt(r.split(':')[1], 10) || 2 };
-  return { mode: 'daily', days: [0, 2, 4], every: 2 };
+  if (r.startsWith('once:')) return { mode: 'once', days: [0, 2, 4], every: 2, date: r.slice(5) };
+  if (r.startsWith('weekly:')) return { mode: 'weekly', days: r.split(':')[1].split(',').map(Number).filter((n) => n >= 0 && n <= 6), every: 2, date: '' };
+  if (r.startsWith('hours:')) return { mode: 'hours', days: [0, 2, 4], every: parseInt(r.split(':')[1], 10) || 2, date: '' };
+  return { mode: 'daily', days: [0, 2, 4], every: 2, date: '' };
 }
+const ymd = (d: Date) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+const addDays = (n: number) => { const d = new Date(); d.setDate(d.getDate() + n); return d; };
 
 export default function HabitEditScreen({ navigation, route }) {
   const habit = route?.params?.habit || {};
@@ -32,11 +35,12 @@ export default function HabitEditScreen({ navigation, route }) {
   const [rMode, setRMode] = useState(init.mode);
   const [rDays, setRDays] = useState<number[]>(init.days.length ? init.days : [0, 2, 4]);
   const [rEvery, setREvery] = useState(init.every);
+  const [rDate, setRDate] = useState<Date>(() => (init.date ? new Date(init.date) : new Date()));
   const [busy, setBusy] = useState(false);
 
   const valid = name.trim().length > 0 && (rMode === 'hours' ? rEvery >= 1 : /^\d{1,2}:\d{2}$/.test(time.trim())) && (rMode !== 'weekly' || rDays.length > 0);
   const toggleDay = (d: number) => setRDays((xs) => (xs.includes(d) ? xs.filter((x) => x !== d) : [...xs, d]));
-  const buildRepeat = () => (rMode === 'weekly' ? 'weekly:' + [...rDays].sort((a, b) => a - b).join(',') : rMode === 'hours' ? 'hours:' + rEvery : 'daily');
+  const buildRepeat = () => (rMode === 'once' ? 'once:' + ymd(rDate) : rMode === 'weekly' ? 'weekly:' + [...rDays].sort((a, b) => a - b).join(',') : rMode === 'hours' ? 'hours:' + rEvery : 'daily');
 
   const save = async () => {
     if (!valid || busy) return;
@@ -98,7 +102,7 @@ export default function HabitEditScreen({ navigation, route }) {
 
           <Text style={[s.label, { marginTop: 16 }]}>Lặp lại</Text>
           <View style={s.seg}>
-            {[{ k: 'daily', t: 'Hằng ngày' }, { k: 'weekly', t: 'Hằng tuần' }, { k: 'hours', t: 'Mỗi X giờ' }].map((r) => {
+            {[{ k: 'once', t: 'Một lần' }, { k: 'daily', t: 'Hằng ngày' }, { k: 'weekly', t: 'Hằng tuần' }, { k: 'hours', t: 'Mỗi X giờ' }].map((r) => {
               const on = rMode === r.k;
               return (
                 <Pressable key={r.k} onPress={() => setRMode(r.k)} style={[s.segItem, on && s.segItemOn]}>
@@ -107,6 +111,19 @@ export default function HabitEditScreen({ navigation, route }) {
               );
             })}
           </View>
+
+          {rMode === 'once' && (
+            <View style={s.qr}>
+              {[{ lbl: 'Hôm nay', n: 0 }, { lbl: 'Ngày mai', n: 1 }, { lbl: 'Mốt', n: 2 }].map((o) => {
+                const on = ymd(rDate) === ymd(addDays(o.n));
+                return (
+                  <Pressable key={o.n} onPress={() => setRDate(addDays(o.n))} style={[s.qrChip, on && s.qrChipOn]}>
+                    <Text style={[s.qrChipTxt, on && { color: colors.purpleDark }]}>{o.lbl}</Text>
+                  </Pressable>
+                );
+              })}
+            </View>
+          )}
 
           {rMode === 'weekly' && (
             <View style={s.daysRow}>

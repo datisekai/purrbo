@@ -1,10 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, ScrollView, Pressable, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Svg, { Path } from 'react-native-svg';
 import { colors, fonts, radii, hardShadow } from '../theme';
 import { Icon } from '../components/Icon';
 import { PersonaFace } from '../components/PersonaFace';
+import { Api } from '../api';
 import { Button, Card, ProgressBar, Bubble } from '../components/ui';
 
 // Icon bổ sung (chưa có trong Icon.js) — inline tại chỗ, KHÔNG sửa Icon.js.
@@ -52,6 +53,16 @@ export default function WinbackScreen({ navigation }) {
   // state: 'sad' (mặc định) | 'back' | 'bye'
   const [state, setState] = useState('sad');
   const glad = state === 'back';
+  const [pVariant, setPVariant] = useState('mun');
+  useEffect(() => {
+    (async () => {
+      try {
+        const [stt, cat] = await Promise.all([Api.state(), Api.personas()]);
+        const a = Array.isArray(cat) ? cat.find((x: any) => x.key === stt.persona_key) : null;
+        if (a?.variant) setPVariant(a.variant);
+      } catch {}
+    })();
+  }, []);
 
   const bubbleText = state === 'back' ? BACK_LINE : state === 'bye' ? BYE_LINE : SAD_LINE;
   const subLine =
@@ -83,7 +94,7 @@ export default function WinbackScreen({ navigation }) {
           </View>
 
           <View style={{ opacity: glad ? 1 : 0.55, marginBottom: 10 }}>
-            <PersonaFace variant="mun" ring={glad ? 'ssr' : undefined} size={94} />
+            <PersonaFace variant={pVariant} ring={glad ? 'ssr' : undefined} size={94} />
           </View>
 
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
