@@ -4,7 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect } from '@react-navigation/native';
 import { colors, fonts, radii, hardShadow } from '../theme';
 import { Icon } from '../components/Icon';
-import { PersonaFace } from '../components/PersonaFace';
+import { PersonaFace, PersonaChibi } from '../components/PersonaFace';
 import { AnimatedMascot } from '../components/AnimatedMascot';
 import { WidgetPreview } from '../components/WidgetPreview';
 import { CelebrationModal } from '../components/CelebrationModal';
@@ -106,6 +106,23 @@ export default function HomeScreen({ navigation }: any) {
   const streak = st?.streak ?? 12;
   const doneCount = habits.filter((h) => h.done).length;
 
+  // ── Việc SẮP TỚI: undone gần giờ hiện tại nhất (ưu tiên còn phía trước trong ngày) ──
+  const parseHM = (t: string) => { const m = String(t || '').match(/(\d{1,2})[:h](\d{0,2})/); return m ? Number(m[1]) * 60 + Number(m[2] || 0) : null; };
+  const nowD = new Date();
+  const nowMin = nowD.getHours() * 60 + nowD.getMinutes();
+  const undone = habits.filter((h) => !h.done);
+  const timed = undone.map((h) => ({ h, t: parseHM(h.time) })).filter((x) => x.t != null) as { h: any; t: number }[];
+  const future = timed.filter((x) => x.t >= nowMin).sort((a, b) => a.t - b.t);
+  const nextUp = future[0] || timed.sort((a, b) => a.t - b.t)[0] || (undone[0] ? { h: undone[0], t: null } : null);
+  const nextLabel = (() => {
+    if (!nextUp || nextUp.t == null) return 'hôm nay';
+    const diff = nextUp.t - nowMin;
+    if (diff > 0 && diff <= 90) return `trong ${diff < 60 ? diff + ' phút' : Math.round(diff / 60 * 10) / 10 + ' tiếng'}`;
+    if (diff <= 0) return `${nextUp.h.time} · tới giờ rồi`;
+    return nextUp.h.time;
+  })();
+  const dateLabel = `Hôm nay · ${String(nowD.getDate()).padStart(2, '0')}/${String(nowD.getMonth() + 1).padStart(2, '0')}`;
+
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: colors.bg }} edges={['top']}>
       <ScrollView
@@ -171,8 +188,32 @@ export default function HomeScreen({ navigation }: any) {
           </View>
         </View>
 
+        {/* SẮP TỚI — spotlight: người đồng hành đang đợi cưng làm việc kế tiếp */}
+        {!loading && nextUp && (
+          <View style={s.next}>
+            <View style={s.nextTag}>
+              <Icon name="clock" size={12} color="#fff" />
+              <Text style={s.nextTagTxt}>SẮP TỚI · {nextLabel}</Text>
+            </View>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+              <PersonaChibi variant={persona?.variant || 'mun'} size={92} items={equipped} expr="happy" />
+              <View style={{ flex: 1, minWidth: 0 }}>
+                <Text style={s.nextName} numberOfLines={1}>{nextUp.h.name}</Text>
+                <Text style={s.nextNudge} numberOfLines={2}>{nextUp.h.hint || `${persona?.name || 'Em'} đang canh cưng đó 👀💗`}</Text>
+              </View>
+            </View>
+            <Button
+              label="Khoe ngay 💗"
+              tone="mint"
+              onPress={() => khoe(nextUp.h)}
+              icon={<Icon name="heart" size={16} color="#fff" />}
+              style={{ marginTop: 12, paddingVertical: 13 }}
+            />
+          </View>
+        )}
+
         <View style={s.stitle}>
-          <Text style={s.stitleTxt}>Việc hôm nay</Text>
+          <Text style={s.stitleTxt}>Cả ngày</Text>
           <Pressable onPress={() => navigation?.navigate?.('AddTask')} style={s.addBtn}>
             <Icon name="plus" size={14} color="#fff" />
             <Text style={s.addBtnTxt}>Thêm việc</Text>
@@ -190,7 +231,7 @@ export default function HomeScreen({ navigation }: any) {
           </View>
         )}
 
-        {habits.map((h) => {
+        {habits.filter((h) => !(nextUp && h.id === nextUp.h.id)).map((h) => {
           const ic = istyle(h.icon);
           return (
             <View key={h.id} style={[s.habit, h.done && { opacity: 0.55 }]}>
@@ -215,7 +256,7 @@ export default function HomeScreen({ navigation }: any) {
 
         {/* Widget màn hình chính — xem trước */}
         <View style={{ marginTop: 10 }}>
-          <WidgetPreview habits={habits} dateLabel="Hôm nay · 13/07" />
+          <WidgetPreview habits={habits} dateLabel={dateLabel} />
         </View>
       </ScrollView>
 
@@ -244,6 +285,17 @@ const s = StyleSheet.create({
   },
   ssr: { flexDirection: 'row', alignItems: 'center', gap: 3, backgroundColor: colors.pink, borderRadius: radii.pill, paddingVertical: 2, paddingHorizontal: 8 },
   bubble: { backgroundColor: '#fff', borderRadius: 18, borderBottomLeftRadius: 5, padding: 12, ...hardShadow(3, 0.12) },
+  next: {
+    backgroundColor: colors.pink, borderRadius: 26, padding: 16, marginBottom: 20,
+    borderWidth: 3, borderColor: '#fff', ...hardShadow(7, 0.2),
+  },
+  nextTag: {
+    flexDirection: 'row', alignItems: 'center', gap: 5, alignSelf: 'flex-start',
+    backgroundColor: '#ffffff33', borderRadius: radii.pill, paddingVertical: 4, paddingHorizontal: 11, marginBottom: 12,
+  },
+  nextTagTxt: { fontFamily: fonts.heading, fontSize: 11, color: '#fff', letterSpacing: 0.5 },
+  nextName: { fontFamily: fonts.display, fontSize: 21, color: '#fff' },
+  nextNudge: { fontFamily: fonts.body, fontSize: 13, color: '#fff', opacity: 0.92, marginTop: 3, lineHeight: 19 },
   stitle: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12, marginHorizontal: 4 },
   stitleTxt: { fontFamily: fonts.display, fontSize: 17, color: colors.ink },
   addBtn: {
