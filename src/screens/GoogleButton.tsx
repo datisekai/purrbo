@@ -4,6 +4,7 @@ import * as WebBrowser from 'expo-web-browser';
 import * as Google from 'expo-auth-session/providers/google';
 import { colors, fonts, radii, hardShadow } from '../theme';
 import { useAuth } from '../auth';
+import { GCAL_SCOPE, setGcalToken } from '../googleCalendar';
 
 WebBrowser.maybeCompleteAuthSession();
 
@@ -16,23 +17,41 @@ export const GOOGLE_IDS = {
 };
 export const GOOGLE_LOGIN_READY = !!(GOOGLE_IDS.ios || GOOGLE_IDS.android || GOOGLE_IDS.web);
 
+// Đăng nhập Google + XIN LUÔN quyền đọc lịch trong 1 lần cấp quyền.
+// Native → auth code flow (PKCE, không cần secret) tự đổi ra CẢ id_token (để login)
+// LẪN access_token (để đồng bộ lịch) → lưu sẵn token lịch, sau khỏi bấm "Kết nối".
 // Chỉ render khi GOOGLE_LOGIN_READY = true → hook luôn có ít nhất 1 client id.
-export default function GoogleButton({ label = 'Đăng nhập với Google' }: { label?: string }) {
+export default function GoogleButton({
+  label = 'Đăng nhập với Google',
+  onCalendarConnected,
+}: {
+  label?: string;
+  onCalendarConnected?: () => void;
+}) {
   const { loginGoogle } = useAuth();
   const [busy, setBusy] = useState(false);
-  const [request, response, promptAsync] = Google.useIdTokenAuthRequest({
+  const [request, response, promptAsync] = Google.useAuthRequest({
     iosClientId: GOOGLE_IDS.ios,
     androidClientId: GOOGLE_IDS.android,
     webClientId: GOOGLE_IDS.web,
+    scopes: ['openid', 'profile', 'email', GCAL_SCOPE],
   });
 
   useEffect(() => {
-    if (response?.type === 'success' && response.params?.id_token) {
-      setBusy(true);
-      loginGoogle(response.params.id_token)
-        .catch((e) => Alert.alert('Đăng nhập lỗi', String(e)))
-        .finally(() => setBusy(false));
+    if (response?.type !== 'success') return;
+    const idToken = response.authentication?.idToken || (response.params as any)?.id_token;
+    const accessToken = response.authentication?.accessToken || (response.params as any)?.access_token;
+    if (!idToken) {
+      Alert.alert('Đăng nhập lỗi', 'Không lấy được id_token từ Google');
+      return;
     }
+    setBusy(true);
+    // Lưu token lịch trước (nếu user đồng ý cấp quyền calendar) → sync tự bật.
+    (accessToken ? setGcalToken(accessToken).then(() => onCalendarConnected?.()) : Promise.resolve())
+      .catch(() => {})
+      .then(() => loginGoogle(idToken))
+      .catch((e) => Alert.alert('Đăng nhập lỗi', String(e)))
+      .finally(() => setBusy(false));
   }, [response]);
 
   return (

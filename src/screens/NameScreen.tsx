@@ -48,11 +48,12 @@ export default function NameScreen() {
         {GOOGLE_LOGIN_READY ? (
           <>
             <Text style={s.or}>hoặc</Text>
-            <GoogleButton label="Đăng nhập với Google" />
+            <GoogleButton label="Đăng nhập & đồng bộ lịch Google" />
+            <Text style={s.note}>Đăng nhập Google sẽ đồng bộ lịch luôn cho cưng — hoặc để sau ở Cài đặt cũng được 📅</Text>
           </>
-        ) : null}
-
-        <Text style={s.note}>Bạn có thể đăng nhập Google sau, ở phần Cài đặt — để đồng bộ lịch 📅</Text>
+        ) : (
+          <Text style={s.note}>Bạn có thể đăng nhập Google sau, ở phần Cài đặt — để đồng bộ lịch 📅</Text>
+        )}
       </View>
     </SafeAreaView>
   );
