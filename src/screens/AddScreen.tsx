@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { View, Text, ScrollView, Pressable, TextInput, StyleSheet, Alert, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Svg, { Path, Circle } from 'react-native-svg';
@@ -45,6 +45,16 @@ export default function AddScreen({ navigation }) {
   const [toast, setToast] = useState(false);
   const [loading, setLoading] = useState(false);
   const [creating, setCreating] = useState(false);
+  const [pVariant, setPVariant] = useState('mun');  // persona active → PersonaFace/copy đúng
+  useEffect(() => {
+    (async () => {
+      try {
+        const [st, cat] = await Promise.all([Api.state(), Api.personas()]);
+        const active = Array.isArray(cat) ? cat.find((p: any) => p.key === st.persona_key) : null;
+        if (active?.variant) setPVariant(active.variant);
+      } catch {}
+    })();
+  }, []);
   const tRef = useRef(null);
 
   // Tự nhập
@@ -397,7 +407,7 @@ export default function AddScreen({ navigation }) {
             {/* Persona helper */}
             <View style={s.helper}>
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: 11 }}>
-                <PersonaFace variant="mun" ring="ssr" size={52} />
+                <PersonaFace variant={pVariant} ring="ssr" size={52} />
                 <Bubble
                   style={{ flex: 1, borderColor: '#fff' }}
                   text={complete

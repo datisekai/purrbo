@@ -3,6 +3,7 @@ import { Modal, View, Text, Pressable, Animated, Easing, StyleSheet, Dimensions 
 import Svg, { Path } from 'react-native-svg';
 import { colors, fonts, radii, hardShadow } from '../theme';
 import { PersonaChibi } from './PersonaFace';
+import { personaCelebrate } from '../personaCopy';
 import { Button } from './ui';
 
 const { width: SCRW } = Dimensions.get('window');
@@ -67,9 +68,7 @@ export function CelebrationModal({ data, onClose }: { data: Celebration; onClose
 
   const isLevel = data.type === 'level';
   const title = isLevel ? `Lên Lv.${data.value}!` : `Streak ${data.value} ngày!`;
-  const sub = isLevel
-    ? `${data.persona?.name || 'Bạn đồng hành'} thương cưng thêm một nấc rồi đó 💗`
-    : `Giữ lửa ${data.value} ngày liền — đỉnh của chóp, cưng của em 🔥`;
+  const sub = personaCelebrate(data.persona?.variant, isLevel ? 'level' : 'streak');
   const scale = pop.interpolate({ inputRange: [0, 1], outputRange: [0.7, 1] });
 
   return (

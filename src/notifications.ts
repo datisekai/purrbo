@@ -4,6 +4,7 @@ import { Platform } from 'react-native';
 import * as Notifications from 'expo-notifications';
 import Constants from 'expo-constants';
 import { Api } from './api';
+import { personaReminder } from './personaCopy';
 import { navigate } from './navigation/ref';
 
 // QUAN TRỌNG: call này chạy Ở CẤP MODULE (lúc import). Nếu native module
@@ -103,16 +104,16 @@ const expoWeekday = (d: number) => ((d + 1) % 7) + 1;
 // Đặt lại toàn bộ nhắc theo lịch lặp của từng habit.
 //  repeat: "daily" | "weekly:0,2,4" (0=T2..6=CN) | "hours:2" (mỗi 2 tiếng)
 let _lastSig = '';
-export async function scheduleHabitReminders(habits: Habit[]): Promise<void> {
-  // Chỉ lên lịch LẠI khi danh sách habit thực sự đổi — tránh reschedule (và trên
+export async function scheduleHabitReminders(habits: Habit[], variant?: string): Promise<void> {
+  // Chỉ lên lịch LẠI khi habit HOẶC persona đổi — tránh reschedule (và trên
   // simulator là re-bắn) mỗi lần Home focus.
-  const sig = JSON.stringify((habits || []).map((h) => [h.name, h.time, h.repeat]));
+  const sig = JSON.stringify([variant || '', (habits || []).map((h) => [h.name, h.time, h.repeat])]);
   if (sig === _lastSig) return;
   _lastSig = sig;
   try {
     await Notifications.cancelAllScheduledNotificationsAsync();
     for (const h of habits) {
-      const body = `${h.name} — em đang hóng cưng khoe đó 👀💗`;
+      const body = personaReminder(variant, h.name);  // nhắc theo GIỌNG persona
       const content = { title: 'Purrbo 🐾', body, data: { target: 'Main' } };
       const repeat = String(h.repeat || 'daily');
 

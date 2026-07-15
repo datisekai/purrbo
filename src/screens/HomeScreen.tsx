@@ -48,9 +48,9 @@ export default function HomeScreen({ navigation }: any) {
       const [state, hs, cat] = await Promise.all([Api.state(), Api.habits(), Api.personas()]);
       setSt(state);
       setHabits(hs);
-      scheduleHabitReminders(hs);   // AD-9: đặt nhắc local theo giờ habit
       const active = Array.isArray(cat) ? cat.find((p: any) => p.key === state.persona_key) : null;
       if (active) setPersona(active);
+      scheduleHabitReminders(hs, active?.variant);   // AD-9: nhắc local theo giọng persona
     } catch {
       /* backend chưa chạy → giữ trạng thái mặc định */
     }

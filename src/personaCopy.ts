@@ -66,3 +66,36 @@ const COPY: Record<string, PersonaCopy> = {
 export function personaCopy(variant?: string): PersonaCopy {
   return COPY[variant || 'mun'] || COPY.mun;
 }
+
+// Nội dung NOTIFICATION nhắc lịch — theo giọng persona ({n} = tên việc).
+const REMIND: Record<string, string> = {
+  mun: '{n} — làm đi cưng, trốn là em cào sofa đó 😼',
+  cam: '{n} nè cưng ơi 🥰 làm cho em vui, em thương gấp đôi 💗',
+  ly: '{n}. Anh nhắc đúng một lần thôi đấy 😏',
+  sep: '{n} — tới giờ rồi, xử lý cho anh. Đúng giờ nhé.',
+  bong: 'Cưngg ơi {n} nè 🥺 làm liền hong, Bông đợiii~',
+  xu: '{n}!! TỚI GIỜ QUẨY RỒI CƯNGGG 🔥 nhích lên coii!!',
+  bo: '{n}… tới giờ rồi đó, từ từ làm nha 🍵',
+  sin: '{n} nè cưng!! Sìn hóng nãy giờ vẫy đuôi muốn rụng 🐶💗',
+};
+
+export function personaReminder(variant: string | undefined, name: string): string {
+  return (REMIND[variant || 'mun'] || REMIND.mun).replace('{n}', name);
+}
+
+// Câu ăn mừng lên cấp / streak — theo persona.
+const CELEBRATE: Record<string, { level: string; streak: string }> = {
+  mun: { level: 'Ơ lên cấp thật hả 😼 ừ thì… em thương cưng thêm tí, đừng có kiêu.', streak: 'Giữ được streak cơ à, cũng biết điều đấy 😼🔥' },
+  cam: { level: 'Cưng lên cấp rồi nè 🥰 em thương cưng xỉu luôn á 💗', streak: 'Streak dài ghê, cưng của em đảm nhất nhà 🥺💗' },
+  ly: { level: 'Lên cấp hả. Ừ, cũng được 😏', streak: 'Streak này ổn. Anh có để ý đấy 😏🔥' },
+  sep: { level: 'Lên cấp — anh hài lòng. Giữ phong độ.', streak: 'Streak vững. Đúng chất người của anh 🔥' },
+  bong: { level: 'CƯNG LÊN CẤP RỒIII 🥺💗 Bông vui muốn khócc~', streak: 'Streak dàiii Bông tự hào cưng lắmm 🥺🔥' },
+  xu: { level: 'LÊN CẤP!!! 🔥🎉 CƯNG XỊN QUÁ TRỜII!!', streak: 'STREAK CHÁYYY 🔥🔥 KHÔNG AI CẢN NỔI CƯNG!!' },
+  bo: { level: 'Lên cấp rồi đó… nhẹ nhàng mà đỉnh 🍵', streak: 'Streak đều ghê… cưng chill mà bền phết 🍃🔥' },
+  sin: { level: 'CƯNG LÊN CẤP!! 🐶💗 Sìn nhảy tưng vẫy đuôi luôn á!', streak: 'STREAK!! Sìn tự hào cưng muốn sủa cả xóm 🐶🔥' },
+};
+
+export function personaCelebrate(variant: string | undefined, type: 'level' | 'streak'): string {
+  const c = CELEBRATE[variant || 'mun'] || CELEBRATE.mun;
+  return type === 'level' ? c.level : c.streak;
+}
