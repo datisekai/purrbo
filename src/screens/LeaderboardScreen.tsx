@@ -12,6 +12,7 @@ export default function LeaderboardScreen({ navigation }: any) {
   const [top, setTop] = useState<any[]>([]);
   const [myRank, setMyRank] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
+  const [err, setErr] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
 
   const load = useCallback(async () => {
@@ -19,7 +20,8 @@ export default function LeaderboardScreen({ navigation }: any) {
       const r = await Api.leaderboard();
       setTop(Array.isArray(r?.top) ? r.top : []);
       setMyRank(r?.my_rank ?? null);
-    } catch {}
+      setErr(false);
+    } catch { setErr(true); }
     setLoading(false);
   }, []);
   useFocusEffect(useCallback(() => { load(); }, [load]));
@@ -51,6 +53,11 @@ export default function LeaderboardScreen({ navigation }: any) {
 
         {loading ? (
           <ActivityIndicator color={colors.pink} style={{ marginTop: 40 }} />
+        ) : err ? (
+          <View style={s.empty}>
+            <Text style={s.emptyTxt}>Không tải được bảng xếp hạng 😿</Text>
+            <Text style={s.emptySub}>Kéo xuống để thử lại nha</Text>
+          </View>
         ) : top.length === 0 ? (
           <View style={s.empty}>
             <Text style={s.emptyTxt}>Chưa có ai lên bảng 🐾</Text>

@@ -118,6 +118,7 @@ function gEventToItem(e, i) {
   return {
     id: 'g' + i,
     type: 'sync',
+    date: s.slice(0, 10) || '',   // GIỮ ngày thật của event → lọc đúng ngày
     time: hm || '—',
     ampm: hm ? ampmOf(hm) : 'CẢ NGÀY',
     ic: 'briefcase',
@@ -149,11 +150,12 @@ export default function CalendarScreen({ navigation }) {
   // Habit thật từ backend; event Google CHỈ khi đã kết nối (có access_token).
   const load = useCallback(async () => {
     let base = [];
+    let habitsOk = false;
     try {
       const habits = await Api.habits();
-      if (Array.isArray(habits)) base = habits.map(toItem);
+      if (Array.isArray(habits)) { base = habits.map(toItem); habitsOk = true; }
     } catch {
-      /* backend die → giữ default */
+      /* backend die → giữ items cũ, KHÔNG clobber */
     }
     let gitems = [];
     let conn = false;
@@ -176,10 +178,9 @@ export default function CalendarScreen({ navigation }) {
       }
     } catch {}
     setGcalOn(conn);
-    if (base.length || gitems.length) {
-      setItems(
-        [...base, ...gitems].sort((a, b) => String(a.time).localeCompare(String(b.time)))
-      );
+    // Fetch OK → luôn cập nhật (kể cả rỗng, để phản ánh việc đã xoá). Lỗi mạng → giữ cũ.
+    if (habitsOk || gitems.length) {
+      setItems([...base, ...gitems]);
     }
     try {
       const [state, cat] = await Promise.all([Api.state(), Api.personas()]);
@@ -231,7 +232,7 @@ export default function CalendarScreen({ navigation }) {
   const ymd = (d) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
   // habit có hiện vào NGÀY cụ thể không? once=đúng ngày, weekly=đúng thứ, daily/hours=luôn.
   const showsOnDate = (it, date) => {
-    if (it.type !== 'habit') return true;
+    if (it.type !== 'habit') return it.date ? it.date === ymd(date) : true;  // event sync: đúng ngày
     const rep = String(it.repeat || 'daily');
     if (rep.startsWith('once:')) return rep.slice(5) === ymd(date);
     if (rep.startsWith('weekly:')) return rep.split(':')[1].split(',').map(Number).includes(dowIdx(date));

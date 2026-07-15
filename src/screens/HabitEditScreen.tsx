@@ -35,7 +35,7 @@ export default function HabitEditScreen({ navigation, route }) {
   const [rMode, setRMode] = useState(init.mode);
   const [rDays, setRDays] = useState<number[]>(init.days.length ? init.days : [0, 2, 4]);
   const [rEvery, setREvery] = useState(init.every);
-  const [rDate, setRDate] = useState<Date>(() => (init.date ? new Date(init.date) : new Date()));
+  const [rDate, setRDate] = useState<Date>(() => (init.date ? new Date(init.date + 'T00:00:00') : new Date()));
   const [busy, setBusy] = useState(false);
 
   const valid = name.trim().length > 0 && (rMode === 'hours' ? rEvery >= 1 : /^\d{1,2}:\d{2}$/.test(time.trim())) && (rMode !== 'weekly' || rDays.length > 0);

@@ -47,6 +47,16 @@ const ICON_CHOICES = [
   { key: 'star', bg: '#FFF7E0', col: '#C79200' },
 ];
 
+// Đoán icon từ tên việc (NLP không trả icon)
+function iconFor(name: string): string {
+  const s = (name || '').toLowerCase();
+  if (/(nước|uống|trà|cà phê|cafe)/.test(s)) return 'droplet';
+  if (/(gym|tập|chạy|bơi|yoga|thể dục|đá banh|bóng)/.test(s)) return 'dumbbell';
+  if (/(đọc|sách|học|bài|ôn)/.test(s)) return 'book';
+  if (/(ăn|cơm|trưa|tối|sáng|đồ ăn|nấu)/.test(s)) return 'heart';
+  return 'star';
+}
+
 export default function AddScreen({ navigation }) {
   const [mode, setMode] = useState('nlp'); // 'nlp' = gõ bằng lời · 'manual' = tự nhập
   const [text, setText] = useState(''); // để trống — user tự gõ hoặc chạm gợi ý
@@ -56,12 +66,14 @@ export default function AddScreen({ navigation }) {
   const [loading, setLoading] = useState(false);
   const [creating, setCreating] = useState(false);
   const [pVariant, setPVariant] = useState('mun');  // persona active → PersonaFace/copy đúng
+  const [pName, setPName] = useState('bạn đồng hành');
   useEffect(() => {
     (async () => {
       try {
         const [st, cat] = await Promise.all([Api.state(), Api.personas()]);
         const active = Array.isArray(cat) ? cat.find((p: any) => p.key === st.persona_key) : null;
         if (active?.variant) setPVariant(active.variant);
+        if (active?.name) setPName(active.name);
       } catch {}
     })();
   }, []);
@@ -169,7 +181,7 @@ export default function AddScreen({ navigation }) {
     try {
       await Api.createHabit({
         name: parsed.name,
-        icon: 'droplet',
+        icon: iconFor(parsed.name),
         time: parsed.time,
         hint: parsed.withwho ? 'với ' + parsed.withwho : '',
         repeat: parsed.repeat || 'daily',   // NLP trả repeat (vd weekly:5) → dùng luôn
@@ -416,10 +428,14 @@ export default function AddScreen({ navigation }) {
                     <Text style={s.fLabel}>{f.label}</Text>
                     <Text style={s.fVal}>{f.val}</Text>
                   </View>
-                  <View style={[s.tag, s.tagOk]}>
-                    <Icon name="check" size={12} color={colors.mintDark} />
-                    <Text style={s.tagOkTxt}>ok</Text>
-                  </View>
+                  {f.val ? (
+                    <View style={[s.tag, s.tagOk]}>
+                      <Icon name="check" size={12} color={colors.mintDark} />
+                      <Text style={s.tagOkTxt}>ok</Text>
+                    </View>
+                  ) : (
+                    <View style={[s.tag, s.tagNeed]}><Text style={s.tagNeedTxt}>—</Text></View>
+                  )}
                 </View>
               ))}
 
@@ -432,7 +448,7 @@ export default function AddScreen({ navigation }) {
                   <Text style={s.fLabel}>Nhắc trước bao lâu?</Text>
                   {remind
                     ? <Text style={s.fVal}>{remind}</Text>
-                    : <Text style={[s.fVal, { color: colors.coralDark }]}>chưa có · Mèo Mun đang hỏi</Text>}
+                    : <Text style={[s.fVal, { color: colors.coralDark }]}>chưa có · {pName} đang hỏi</Text>}
                 </View>
                 {remind ? (
                   <View style={[s.tag, s.tagOk]}>

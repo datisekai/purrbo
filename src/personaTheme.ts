@@ -14,6 +14,11 @@ const THEME: Record<string, PersonaTheme> = {
   sin:  { surface: '#FBF1DD', soft: '#FDF8EC' }, // vàng ấm
 };
 
+// Trung tính: dùng khi persona CHƯA resolve (tránh nháy nhầm tint mun trước khi
+// biết persona thật). Khi đã có variant → tint đúng nhân vật.
+const NEUTRAL: PersonaTheme = { surface: '#F1EEF6', soft: '#F7F5FB' };
+
 export function personaTheme(variant?: string): PersonaTheme {
-  return THEME[variant || 'mun'] || THEME.mun;
+  if (!variant) return NEUTRAL;
+  return THEME[variant] || NEUTRAL;
 }

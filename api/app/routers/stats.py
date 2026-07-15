@@ -9,7 +9,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from api.app.db import get_session
 from api.app.deps import get_current_user
-from api.app.models import HabitCompletion
+from api.app.models import HabitCompletion, User, UserState
 from api.app.services import _now_local, _user_tz, compute_streak
 
 router = APIRouter(tags=["stats"])
@@ -55,3 +55,40 @@ async def get_stats(user_id: str = Depends(get_current_user), db: AsyncSession =
         "active_days": active_days,
         "days": days,
     }
+
+
+@router.get("/leaderboard")
+async def leaderboard(user_id: str = Depends(get_current_user), db: AsyncSession = Depends(get_session)):
+    """Bảng xếp hạng: top theo streak (tie-break điểm thân thiết). Đánh dấu 'me'."""
+    rows = (
+        await db.execute(
+            select(User.id, User.name, UserState.streak, UserState.affinity_level, UserState.affinity_points)
+            .join(UserState, UserState.user_id == User.id)
+            .order_by(UserState.streak.desc(), UserState.affinity_points.desc())
+            .limit(50)
+        )
+    ).all()
+    top = [
+        {
+            "rank": i + 1,
+            "name": (r.name or "Ẩn danh").strip() or "Ẩn danh",
+            "streak": r.streak or 0,
+            "level": r.affinity_level or 1,
+            "me": r.id == user_id,
+        }
+        for i, r in enumerate(rows)
+    ]
+    my_rank = next((t["rank"] for t in top if t["me"]), None)
+    if my_rank is None:  # user ngoài top 50 → tính hạng thật bằng số người xếp trên
+        me = await db.get(UserState, user_id)
+        if me:
+            higher = (
+                await db.execute(
+                    select(func.count()).select_from(UserState).where(
+                        (UserState.streak > me.streak)
+                        | ((UserState.streak == me.streak) & (UserState.affinity_points > me.affinity_points))
+                    )
+                )
+            ).scalar()
+            my_rank = (higher or 0) + 1
+    return {"top": top, "my_rank": my_rank}

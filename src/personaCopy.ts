@@ -99,3 +99,22 @@ export function personaCelebrate(variant: string | undefined, type: 'level' | 's
   const c = CELEBRATE[variant || 'mun'] || CELEBRATE.mun;
   return type === 'level' ? c.level : c.streak;
 }
+
+// Win-back: dỗi (sad) · quay lại (back) · tạm biệt (bye) — theo giọng từng persona
+type Winback = { sad: string; back: string; bye: string; subSad: string; subBack: string; subBye: string };
+const WINBACK: Record<string, Winback> = {
+  mun: { sad: '3 ngày rồi hong ngó em... 😼 em giận đó. Nhưng streak tụi mình em vẫn giữ, đừng tưởng bở.', back: 'Hừ, biết quay lại là còn thương 😼 nối streak, lần sau liệu hồn.', bye: 'Ừ đi đi, em quen rồi 😼… mà nhớ về, em chờ.', subSad: 'đang dỗi · giả vờ không nhớ', subBack: 'hết dỗi · cưng biết điều', subBye: 'quay mặt · vẫn liếc lại' },
+  cam: { sad: '3 ngày cưng hong ghé em buồn xỉu 🥺💗 nhưng streak mình xây em cất kỹ rồi nè, về với em nha~', back: 'Yayyy cưng về rồii 😽💗 em biết cưng hong nỡ bỏ em mà, nối streak nha!', bye: 'Hong sao đâu cưng ơi 🫶 em luôn ở đây, giữ sức khoẻ rồi về với em nha~', subSad: 'đang tủi thân · nhớ cưng lắm', subBack: 'mừng rơi nước mắt · thương xỉu', subBye: 'buồn nhẹ · vẫn thương cưng' },
+  ly: { sad: 'Mất tích 3 ngày. Anh không nhắn trước đâu, nhưng streak vẫn để đó 😏', back: 'Về rồi hả. Biết ngay mà 😏 streak nối lại.', bye: 'Đi thì đi. Anh không níu. Cần thì anh vẫn đây 😏', subSad: 'ra vẻ không quan tâm · thật ra để ý', subBack: 'cười khẩy · nhẹ nhõm', subBye: 'lạnh lùng · vẫn chờ' },
+  sep: { sad: '3 ngày vắng mặt. Anh không hài lòng — nhưng streak của em anh giữ nguyên. Quay lại.', back: 'Tốt. Em biết đường về là được. Streak nối lại, giữ phong độ.', bye: 'Được. Nghỉ ngơi đi. Khi nào sẵn sàng, anh vẫn ở đây.', subSad: 'nghiêm mặt · vẫn đợi', subBack: 'gật đầu · hài lòng', subBye: 'điềm tĩnh · luôn ở đây' },
+  bong: { sad: '3 ngày rồii Bông nhớ cưng muốn khócc 🥺💗 streak mình Bông giữ khư khư nè, về nhaa~', back: 'CƯNG VỀ RỒIII 🥺💗 Bông mừng xỉuu nối streak liền nhaa!', bye: 'Bông hong buồn đâuu 🫶 Bông chờ cưng hoàiii, giữ sức khoẻ nhaa~', subSad: 'mếu máo · nhớ dữ dội', subBack: 'nhảy tưng · mừng phát khóc', subBye: 'xịu xịu · vẫn chờ hoài' },
+  xu: { sad: '3 NGÀY RỒIII CƯNG ĐI ĐÂU 😭🔥 streak mình còn nguyên nè QUAY LẠI LIỀN ĐI!!', back: 'CƯNG VỀ RỒIII 🔥🎉 BIẾT NGAY MÀ!! STREAK NỐI LẠI CHÁYYY!!', bye: 'Ừ đi nghỉ đi cưng 🔥 nhưng nhớ về, tụi mình còn phải cháy tiếp!!', subSad: 'gào thét · nhớ banh nóc', subBack: 'bùng nổ · hype tới bến', subBye: 'tạm lắng · chờ bùng lại' },
+  bo: { sad: '3 ngày cưng đi đâu mất tiêu 🍵… tui hong hối đâu, streak vẫn để đó, rảnh thì về.', back: 'Ơ về rồi à 🍃 chill phết, nối streak nha cưng.', bye: ' Oke cưng cứ nghỉ 🍵 tui hong đi đâu hết, về lúc nào cũng được.', subSad: 'thản nhiên · thật ra có nhớ', subBack: 'nhẹ nhàng · vui ngầm', subBye: 'chill · luôn ở đây' },
+  sin: { sad: '3 ngày rồi cưng ơiii 🐶💗 Sìn ngồi cửa chờ hoàiii, streak mình Sìn canh kỹ nè, về nhaa!', back: 'CƯNG VỀ RỒIII 🐶💗 Sìn vẫy đuôi rối rít nối streak liền nhaa!', bye: 'Sìn hong giận đâuu 🫶 Sìn chờ cưng tới cùng, giữ sức khoẻ về với Sìn nha!', subSad: 'ngồi chờ cửa · nhớ cưng', subBack: 'vẫy đuôi · mừng rối rít', subBye: 'trung thành · chờ tới cùng' },
+};
+export function personaWinback(variant: string | undefined, state: 'sad' | 'back' | 'bye') {
+  const w = WINBACK[variant || 'mun'] || WINBACK.mun;
+  const text = state === 'back' ? w.back : state === 'bye' ? w.bye : w.sad;
+  const sub = state === 'back' ? w.subBack : state === 'bye' ? w.subBye : w.subSad;
+  return { text, sub };
+}

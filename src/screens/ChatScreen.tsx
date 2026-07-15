@@ -140,11 +140,12 @@ export default function ChatScreen({ navigation, route }) {
   const [persona, setPersona] = useState(
     route?.params?.persona || { key: 'mun', name: 'Mun', variant: 'mun', level: 5 }
   );
-  const [loading, setLoading] = useState(true);
   const listRef = useRef(null);
   const idRef = useRef(100);
   const replyIx = useRef(0);
   const timer = useRef(null);
+  // Chỉ nạp lịch sử SAU khi biết chắc persona (tránh nạp 2 lần + nháy lời chào mun).
+  const [ready, setReady] = useState(!!route?.params?.persona?.key);
 
   // Xác định persona: param → dùng luôn (và set active để backend trả đúng giọng);
   // không có param → lấy persona đang active từ backend.
@@ -161,6 +162,7 @@ export default function ChatScreen({ navigation, route }) {
         const active = Array.isArray(cat) ? cat.find((x) => x.key === st.persona_key) : null;
         if (active) setPersona({ ...active, level: st.affinity_level });
       } catch {}
+      finally { setReady(true); }
     })();
   }, []);
 
@@ -173,8 +175,8 @@ export default function ChatScreen({ navigation, route }) {
   // Nạp lịch sử chat thật mỗi khi mở màn / ĐỔI persona. Trống → lời chào của persona.
   const greet = () => [{ id: 1, who: 'them', text: personaCopy(persona.variant).greet }];
   useEffect(() => {
+    if (!ready) return;
     let alive = true;
-    setLoading(true);
     (async () => {
       try {
         const hist = await Api.chatHistory();
@@ -189,12 +191,10 @@ export default function ChatScreen({ navigation, route }) {
         scrollDown();
       } catch {
         if (alive) setMsgs(greet());
-      } finally {
-        if (alive) setLoading(false);
       }
     })();
     return () => { alive = false; };
-  }, [persona.key]);
+  }, [persona.key, ready]);
 
   const push = (who, t, extra = {}) => {
     idRef.current += 1;
@@ -306,7 +306,7 @@ export default function ChatScreen({ navigation, route }) {
           contentContainerStyle={s.chips}
         >
           {CHIPS.map((c, i) => (
-            <QuickChip key={i} label={c.label} onPress={() => sendUser(c.label, c.reply)} />
+            <QuickChip key={i} label={c.label} onPress={() => sendUser(c.label)} />
           ))}
         </ScrollView>
 

@@ -5,6 +5,13 @@ import json
 import os
 from datetime import datetime, timedelta
 
+try:
+    from zoneinfo import ZoneInfo
+    _VN = ZoneInfo("Asia/Ho_Chi_Minh")
+except Exception:  # thiếu tzdata → fallback offset cứng +7
+    from datetime import timezone
+    _VN = timezone(timedelta(hours=7))
+
 from openai import AsyncOpenAI
 
 _MODEL = os.environ.get("OPENAI_NLP_MODEL", "gpt-4o-mini")
@@ -12,12 +19,13 @@ _WD_VI = ["Thứ 2", "Thứ 3", "Thứ 4", "Thứ 5", "Thứ 6", "Thứ 7", "Ch�
 
 
 def _today(now_iso: str) -> datetime:
+    # Client gửi UTC (toISOString) → quy về giờ VN để 'hôm nay' đúng quanh nửa đêm.
     if now_iso:
         try:
-            return datetime.fromisoformat(now_iso.replace("Z", "+00:00"))
+            return datetime.fromisoformat(now_iso.replace("Z", "+00:00")).astimezone(_VN)
         except ValueError:
             pass
-    return datetime.now()
+    return datetime.now(_VN)
 
 
 def _week_table(d: datetime) -> str:

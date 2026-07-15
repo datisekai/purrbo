@@ -132,6 +132,7 @@ export default function SettingsScreen({ navigation }) {
   const [bgm, setBgmState] = useState(isBgOn());
 
   const [pVariant, setPVariant] = useState('mun');  // persona active cho preview
+  const [pName, setPName] = useState('Bạn đồng hành');
   const onSfx = (v: boolean) => { setSfxState(v); setSfx(v); };
   const onBgm = (v: boolean) => { setBgmState(v); setBg(v); };
 
@@ -143,7 +144,7 @@ export default function SettingsScreen({ navigation }) {
         if (typeof st?.intimacy === 'number') setIntimacy(st.intimacy);
         if (typeof st?.lay === 'number') setLay(st.lay);
         if (typeof st?.freq === 'number') setFreq(st.freq);
-        try { const cat = await Api.personas(); const a = Array.isArray(cat) ? cat.find((x: any) => x.key === st.persona_key) : null; if (a?.variant) setPVariant(a.variant); } catch {}
+        try { const cat = await Api.personas(); const a = Array.isArray(cat) ? cat.find((x: any) => x.key === st.persona_key) : null; if (a?.variant) setPVariant(a.variant); if (a?.name) setPName(a.name); } catch {}
       } catch {
         // backend không kết nối được → giữ nguyên state cục bộ
       }
@@ -265,7 +266,7 @@ export default function SettingsScreen({ navigation }) {
             <PersonaFace variant={pVariant} ring="ssr" size={54} expr={lay === 0 ? 'love' : lay === 2 ? 'gat' : 'happy'} />
             <View style={{ flex: 1 }}>
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-                <Text style={{ fontFamily: fonts.display, fontSize: 19, color: colors.ink }}>Mèo Mun</Text>
+                <Text style={{ fontFamily: fonts.display, fontSize: 19, color: colors.ink }}>{pName}</Text>
                 <View style={s.ssr}>
                   <Icon name="star" size={9} color="#fff" />
                   <Text style={{ fontFamily: fonts.heading, fontSize: 10, color: '#fff' }}>SSR</Text>

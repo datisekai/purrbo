@@ -4,6 +4,13 @@ from __future__ import annotations
 import re
 from datetime import datetime, timedelta
 
+try:
+    from zoneinfo import ZoneInfo
+    _VN = ZoneInfo("Asia/Ho_Chi_Minh")
+except Exception:
+    from datetime import timezone
+    _VN = timezone(timedelta(hours=7))
+
 _WD = {"thứ 2": 0, "thứ hai": 0, "thứ 3": 1, "thứ ba": 1, "thứ 4": 2, "thứ tư": 2,
        "thứ 5": 3, "thứ năm": 3, "thứ 6": 4, "thứ sáu": 4, "thứ 7": 5, "thứ bảy": 5,
        "chủ nhật": 6, "cn": 6}
@@ -12,10 +19,10 @@ _WD = {"thứ 2": 0, "thứ hai": 0, "thứ 3": 1, "thứ ba": 1, "thứ 4": 2, 
 def _now(now_iso: str) -> datetime:
     if now_iso:
         try:
-            return datetime.fromisoformat(now_iso.replace("Z", "+00:00"))
+            return datetime.fromisoformat(now_iso.replace("Z", "+00:00")).astimezone(_VN)
         except ValueError:
             pass
-    return datetime.now()
+    return datetime.now(_VN)
 
 
 def _repeat(low: str, base: datetime) -> str:

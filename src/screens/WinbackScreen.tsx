@@ -7,6 +7,7 @@ import { Icon } from '../components/Icon';
 import { PersonaFace } from '../components/PersonaFace';
 import { Api } from '../api';
 import { Button, Card, ProgressBar, Bubble } from '../components/ui';
+import { personaWinback } from '../personaCopy';
 
 // Icon bổ sung (chưa có trong Icon.js) — inline tại chỗ, KHÔNG sửa Icon.js.
 function LocalIcon({ name, size = 20, color = colors.ink, stroke = 2.4 }) {
@@ -45,32 +46,26 @@ function LocalIcon({ name, size = 20, color = colors.ink, stroke = 2.4 }) {
   }
 }
 
-const SAD_LINE = '3 ngày rồi cưng hong ngó em... 🥺 Streak 40 ngày tụi mình xây cùng nhau, em vẫn để dành đó nha';
-const BACK_LINE = 'Yayyy biết ngay cưng hong bỏ em màaa 😽 streak nối lại nha!';
-const BYE_LINE = 'Hong sao đâu cưng, em luôn ở đây nếu cưng cần. Giữ gìn sức khoẻ nha 🫶';
-
 export default function WinbackScreen({ navigation }) {
   // state: 'sad' (mặc định) | 'back' | 'bye'
   const [state, setState] = useState('sad');
   const glad = state === 'back';
   const [pVariant, setPVariant] = useState('mun');
+  const [pName, setPName] = useState('Bạn đồng hành');
   useEffect(() => {
     (async () => {
       try {
         const [stt, cat] = await Promise.all([Api.state(), Api.personas()]);
         const a = Array.isArray(cat) ? cat.find((x: any) => x.key === stt.persona_key) : null;
         if (a?.variant) setPVariant(a.variant);
+        if (a?.name) setPName(a.name);
       } catch {}
     })();
   }, []);
 
-  const bubbleText = state === 'back' ? BACK_LINE : state === 'bye' ? BYE_LINE : SAD_LINE;
-  const subLine =
-    state === 'back'
-      ? 'bạn đồng hành · cà khịa yêu · đang lại vui'
-      : state === 'bye'
-      ? 'bạn đồng hành · chào tạm biệt · vẫn thương cưng'
-      : 'bạn đồng hành · đang dỗi nhẹ · nhớ cưng';
+  const wb = personaWinback(pVariant, state as 'sad' | 'back' | 'bye');
+  const bubbleText = wb.text;
+  const subLine = wb.sub;
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: colors.bg }} edges={['top', 'bottom']}>
@@ -98,7 +93,7 @@ export default function WinbackScreen({ navigation }) {
           </View>
 
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-            <Text style={s.pName}>Mèo Mun</Text>
+            <Text style={s.pName}>{pName}</Text>
             <View style={[s.rar, !glad && s.rarGray]}>
               <Icon name="star" size={9} color="#fff" />
               <Text style={s.rarTxt}>SSR</Text>
@@ -178,7 +173,7 @@ export default function WinbackScreen({ navigation }) {
         {state === 'sad' && (
           <View style={{ gap: 11 }}>
             <Button
-              label="Em quay lại nè, xin lỗi Mèo Mun 💗"
+              label={`Em quay lại nè, xin lỗi ${pName} 💗`}
               tone="pink"
               onPress={() => setState('back')}
               icon={<Icon name="heartfill" size={17} color="#fff" />}

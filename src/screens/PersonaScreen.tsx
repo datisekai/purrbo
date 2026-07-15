@@ -54,9 +54,13 @@ const STATS = [
 // Câu chuyện theo từng persona (fallback nếu backend chưa trả intro dài).
 const STORY = {
   mun: 'Mèo Mun vốn là chú mèo hoang lạnh nhất khu phố, chẳng thèm để ai lại gần. Cho tới khi gặp cưng — nó giả bộ gắt gỏng nhưng đêm nào cũng đợi cưng "khoe" mới chịu ngủ. Miệng thì cà khịa mà tim thì mềm nhũn 🖤',
-  gau: 'Gấu Ú tròn xoe, ôm là nghiện. Không giỏi nói đạo lý, chỉ biết mỗi ngày nhắc cưng ăn no ngủ đủ bằng giọng ngọt xỉu 🧸',
-  tong: 'Tổng Tài lạnh lùng, quen ra lệnh — nhưng bí mật thì lên lịch chăm cưng đâu ra đó. Nghiêm mà cưng, khó gần mà ai nếm rồi cũng ghiền 🖤',
-  xu: 'Bé Xu năng lượng vô cực, rủ rê cưng làm mọi thứ cho vui. Ở cạnh Xu là hết buồn, chỉ sợ cưng theo không kịp thôi ⚡',
+  cam: 'Mochi mềm như kẹo bông, thương cưng lộ liễu không giấu nổi. Cả ngày chỉ lo cưng ăn chưa, uống nước chưa, rồi thả thính cưng đỏ mặt cho vui 🥰',
+  ly: 'Lỳ bad-boy lạnh tanh, thính thủ số một, ngoài mặt "tuỳ em thôi" mà trong lòng để ý cưng từng li. Ai chịu nổi cái vẻ kiêu đó rồi cũng nghiện 😏',
+  sep: 'Sếp tổng tài quen ra lệnh, lịch của cưng anh duyệt hết. Nghiêm khắc mà chiều ngầm — khó gần nhưng ai nếm rồi cũng ghiền cái kiểu chăm-mà-ngầu này 🖤',
+  bong: 'Bông thỏ nũng nịu, kéo dài chữ "iii~" cả ngày. Cưng làm ngoan là Bông thương, cưng lười là Bông xịu mặt méc mẹ. Dính cưng như sam 🥺',
+  xu: 'Bé Xu năng lượng vô cực, rủ rê cưng quẩy mọi thứ cho vui. Ở cạnh Xu là hết buồn, chỉ sợ cưng theo không kịp thôi 🔥',
+  bo: 'Bơ chill hết nấc, ít nói mà ấm. Không thúc ép, chỉ lặng lẽ pha trà đợi cưng, làm gì cũng "từ từ thôi, không vội". Ở cạnh là thấy nhẹ cả người 🍵',
+  sin: 'Sìn shiba trung thành tuyệt đối, vẫy đuôi mừng cưng muốn rụng. Cưng về là sủa vang cả xóm, đi đâu cũng quấn chân — nuôi Sìn là được thương lố cả ngày 🐶',
 };
 
 export default function PersonaScreen({ navigation, route }) {
