@@ -18,3 +18,7 @@ api/.env
 # Native — sinh lại từ app.json qua prebuild (CNG). targets/ giữ lại (nguồn widget).
 /ios
 /android
+
+# apple-targets sinh mỗi prebuild — giữ nguồn PurrboWidget.swift + expo-target.config.js
+targets/*/generated.entitlements
+targets/*/Info.plist
