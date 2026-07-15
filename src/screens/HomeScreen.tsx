@@ -76,20 +76,12 @@ export default function HomeScreen({ navigation }: any) {
     setRefreshing(false);
   }, [loadCore]);
 
-  // Refresh mỗi lần vào Home: nhiệm vụ chờ nhận + persona ĐANG DÙNG (đổi ở nơi khác → phản ánh ngay).
+  // Refresh mỗi lần vào Home: load FULL (gồm habits) để thêm/sửa/xoá việc ở màn
+  // khác quay về là thấy ngay — không chỉ state/persona/nhiệm vụ.
   useFocusEffect(
     useCallback(() => {
-      Api.missions().then((m) => setClaimable(m?.claimable_gems || 0)).catch(() => {});
-      Api.equippedItems().then((e) => setEquipped(e || {})).catch(() => {});
-      (async () => {
-        try {
-          const [state, cat] = await Promise.all([Api.state(), Api.personas()]);
-          setSt(state);
-          const active = Array.isArray(cat) ? cat.find((p: any) => p.key === state.persona_key) : null;
-          if (active) setPersona(active);
-        } catch {}
-      })();
-    }, [])
+      loadCore();
+    }, [loadCore])
   );
 
   // Vòng thân thiết chạy tới giá trị hiện tại (lúc load + sau khi Khoe).
