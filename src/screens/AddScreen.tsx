@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { View, Text, ScrollView, Pressable, TextInput, StyleSheet, Alert } from 'react-native';
+import { View, Text, ScrollView, Pressable, TextInput, StyleSheet, Alert, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Svg, { Path, Circle } from 'react-native-svg';
 import { colors, fonts, radii, hardShadow } from '../theme';
@@ -44,6 +44,7 @@ export default function AddScreen({ navigation }) {
   const [remind, setRemind] = useState(null);
   const [toast, setToast] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [creating, setCreating] = useState(false);
   const tRef = useRef(null);
 
   // Tự nhập
@@ -76,11 +77,12 @@ export default function AddScreen({ navigation }) {
     tRef.current = setTimeout(() => {
       setToast(false);
       navigation?.goBack?.();
-    }, 2200);
+    }, 1100);
   };
 
   const createManual = async () => {
-    if (!mValid) return;
+    if (!mValid || creating) return;
+    setCreating(true);
     try {
       const repeat = buildRepeat();
       const hintBits = [];
@@ -97,7 +99,7 @@ export default function AddScreen({ navigation }) {
       showToast();
     } catch (e) {
       Alert.alert('Ối, tạo lịch chưa được', String(e?.message ?? e));
-    }
+    } finally { setCreating(false); }
   };
 
   const detected = parsed
@@ -133,7 +135,8 @@ export default function AddScreen({ navigation }) {
   };
 
   const create = async () => {
-    if (!complete || !parsed) return;
+    if (!complete || !parsed || creating) return;
+    setCreating(true);
     try {
       await Api.createHabit({
         name: parsed.name,
@@ -144,7 +147,7 @@ export default function AddScreen({ navigation }) {
       showToast();
     } catch (e) {
       Alert.alert('Ối, tạo lịch chưa được', String(e?.message ?? e));
-    }
+    } finally { setCreating(false); }
   };
 
   return (
@@ -153,7 +156,7 @@ export default function AddScreen({ navigation }) {
       {toast && (
         <View style={s.toast}>
           <Icon name="heartfill" size={16} color="#FF9BC1" />
-          <Text style={s.toastTxt}>Đã thêm! Mèo Mun sẽ nhắc cưng đúng giờ 💗</Text>
+          <Text style={s.toastTxt}>Đã thêm! Purrbo sẽ nhắc cưng đúng giờ 💗</Text>
         </View>
       )}
 
@@ -282,11 +285,11 @@ export default function AddScreen({ navigation }) {
             )}
 
             <Button
-              label={mValid ? 'Tạo lịch' : 'Nhập tên & giờ để tạo'}
+              label={creating ? 'Đang tạo…' : mValid ? 'Tạo lịch' : 'Nhập tên & giờ để tạo'}
               tone="mint"
-              disabled={!mValid}
+              disabled={!mValid || creating}
               onPress={createManual}
-              icon={mValid ? <Icon name="check" size={18} color="#fff" /> : null}
+              icon={creating ? <ActivityIndicator color="#fff" /> : mValid ? <Icon name="check" size={18} color="#fff" /> : null}
               style={{ marginTop: 20, paddingVertical: 15 }}
             />
           </View>
@@ -414,11 +417,11 @@ export default function AddScreen({ navigation }) {
 
             {/* Create */}
             <Button
-              label={complete ? 'Tạo lịch' : 'Trả lời Mèo Mun để tạo lịch'}
+              label={creating ? 'Đang tạo…' : complete ? 'Tạo lịch' : 'Trả lời để tạo lịch'}
               tone="mint"
-              disabled={!complete}
+              disabled={!complete || creating}
               onPress={create}
-              icon={complete ? <Icon name="check" size={18} color="#fff" /> : null}
+              icon={creating ? <ActivityIndicator color="#fff" /> : complete ? <Icon name="check" size={18} color="#fff" /> : null}
               style={{ paddingVertical: 15 }}
             />
           </>

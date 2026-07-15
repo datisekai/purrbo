@@ -90,16 +90,11 @@ _DEFAULT_HABITS = [
 
 
 async def seed_user_defaults(db: AsyncSession, user_id: str) -> None:
-    """User mới → tạo sẵn vài thói quen + trạng thái persona (Mèo Mun)."""
+    """User mới → chỉ tạo trạng thái + persona sở hữu. KHÔNG seed lịch mẫu
+    (user tự thêm việc của mình — tránh lịch rác)."""
     has_state = await db.get(UserState, user_id)
     if has_state is None:
         db.add(UserState(user_id=user_id))
-    count = (
-        await db.execute(select(func.count()).select_from(Habit).where(Habit.user_id == user_id))
-    ).scalar()
-    if not count:
-        for name, icon, time, hint in _DEFAULT_HABITS:
-            db.add(Habit(user_id=user_id, name=name, icon=icon, time=time, hint=hint))
     owned = (
         await db.execute(select(func.count()).select_from(OwnedPersona).where(OwnedPersona.user_id == user_id))
     ).scalar()

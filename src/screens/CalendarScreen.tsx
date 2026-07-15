@@ -126,8 +126,13 @@ function gEventToItem(e, i) {
   };
 }
 
+const DOW_LABEL = ['T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'CN'];
+const MONTH_LABEL = (m) => `Tháng ${m + 1}`;
+const dowIdx = (d) => (d.getDay() + 6) % 7; // 0=T2..6=CN
+const sameDay = (a, b) => a.getDate() === b.getDate() && a.getMonth() === b.getMonth() && a.getFullYear() === b.getFullYear();
+
 export default function CalendarScreen({ navigation }) {
-  const [sel, setSel] = useState(13);
+  const [selDate, setSelDate] = useState<Date>(() => new Date());
   const [loading, setLoading] = useState(true);
   const [view, setView] = useState('week'); // 'week' = 7 ngày · 'month' = 30 ngày
   const [note, setNote] = useState(NOTE);
@@ -217,6 +222,26 @@ export default function CalendarScreen({ navigation }) {
     }
   };
 
+  // ── Ngày THẬT ──
+  const today = new Date();
+  const monday = new Date(today); monday.setDate(today.getDate() - dowIdx(today));
+  const weekDates = Array.from({ length: 7 }, (_, i) => { const d = new Date(monday); d.setDate(monday.getDate() + i); return d; });
+  const mYear = today.getFullYear(), mMonth = today.getMonth();
+  const daysInMonth = new Date(mYear, mMonth + 1, 0).getDate();
+  const firstOffset = dowIdx(new Date(mYear, mMonth, 1)); // ô trống đầu tháng
+  const selDow = dowIdx(selDate);
+  // habit có hiện vào ngày (theo thứ) không? weekly lọc theo thứ, daily/hours luôn có
+  const showsOn = (it, di) => {
+    if (it.type !== 'habit') return true;
+    const rep = String(it.repeat || 'daily');
+    if (rep.startsWith('weekly:')) return rep.split(':')[1].split(',').map(Number).includes(di);
+    return true;
+  };
+  const hasTaskOnDow = (di) => items.some((it) => showsOn(it, di));
+  const visibleItems = items.filter((it) => showsOn(it, selDow));
+  const selLabel = `${String(selDate.getDate()).padStart(2, '0')}/${String(selDate.getMonth() + 1).padStart(2, '0')} · ${DOW_LABEL[selDow]}`;
+  const isToday = sameDay(selDate, today);
+
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: colors.bg }} edges={['top']}>
       <ScrollView contentContainerStyle={{ padding: 18, paddingBottom: 40 }} showsVerticalScrollIndicator={false}
@@ -224,7 +249,7 @@ export default function CalendarScreen({ navigation }) {
         {/* Header */}
         <View style={s.top}>
           <View style={{ flex: 1 }}>
-            <Text style={s.hi}>Tháng 7</Text>
+            <Text style={s.hi}>{MONTH_LABEL(mMonth)}</Text>
             <Text style={s.sub}>Chọn ngày để xem lịch nha cưng</Text>
           </View>
           <Pressable
@@ -258,40 +283,45 @@ export default function CalendarScreen({ navigation }) {
         </View>
 
         {view === 'week' ? (
-          /* Week strip */
+          /* Week strip — tuần chứa hôm nay (T2→CN) */
           <View style={s.week}>
-            {WEEK.map((d) => {
-              const isSel = sel === d.num && !d.today;
+            {weekDates.map((d, i) => {
+              const isTdy = sameDay(d, today);
+              const isSel = sameDay(d, selDate) && !isTdy;
               return (
                 <Pressable
-                  key={d.num}
-                  onPress={() => setSel(d.num)}
-                  style={[s.day, d.today && s.dayToday, isSel && s.daySel]}
+                  key={i}
+                  onPress={() => setSelDate(d)}
+                  style={[s.day, isTdy && s.dayToday, isSel && s.daySel]}
                 >
-                  <Text style={[s.dow, d.today && s.dayTodayTxt]}>{d.dow}</Text>
-                  <Text style={[s.num, d.today && s.dayTodayTxt]}>{d.num}</Text>
-                  {d.dot && <View style={[s.dot, d.today && { backgroundColor: '#fff' }]} />}
+                  <Text style={[s.dow, isTdy && s.dayTodayTxt]}>{DOW_LABEL[i]}</Text>
+                  <Text style={[s.num, isTdy && s.dayTodayTxt]}>{d.getDate()}</Text>
+                  {hasTaskOnDow(i) && <View style={[s.dot, isTdy && { backgroundColor: '#fff' }]} />}
                 </Pressable>
               );
             })}
           </View>
         ) : (
-          /* Month grid — 30 ngày */
+          /* Month grid — tháng thật, căn theo thứ */
           <View style={s.month}>
             <View style={s.mDowRow}>
-              {MONTH_DOW.map((d) => (
+              {DOW_LABEL.map((d) => (
                 <Text key={d} style={s.mDow}>{d}</Text>
               ))}
             </View>
             <View style={s.mGrid}>
-              {MONTH_DAYS.map((n) => {
-                const today = n === TODAY;
-                const isSel = sel === n && !today;
+              {Array.from({ length: firstOffset }).map((_, i) => (
+                <View key={'blank' + i} style={s.mCellWrap} />
+              ))}
+              {Array.from({ length: daysInMonth }, (_, k) => k + 1).map((n) => {
+                const d = new Date(mYear, mMonth, n);
+                const isTdy = n === today.getDate();
+                const isSel = sameDay(d, selDate) && !isTdy;
                 return (
-                  <Pressable key={n} onPress={() => setSel(n)} style={s.mCellWrap}>
-                    <View style={[s.mCell, today && s.mCellToday, isSel && s.mCellSel]}>
-                      <Text style={[s.mNum, today && s.dayTodayTxt]}>{n}</Text>
-                      {DOTS.has(n) && <View style={[s.mDot, today && { backgroundColor: '#fff' }]} />}
+                  <Pressable key={n} onPress={() => setSelDate(d)} style={s.mCellWrap}>
+                    <View style={[s.mCell, isTdy && s.mCellToday, isSel && s.mCellSel]}>
+                      <Text style={[s.mNum, isTdy && s.dayTodayTxt]}>{n}</Text>
+                      {hasTaskOnDow(dowIdx(d)) && <View style={[s.mDot, isTdy && { backgroundColor: '#fff' }]} />}
                     </View>
                   </Pressable>
                 );
@@ -302,11 +332,11 @@ export default function CalendarScreen({ navigation }) {
 
         {/* Persona note */}
         <View style={s.note}>
-          <PersonaFace variant="mun" ring="ssr" size={48} />
+          <PersonaFace variant={activePersona.variant} ring="ssr" size={48} />
           <View style={s.bubble}>
             <View style={s.who}>
               <Icon name="heart" size={12} color={colors.purpleDark} />
-              <Text style={s.whoTxt}>Mèo Mun</Text>
+              <Text style={s.whoTxt}>{activePersona.name}</Text>
             </View>
             <Text style={s.bubbleTxt}>{note}</Text>
           </View>
@@ -314,17 +344,23 @@ export default function CalendarScreen({ navigation }) {
 
         {/* Section title */}
         <View style={s.stitle}>
-          <Text style={s.stitleTxt}>Lịch hôm nay</Text>
+          <Text style={s.stitleTxt}>{isToday ? 'Lịch hôm nay' : 'Lịch ngày này'}</Text>
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
             <Icon name="calendar" size={13} color={colors.muted} />
-            <Text style={s.stitleSub}>13/07 · T7</Text>
+            <Text style={s.stitleSub}>{selLabel}</Text>
           </View>
         </View>
 
         {/* Timeline */}
         <View>
           {loading && [0, 1, 2].map((i) => <SkeletonRow key={'sk' + i} />)}
-          {!loading && items.map((it) => (
+          {!loading && visibleItems.length === 0 && (
+            <View style={s.empty}>
+              <Text style={s.emptyTxt}>Ngày này chưa có việc nào 🐾</Text>
+              <Text style={s.emptySub}>Chạm ➕ để thêm cho cưng nha</Text>
+            </View>
+          )}
+          {!loading && visibleItems.map((it) => (
             <View key={it.id} style={s.row}>
               <View style={s.time}>
                 <Text style={s.timeBig}>{it.time}</Text>
@@ -461,6 +497,9 @@ const s = StyleSheet.create({
   stitleTxt: { fontFamily: fonts.display, fontSize: 17, color: colors.ink },
   stitleSub: { fontFamily: fonts.bodyBold, fontSize: 12, color: colors.muted },
 
+  empty: { alignItems: 'center', paddingVertical: 26, backgroundColor: '#fff', borderWidth: 2, borderColor: colors.line, borderRadius: 20, marginBottom: 8, ...hardShadow(3, 0.1) },
+  emptyTxt: { fontFamily: fonts.heading, fontSize: 14, color: colors.ink },
+  emptySub: { fontFamily: fonts.body, fontSize: 12, color: colors.muted, marginTop: 3 },
   row: { flexDirection: 'row', gap: 11, marginBottom: 13 },
   time: { width: 44, alignItems: 'flex-end', paddingTop: 14 },
   timeBig: { fontFamily: fonts.display, fontSize: 13, color: colors.ink, lineHeight: 15 },

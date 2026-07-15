@@ -129,8 +129,10 @@ function SendBtn({ onPress }) {
 }
 
 export default function ChatScreen({ navigation, route }) {
-  const [msgs, setMsgs] = useState(SEED);
+  const [msgs, setMsgs] = useState<any[]>([]);
   const [text, setText] = useState('');
+  const dnow = new Date();
+  const dateLabel = `${String(dnow.getDate()).padStart(2, '0')}/${String(dnow.getMonth() + 1).padStart(2, '0')}`;
   const [typing, setTyping] = useState(false);
   // Persona đang nhắn — từ param (chọn ở hồ sơ) hoặc persona đang active.
   const [persona, setPersona] = useState(
@@ -166,28 +168,31 @@ export default function ChatScreen({ navigation, route }) {
   useEffect(() => { scrollDown(); }, [msgs, typing]);
   useEffect(() => () => { if (timer.current) clearTimeout(timer.current); }, []);
 
-  // Nạp lịch sử chat thật khi mở màn (backend sập → giữ SEED làm mặc định).
+  // Nạp lịch sử chat thật mỗi khi mở màn / ĐỔI persona. Trống → lời chào của persona.
+  const greet = () => [{ id: 1, who: 'them', text: `Ê ${persona.name} đây nè 🐾 Hôm nay của cưng sao rồi, kể em nghe đi?` }];
   useEffect(() => {
+    let alive = true;
+    setLoading(true);
     (async () => {
       try {
         const hist = await Api.chatHistory();
+        if (!alive) return;
         if (Array.isArray(hist) && hist.length > 0) {
-          const mapped = hist.map((h, i) => ({
-            id: i + 1,
-            who: h.role === 'user' ? 'me' : 'them',
-            text: h.text,
-          }));
+          const mapped = hist.map((h, i) => ({ id: i + 1, who: h.role === 'user' ? 'me' : 'them', text: h.text }));
           idRef.current = mapped.length + 100;
           setMsgs(mapped);
+        } else {
+          setMsgs(greet());
         }
         scrollDown();
       } catch {
-        // giữ nguyên SEED
+        if (alive) setMsgs(greet());
       } finally {
-        setLoading(false);
+        if (alive) setLoading(false);
       }
     })();
-  }, []);
+    return () => { alive = false; };
+  }, [persona.key]);
 
   const push = (who, t, extra = {}) => {
     idRef.current += 1;
@@ -243,7 +248,7 @@ export default function ChatScreen({ navigation, route }) {
               </View>
             </View>
           </View>
-          <HeaderBtn name="info" onPress={() => {}} />
+          <HeaderBtn name="info" onPress={() => navigation?.navigate?.('PersonaDetail', { persona })} />
         </View>
 
         {/* Messages */}
@@ -255,7 +260,7 @@ export default function ChatScreen({ navigation, route }) {
           onContentSizeChange={scrollDown}
         >
           <View style={s.dayPill}>
-            <Text style={s.dayPillTxt}>Hôm nay · 13/07</Text>
+            <Text style={s.dayPillTxt}>Hôm nay · {dateLabel}</Text>
           </View>
 
           {msgs.map((m) =>
@@ -305,10 +310,7 @@ export default function ChatScreen({ navigation, route }) {
 
         {/* Input bar */}
         <View style={s.inbar}>
-          <View style={s.field}>
-            <Pressable style={s.mini} onPress={() => {}}>
-              <Glyph name="plus-circle" size={22} color={colors.muted} />
-            </Pressable>
+          <View style={[s.field, { paddingLeft: 14 }]}>
             <TextInput
               style={s.input}
               value={text}
@@ -319,9 +321,6 @@ export default function ChatScreen({ navigation, route }) {
               placeholder={`Nhắn cho ${persona.name}…`}
               placeholderTextColor={colors.muted}
             />
-            <Pressable style={s.mini} onPress={() => {}}>
-              <Glyph name="mic" size={20} color={colors.muted} />
-            </Pressable>
           </View>
           <SendBtn onPress={onSend} />
         </View>
