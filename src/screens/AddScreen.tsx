@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { View, Text, ScrollView, Pressable, TextInput, StyleSheet, Alert, ActivityIndicator } from 'react-native';
+import { View, Text, ScrollView, Pressable, TextInput, StyleSheet, Alert, ActivityIndicator, Keyboard } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Svg, { Path, Circle } from 'react-native-svg';
 import { colors, fonts, radii, hardShadow } from '../theme';
@@ -174,6 +174,7 @@ export default function AddScreen({ navigation }) {
 
   const createManual = async () => {
     if (!mValid || creating) return;
+    Keyboard.dismiss();
     setCreating(true);
     try {
       const repeat = buildRepeat();
@@ -212,6 +213,7 @@ export default function AddScreen({ navigation }) {
 
   const runParse = async () => {
     if (!text.trim() || loading) return;
+    Keyboard.dismiss();   // tắt bàn phím để thấy kết quả bên dưới
     setLoading(true);
     try {
       const res = await Api.nlpParse(text);
@@ -253,7 +255,7 @@ export default function AddScreen({ navigation }) {
         </View>
       )}
 
-      <ScrollView contentContainerStyle={{ padding: 18, paddingBottom: 40 }} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="always">
+      <ScrollView contentContainerStyle={{ padding: 18, paddingBottom: 40 }} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="always" keyboardDismissMode="on-drag">
         {/* Header */}
         <View style={s.hdr}>
           <Pressable onPress={() => navigation?.goBack?.()} style={s.back}>
@@ -481,7 +483,7 @@ export default function AddScreen({ navigation }) {
               <Text style={s.sectTxt}>Purrbo hiểu là</Text>
               <View style={s.pill}>
                 <Icon name="check" size={11} color={colors.mintDark} />
-                <Text style={s.pillTxt}>{complete ? '5/5' : '4/5'} xong</Text>
+                <Text style={s.pillTxt}>{detected.filter((f) => f.val).length + (remind ? 1 : 0)}/5 xong</Text>
               </View>
             </View>
 
