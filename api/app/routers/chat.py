@@ -27,9 +27,13 @@ async def _memory(db: AsyncSession, user_id: str, persona_key: str) -> PersonaMe
 
 @router.get("/chat")
 async def history(user_id: str = Depends(get_current_user), db: AsyncSession = Depends(get_session)):
+    st = await db.get(UserState, user_id)
+    pkey = st.persona_key if st else ""
     rows = (
         await db.execute(
-            select(ChatMessage).where(ChatMessage.user_id == user_id).order_by(ChatMessage.id).limit(200)
+            select(ChatMessage)
+            .where(ChatMessage.user_id == user_id, ChatMessage.persona_key == pkey)
+            .order_by(ChatMessage.id).limit(200)
         )
     ).scalars().all()
     return [{"role": m.role, "text": m.text} for m in rows]
@@ -37,9 +41,10 @@ async def history(user_id: str = Depends(get_current_user), db: AsyncSession = D
 
 @router.post("/chat", response_model=ChatOut)
 async def send(payload: ChatIn, user_id: str = Depends(get_current_user), db: AsyncSession = Depends(get_session)):
-    db.add(ChatMessage(user_id=user_id, role="user", text=payload.text))
-
     st = await db.get(UserState, user_id) or UserState(user_id=user_id)
+    pkey = st.persona_key or ""
+    db.add(ChatMessage(user_id=user_id, role="user", text=payload.text, persona_key=pkey))
+
     persona = (
         await db.execute(select(Persona).where(Persona.key == st.persona_key))
     ).scalar_one_or_none()
@@ -47,7 +52,9 @@ async def send(payload: ChatIn, user_id: str = Depends(get_current_user), db: As
 
     recent = (
         await db.execute(
-            select(ChatMessage).where(ChatMessage.user_id == user_id).order_by(ChatMessage.id.desc()).limit(6)
+            select(ChatMessage)
+            .where(ChatMessage.user_id == user_id, ChatMessage.persona_key == pkey)
+            .order_by(ChatMessage.id.desc()).limit(6)
         )
     ).scalars().all()
     recent_lines = [f"{m.role}: {m.text}" for m in reversed(recent)]
@@ -66,7 +73,7 @@ async def send(payload: ChatIn, user_id: str = Depends(get_current_user), db: As
         detail=payload.text,
         memory=memory_ctx,
     ))
-    db.add(ChatMessage(user_id=user_id, role="persona", text=reply))
+    db.add(ChatMessage(user_id=user_id, role="persona", text=reply, persona_key=pkey))
 
     # Cứ ~6 tin thì cô đọng lại tóm tắt (giảm cost, vẫn giữ moat)
     mem.msg_count += 1

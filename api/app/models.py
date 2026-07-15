@@ -53,6 +53,7 @@ class ChatMessage(Base):
     user_id: Mapped[str] = mapped_column(String(64), index=True)
     role: Mapped[str] = mapped_column(String(8))       # "user" | "persona"
     text: Mapped[str] = mapped_column(Text)
+    persona_key: Mapped[str] = mapped_column(String(32), default="", index=True)  # chat theo persona
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_now)
 
 

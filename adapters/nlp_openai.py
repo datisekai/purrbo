@@ -3,7 +3,7 @@ from __future__ import annotations
 
 import json
 import os
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from openai import AsyncOpenAI
 
@@ -20,10 +20,19 @@ def _today(now_iso: str) -> datetime:
     return datetime.now()
 
 
+def _week_table(d: datetime) -> str:
+    monday = d - timedelta(days=d.weekday())
+    this_w = " · ".join(f"{_WD_VI[i]}={(monday + timedelta(days=i)).strftime('%Y-%m-%d')}" for i in range(7))
+    next_w = " · ".join(f"{_WD_VI[i]}={(monday + timedelta(days=i + 7)).strftime('%Y-%m-%d')}" for i in range(7))
+    return f"Tuần NÀY: {this_w}\nTuần SAU: {next_w}"
+
+
 def _system(d: datetime) -> str:
     wd = _WD_VI[d.weekday()]
     return (
-        f"Hôm nay là {d.strftime('%Y-%m-%d')} ({wd}). "
+        f"Hôm nay là {d.strftime('%Y-%m-%d')} ({wd}).\n{_week_table(d)}\n"
+        "Dùng đúng bảng trên để ra ngày — 'thứ X tuần này/tuần sau' TRA THẲNG bảng, ĐỪNG tự tính. "
+        "'mai'=hôm nay+1, 'mốt'=hôm nay+2, 'cuối tuần'=T7 tuần này.\n"
         "Bạn tách một câu tiếng Việt thành lịch nhắc. Trả JSON đúng các khoá: "
         '{"name","time","repeat","place","withwho","remind"}.\n'
         "- name: việc gì, ngắn gọn, BỎ phần thời gian.\n"

@@ -65,6 +65,7 @@ async def _ensure_columns() -> None:
         "ALTER TABLE users ADD COLUMN push_token VARCHAR(256) DEFAULT ''",
         "ALTER TABLE users ADD COLUMN referral_code VARCHAR(12) DEFAULT ''",
         "ALTER TABLE users ADD COLUMN referred_by VARCHAR(64) DEFAULT ''",
+        "ALTER TABLE chat_messages ADD COLUMN persona_key VARCHAR(32) DEFAULT ''",
     ]
     async with SessionLocal() as db:
         for sql in stmts:
