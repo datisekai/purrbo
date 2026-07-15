@@ -12,12 +12,15 @@ import { navigate } from './navigation/ref';
 // Bọc try/catch để lỗi khởi tạo notif không bao giờ làm trắng app.
 try {
   Notifications.setNotificationHandler({
+    // Handler này CHỈ chạy khi noti tới lúc app đang MỞ (foreground). Lúc đó
+    // KHÔNG hiện banner/âm thanh — đang dùng app thì khỏi nhắc, tránh "mở app là
+    // bị noti". Nhắc lịch thật vẫn hiện khi app ĐÓNG/nền (handler không can thiệp).
     handleNotification: async () => ({
-      shouldShowAlert: true,
-      shouldPlaySound: true,
+      shouldShowAlert: false,
+      shouldPlaySound: false,
       shouldSetBadge: false,
-      shouldShowBanner: true,
-      shouldShowList: true,
+      shouldShowBanner: false,
+      shouldShowList: false,
     }),
   });
 } catch {}
