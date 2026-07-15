@@ -96,10 +96,18 @@ export async function registerPushToken(): Promise<string | null> {
   }
 }
 
-type Habit = { name: string; time?: string; repeat?: string };
+type Habit = { name: string; time?: string; repeat?: string; hint?: string };
 
 // 0=T2..6=CN  →  weekday của expo (1=CN..7=T7)
 const expoWeekday = (d: number) => ((d + 1) % 7) + 1;
+
+// "nhắc trước 1 tiếng" / "nhắc trước 15 phút" → số PHÚT dời sớm (0 nếu không có).
+function parseRemindLead(hint?: string): number {
+  const m = String(hint || '').toLowerCase().match(/nhắc trước\s*(\d+)\s*(phút|tiếng|giờ|h)/);
+  if (!m) return 0;
+  const n = parseInt(m[1], 10) || 0;
+  return /tiếng|giờ|h/.test(m[2]) ? n * 60 : n;
+}
 
 // Đặt lại toàn bộ nhắc theo lịch lặp của từng habit.
 //  repeat: "daily" | "weekly:0,2,4" (0=T2..6=CN) | "hours:2" (mỗi 2 tiếng)
@@ -107,7 +115,7 @@ let _lastSig = '';
 export async function scheduleHabitReminders(habits: Habit[], variant?: string): Promise<void> {
   // Chỉ lên lịch LẠI khi habit HOẶC persona đổi — tránh reschedule (và trên
   // simulator là re-bắn) mỗi lần Home focus.
-  const sig = JSON.stringify([variant || '', (habits || []).map((h) => [h.name, h.time, h.repeat])]);
+  const sig = JSON.stringify([variant || '', (habits || []).map((h) => [h.name, h.time, h.repeat, h.hint])]);
   if (sig === _lastSig) return;
   _lastSig = sig;
   try {
@@ -132,10 +140,14 @@ export async function scheduleHabitReminders(habits: Habit[], variant?: string):
       const minute = Number(m[2] || 0);
       if (Number.isNaN(hour)) continue;
 
+      // "nhắc trước X" → dời giờ nhắc SỚM lên leadMin phút.
+      const leadMin = parseRemindLead(h.hint);
+
       // MỘT LẦN vào ngày cụ thể → trigger DATE (bỏ qua nếu đã quá giờ)
       if (repeat.startsWith('once:')) {
         const [y, mo, d] = repeat.slice(5).split('-').map((x) => parseInt(x, 10));
         const when = new Date(y, (mo || 1) - 1, d || 1, hour, minute, 0);
+        when.setMinutes(when.getMinutes() - leadMin);   // Date tự xử lý qua ngày
         if (when.getTime() > Date.now()) {
           await Notifications.scheduleNotificationAsync({
             content, trigger: { type: Notifications.SchedulableTriggerInputTypes.DATE, date: when, channelId: 'purrbo-reminders' } as any,
@@ -144,11 +156,19 @@ export async function scheduleHabitReminders(habits: Habit[], variant?: string):
         continue;
       }
 
+      // Giờ nhắc (theo phút trong ngày) sau khi trừ lead — wrap 0..1439.
+      const totalMin = (((hour * 60 + minute - leadMin) % 1440) + 1440) % 1440;
+      const rHour = Math.floor(totalMin / 60);
+      const rMin = totalMin % 60;
+      // Lead vượt qua nửa đêm → lùi 1 ngày trong tuần (chỉ ảnh hưởng weekly).
+      const dayShift = hour * 60 + minute - leadMin < 0 ? 1 : 0;
+
       if (repeat.startsWith('weekly:')) {
         const days = repeat.split(':')[1].split(',').map((x) => parseInt(x, 10)).filter((x) => x >= 0 && x <= 6);
         for (const d of days) {
+          const dd = ((d - dayShift) % 7 + 7) % 7;
           await Notifications.scheduleNotificationAsync({
-            content, trigger: { type: Notifications.SchedulableTriggerInputTypes.WEEKLY, weekday: expoWeekday(d), hour, minute, channelId: 'purrbo-reminders' } as any,
+            content, trigger: { type: Notifications.SchedulableTriggerInputTypes.WEEKLY, weekday: expoWeekday(dd), hour: rHour, minute: rMin, channelId: 'purrbo-reminders' } as any,
           });
         }
         continue;
@@ -156,7 +176,7 @@ export async function scheduleHabitReminders(habits: Habit[], variant?: string):
 
       // daily
       await Notifications.scheduleNotificationAsync({
-        content, trigger: { type: Notifications.SchedulableTriggerInputTypes.DAILY, hour, minute, channelId: 'purrbo-reminders' } as any,
+        content, trigger: { type: Notifications.SchedulableTriggerInputTypes.DAILY, hour: rHour, minute: rMin, channelId: 'purrbo-reminders' } as any,
       });
     }
   } catch {
