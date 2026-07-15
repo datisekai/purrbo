@@ -24,6 +24,7 @@ export default function GcalConnectButton({
     androidClientId: GOOGLE_IDS.android,
     webClientId: GOOGLE_IDS.web,
     scopes: [GCAL_SCOPE],
+    extraParams: { access_type: 'offline', prompt: 'consent', include_granted_scopes: 'true' },
   });
 
   useEffect(() => {

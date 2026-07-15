@@ -35,6 +35,9 @@ export default function GoogleButton({
     androidClientId: GOOGLE_IDS.android,
     webClientId: GOOGLE_IDS.web,
     scopes: ['openid', 'profile', 'email', GCAL_SCOPE],
+    // Ép Google hỏi lại consent (hiện ô quyền lịch) thay vì trả grant cũ thiếu scope.
+    // access_type offline → kèm refresh_token để không rớt sau ~1h.
+    extraParams: { access_type: 'offline', prompt: 'consent', include_granted_scopes: 'true' },
   });
 
   useEffect(() => {
