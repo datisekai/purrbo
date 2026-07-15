@@ -26,9 +26,12 @@ Home cũ đọc như **todo list**: chồng thẻ trắng đều nhau, persona c
 
 ## 3. Quyết định đã chốt
 
-- **Thân thiết = VÒNG progress quanh chibi** (game-y), kèm số nhỏ Lv./điểm bên dưới.
-- **Thưởng khi Khoe = LEAN**: thanh/vòng thân thiết chạy lên +điểm, mèo nhảy đổi sang biểu cảm `love`, số streak nảy. KHÔNG burst tim/đá quý (để dành, tránh quá tay).
-- **Nhiệm vụ = strip nhỏ cuối Home** (không bỏ khỏi Home).
+- **CHỈ SỐ thân thiết KHÔNG ở Home** (đổi 2026-07-15, Finn). Bỏ vòng progress + Lv/điểm + chip Lv khỏi Home. Chỉ số quan hệ (Lv, tiến độ) để dành cho **màn Persona/Hồ sơ**.
+  - *Vì sao:* "thân thiết" gánh 2 việc — chỉ số (stats, hợp Persona) và payoff cảm xúc (hợp Home). Đặt chỉ số ở Home biến nhân vật thành "đồng hồ đo", hơi grind.
+- **Nhân vật vẫn là HERO ở Home** (trên "Sắp tới"), có animation: **nhún nhẹ liên tục** cho sống.
+- **Thưởng khi Khoe = CẢM XÚC (không chỉ số)**: mèo nhảy đổi biểu cảm `love` + **"+N 💗" bay thoáng** + câu thương (thoại đổi). Giữ linh hồn vòng lặp mà không dựng thanh/vòng cố định.
+- **Nhiệm vụ = strip nhỏ cuối Home**.
+- Streak (metric thói quen) vẫn ở góc trên; chỉ bỏ chip Lv (thân thiết).
 
 ## 4. Hành vi component
 

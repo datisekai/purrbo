@@ -1,7 +1,6 @@
 import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { View, Text, ScrollView, Pressable, RefreshControl, Animated, Easing, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import Svg, { Circle } from 'react-native-svg';
 import { useFocusEffect } from '@react-navigation/native';
 import { colors, fonts, radii, hardShadow } from '../theme';
 import { Icon } from '../components/Icon';
@@ -25,12 +24,6 @@ const ICON_STYLE: Record<string, { bg: string; col: string }> = {
 };
 const istyle = (ic: string) => ICON_STYLE[ic] ?? { bg: '#F1ECF6', col: colors.muted };
 
-// Vòng thân thiết quanh chibi (game-y)
-const AnimatedCircle = Animated.createAnimatedComponent(Circle);
-const RING = 74;            // bán kính vòng
-const RING_C = 2 * Math.PI * RING;
-const AFF_MAX = 500;        // điểm cần cho cấp thân thiết tiếp theo
-
 export default function HomeScreen({ navigation }: any) {
   const { user } = useAuth();
   const [st, setSt] = useState<any>(null);
@@ -42,8 +35,8 @@ export default function HomeScreen({ navigation }: any) {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [celebration, setCelebration] = useState<any>(null);
-  // Vòng thân thiết + thưởng lean
-  const dispAff = useRef(new Animated.Value(0)).current;
+  // Nhân vật sống (nhún nhẹ) + thưởng cảm xúc khi Khoe (KHÔNG chỉ số thân thiết)
+  const heroBob = useRef(new Animated.Value(0)).current;
   const floatY = useRef(new Animated.Value(0)).current;
   const [floatTxt, setFloatTxt] = useState('');
   const [heroExpr, setHeroExpr] = useState<'love' | 'happy'>('happy');
@@ -84,13 +77,17 @@ export default function HomeScreen({ navigation }: any) {
     }, [loadCore])
   );
 
-  // Vòng thân thiết chạy tới giá trị hiện tại (lúc load + sau khi Khoe).
+  // Nhân vật "sống": nhún nhẹ liên tục.
   useEffect(() => {
-    Animated.timing(dispAff, {
-      toValue: Math.min(st?.affinity_points ?? 0, AFF_MAX),
-      duration: 700, easing: Easing.out(Easing.cubic), useNativeDriver: false,
-    }).start();
-  }, [st?.affinity_points]);
+    const loop = Animated.loop(
+      Animated.sequence([
+        Animated.timing(heroBob, { toValue: 1, duration: 1500, easing: Easing.inOut(Easing.sin), useNativeDriver: true }),
+        Animated.timing(heroBob, { toValue: 0, duration: 1500, easing: Easing.inOut(Easing.sin), useNativeDriver: true }),
+      ])
+    );
+    loop.start();
+    return () => loop.stop();
+  }, [heroBob]);
 
   // Thưởng LEAN: "+N 💗" bay lên + mèo nhảy đổi biểu cảm love.
   const rewardBurst = (gain: number) => {
@@ -166,42 +163,31 @@ export default function HomeScreen({ navigation }: any) {
             <Text style={s.hi}>Chào {user?.name || 'bạn'}</Text>
             <Text style={s.sub}>Hôm nay {doneCount}/{habits.length} việc · cùng em nhé</Text>
           </View>
-          <Chip bg="#FFF0E6" fg={colors.coralDark} border="#FFD9C7" style={{ marginRight: 8 }}>
+          <Chip bg="#FFF0E6" fg={colors.coralDark} border="#FFD9C7">
             <Icon name="flamefill" size={14} color={colors.coralDark} />
             <Text style={{ fontFamily: fonts.heading, fontSize: 13, color: colors.coralDark }}>{streak}</Text>
-          </Chip>
-          <Chip bg="#FFEAF2" fg={colors.pinkDark} border="#FFCCDF">
-            <Icon name="heartfill" size={14} color={colors.pinkDark} />
-            <Text style={{ fontFamily: fonts.heading, fontSize: 13, color: colors.pinkDark }}>Lv.{lvl}</Text>
           </Chip>
         </View>
 
         <View style={s.hero}>
-          {/* Vòng thân thiết bao quanh chibi (game-y) */}
-          <View style={{ width: 168, height: 168, alignItems: 'center', justifyContent: 'center' }}>
-            <Svg width={168} height={168} style={{ position: 'absolute' }}>
-              <Circle cx={84} cy={84} r={RING} stroke="#E7DAF5" strokeWidth={9} fill="none" />
-              <AnimatedCircle
-                cx={84} cy={84} r={RING} stroke={colors.purple} strokeWidth={9} fill="none" strokeLinecap="round"
-                strokeDasharray={RING_C}
-                strokeDashoffset={dispAff.interpolate({ inputRange: [0, AFF_MAX], outputRange: [RING_C, 0], extrapolate: 'clamp' })}
-                transform="rotate(-90 84 84)"
-              />
-            </Svg>
-            <PersonaChibi variant={persona?.variant || 'mun'} size={132} items={equipped} expr={heroExpr} />
+          {/* Nhân vật là hero — nhún nhẹ cho sống; thưởng cảm xúc khi Khoe */}
+          <View style={{ alignItems: 'center', justifyContent: 'center', paddingTop: 2 }}>
+            <Animated.View style={{ transform: [{ translateY: heroBob.interpolate({ inputRange: [0, 1], outputRange: [3, -7] }) }] }}>
+              <PersonaChibi variant={persona?.variant || 'mun'} size={140} items={equipped} expr={heroExpr} />
+            </Animated.View>
             <Animated.View
               pointerEvents="none"
-              style={{ position: 'absolute', top: 26, opacity: floatY.interpolate({ inputRange: [0, 0.15, 1], outputRange: [0, 1, 0] }), transform: [{ translateY: floatY.interpolate({ inputRange: [0, 1], outputRange: [0, -48] }) }] }}
+              style={{ position: 'absolute', top: 18, opacity: floatY.interpolate({ inputRange: [0, 0.15, 1], outputRange: [0, 1, 0] }), transform: [{ translateY: floatY.interpolate({ inputRange: [0, 1], outputRange: [0, -50] }) }] }}
             >
               <Text style={s.float}>{floatTxt}</Text>
             </Animated.View>
           </View>
 
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 4 }}>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 6 }}>
             <Text style={s.pName}>{persona?.name || 'Mèo Mun'}</Text>
             <View style={s.ssr}><Icon name="star" size={9} color="#fff" /><Text style={{ fontFamily: fonts.heading, fontSize: 10, color: '#fff' }}>{persona?.rarity || 'SSR'}</Text></View>
           </View>
-          <Text style={s.pTag}>Thân thiết Lv.{lvl} · {aff}/{AFF_MAX} · {persona?.tag || 'cà khịa yêu'}</Text>
+          <Text style={s.pTag}>bạn đồng hành · {persona?.tag || 'cà khịa yêu'}</Text>
 
           <View style={[s.bubble, { marginTop: 12, alignSelf: 'stretch' }]}><Text style={{ fontFamily: fonts.body, fontSize: 14, color: colors.ink, lineHeight: 21 }}>{line || personaCopy(persona?.variant).home}</Text></View>
         </View>
