@@ -11,11 +11,11 @@ class _Resilient:
         self._p = primary
         self._f = fallback
 
-    async def parse(self, text: str) -> dict:
+    async def parse(self, text: str, now: str = "") -> dict:
         try:
-            return await self._p.parse(text)
+            return await self._p.parse(text, now)
         except Exception:
-            return await self._f.parse(text)
+            return await self._f.parse(text, now)
 
 
 def make_schedule() -> SchedulePort:

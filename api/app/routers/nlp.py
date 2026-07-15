@@ -12,5 +12,5 @@ router = APIRouter(tags=["nlp"])
 async def parse(body: NlpIn, user_id: str = Depends(get_current_user)):
     """Nhập lịch bằng lời → tách field, báo field còn thiếu (persona sẽ hỏi thêm)."""
     parser = get_schedule()
-    data = await parser.parse(body.text)
+    data = await parser.parse(body.text, body.now)
     return NlpOut(**data)

@@ -131,6 +131,18 @@ export async function scheduleHabitReminders(habits: Habit[]): Promise<void> {
       const minute = Number(m[2] || 0);
       if (Number.isNaN(hour)) continue;
 
+      // MỘT LẦN vào ngày cụ thể → trigger DATE (bỏ qua nếu đã quá giờ)
+      if (repeat.startsWith('once:')) {
+        const [y, mo, d] = repeat.slice(5).split('-').map((x) => parseInt(x, 10));
+        const when = new Date(y, (mo || 1) - 1, d || 1, hour, minute, 0);
+        if (when.getTime() > Date.now()) {
+          await Notifications.scheduleNotificationAsync({
+            content, trigger: { type: Notifications.SchedulableTriggerInputTypes.DATE, date: when, channelId: 'purrbo-reminders' } as any,
+          });
+        }
+        continue;
+      }
+
       if (repeat.startsWith('weekly:')) {
         const days = repeat.split(':')[1].split(',').map((x) => parseInt(x, 10)).filter((x) => x >= 0 && x <= 6);
         for (const d of days) {

@@ -228,15 +228,19 @@ export default function CalendarScreen({ navigation }) {
   const daysInMonth = new Date(mYear, mMonth + 1, 0).getDate();
   const firstOffset = dowIdx(new Date(mYear, mMonth, 1)); // ô trống đầu tháng
   const selDow = dowIdx(selDate);
-  // habit có hiện vào ngày (theo thứ) không? weekly lọc theo thứ, daily/hours luôn có
-  const showsOn = (it, di) => {
+  const ymd = (d) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+  // habit có hiện vào NGÀY cụ thể không? once=đúng ngày, weekly=đúng thứ, daily/hours=luôn.
+  const showsOnDate = (it, date) => {
     if (it.type !== 'habit') return true;
     const rep = String(it.repeat || 'daily');
-    if (rep.startsWith('weekly:')) return rep.split(':')[1].split(',').map(Number).includes(di);
+    if (rep.startsWith('once:')) return rep.slice(5) === ymd(date);
+    if (rep.startsWith('weekly:')) return rep.split(':')[1].split(',').map(Number).includes(dowIdx(date));
     return true;
   };
-  const hasTaskOnDow = (di) => items.some((it) => showsOn(it, di));
-  const visibleItems = items.filter((it) => showsOn(it, selDow));
+  const hasTaskOnDate = (date) => items.some((it) => showsOnDate(it, date));
+  // Sort theo GIỜ tăng dần (trích HH:MM kể cả time bị lẫn chữ). Không giờ → cuối.
+  const timeMin = (it) => { const m = String(it.time || '').match(/(\d{1,2})[:h](\d{0,2})/); return m ? Number(m[1]) * 60 + Number(m[2] || 0) : 9999; };
+  const visibleItems = items.filter((it) => showsOnDate(it, selDate)).sort((a, b) => timeMin(a) - timeMin(b));
   const selLabel = `${String(selDate.getDate()).padStart(2, '0')}/${String(selDate.getMonth() + 1).padStart(2, '0')} · ${DOW_LABEL[selDow]}`;
   const isToday = sameDay(selDate, today);
 
@@ -294,7 +298,7 @@ export default function CalendarScreen({ navigation }) {
                 >
                   <Text style={[s.dow, isTdy && s.dayTodayTxt]}>{DOW_LABEL[i]}</Text>
                   <Text style={[s.num, isTdy && s.dayTodayTxt]}>{d.getDate()}</Text>
-                  {hasTaskOnDow(i) && <View style={[s.dot, isTdy && { backgroundColor: '#fff' }]} />}
+                  {hasTaskOnDate(d) && <View style={[s.dot, isTdy && { backgroundColor: '#fff' }]} />}
                 </Pressable>
               );
             })}
@@ -319,7 +323,7 @@ export default function CalendarScreen({ navigation }) {
                   <Pressable key={n} onPress={() => setSelDate(d)} style={s.mCellWrap}>
                     <View style={[s.mCell, isTdy && s.mCellToday, isSel && s.mCellSel]}>
                       <Text style={[s.mNum, isTdy && s.dayTodayTxt]}>{n}</Text>
-                      {hasTaskOnDow(dowIdx(d)) && <View style={[s.mDot, isTdy && { backgroundColor: '#fff' }]} />}
+                      {hasTaskOnDate(d) && <View style={[s.mDot, isTdy && { backgroundColor: '#fff' }]} />}
                     </View>
                   </Pressable>
                 );

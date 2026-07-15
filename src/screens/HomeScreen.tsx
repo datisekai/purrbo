@@ -129,13 +129,22 @@ export default function HomeScreen({ navigation }: any) {
   const aff = st?.affinity_points ?? 0;
   const lvl = st?.affinity_level ?? 1;
   const streak = st?.streak ?? 0;
-  const doneCount = habits.filter((h) => h.done).length;
+  const doneCount = todayHabits.filter((h) => h.done).length;
 
   // ── Việc SẮP TỚI: undone gần giờ hiện tại nhất (ưu tiên còn phía trước trong ngày) ──
   const parseHM = (t: string) => { const m = String(t || '').match(/(\d{1,2})[:h](\d{0,2})/); return m ? Number(m[1]) * 60 + Number(m[2] || 0) : null; };
   const nowD = new Date();
   const nowMin = nowD.getHours() * 60 + nowD.getMinutes();
-  const undone = habits.filter((h) => !h.done);
+  // Chỉ việc áp dụng HÔM NAY: once=đúng ngày, weekly=đúng thứ, daily/hours=luôn.
+  const todayYmd = `${nowD.getFullYear()}-${String(nowD.getMonth() + 1).padStart(2, '0')}-${String(nowD.getDate()).padStart(2, '0')}`;
+  const showsToday = (h: any) => {
+    const rep = String(h.repeat || 'daily');
+    if (rep.startsWith('once:')) return rep.slice(5) === todayYmd;
+    if (rep.startsWith('weekly:')) return rep.split(':')[1].split(',').map(Number).includes((nowD.getDay() + 6) % 7);
+    return true;
+  };
+  const todayHabits = habits.filter(showsToday);
+  const undone = todayHabits.filter((h) => !h.done);
   const timed = undone.map((h) => ({ h, t: parseHM(h.time) })).filter((x) => x.t != null) as { h: any; t: number }[];
   const future = timed.filter((x) => x.t >= nowMin).sort((a, b) => a.t - b.t);
   const nextUp = future[0] || timed.sort((a, b) => a.t - b.t)[0] || (undone[0] ? { h: undone[0], t: null } : null);
@@ -162,7 +171,7 @@ export default function HomeScreen({ navigation }: any) {
         <View style={s.top}>
           <View style={{ flex: 1 }}>
             <Text style={s.hi}>Chào {user?.name || 'bạn'}</Text>
-            <Text style={s.sub}>Hôm nay {doneCount}/{habits.length} việc · cùng em nhé</Text>
+            <Text style={s.sub}>Hôm nay {doneCount}/{todayHabits.length} việc · cùng em nhé</Text>
           </View>
           <Chip bg="#FFF0E6" fg={colors.coralDark} border="#FFD9C7">
             <Icon name="flamefill" size={14} color={colors.coralDark} />
@@ -227,7 +236,7 @@ export default function HomeScreen({ navigation }: any) {
 
         {loading && habits.length === 0 && [0, 1, 2].map((i) => <SkeletonRow key={'sk' + i} />)}
 
-        {!loading && habits.length === 0 && (
+        {!loading && todayHabits.length === 0 && (
           <View style={s.empty}>
             <AnimatedMascot size={72} />
             <Text style={s.emptyTitle}>Chưa có việc nào hôm nay</Text>
@@ -236,7 +245,7 @@ export default function HomeScreen({ navigation }: any) {
           </View>
         )}
 
-        {habits.filter((h) => !(nextUp && h.id === nextUp.h.id)).map((h) => {
+        {todayHabits.filter((h) => !(nextUp && h.id === nextUp.h.id)).sort((a, b) => (parseHM(a.time) ?? 9999) - (parseHM(b.time) ?? 9999)).map((h) => {
           const ic = istyle(h.icon);
           return (
             <View key={h.id} style={[s.habit, h.done && { opacity: 0.55 }]}>

@@ -33,9 +33,10 @@ class DialoguePort(Protocol):
 class SchedulePort(Protocol):
     """Tách lịch từ ngôn ngữ tự nhiên → field có cấu trúc (OpenAI hôm nay).
 
-    Trả dict: {name, time, place, withwho, remind, missing:[field còn thiếu]}.
+    Trả dict: {name, time, repeat, place, withwho, remind, missing:[field còn thiếu]}.
+    `now` = ISO datetime của client (để resolve 'hôm nay/mai/thứ 7 tuần này').
     """
-    async def parse(self, text: str) -> dict: ...
+    async def parse(self, text: str, now: str = "") -> dict: ...
 
 
 class PushPort(Protocol):

@@ -102,11 +102,13 @@ class ProfileOut(BaseModel):
 
 class NlpIn(BaseModel):
     text: str = Field(..., min_length=1, max_length=500)  # AD-7 cap độ dài
+    now: str = ""  # ISO datetime của client → resolve 'hôm nay/mai/thứ 7 tuần này'
 
 
 class NlpOut(BaseModel):
     name: str
     time: str = ""
+    repeat: str = "daily"   # once:YYYY-MM-DD | daily | weekly:d1,d2 | hours:N
     place: str = ""
     withwho: str = ""
     remind: str = ""
