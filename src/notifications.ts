@@ -16,19 +16,16 @@ try {
     // Handler này CHỈ chạy khi noti tới lúc app đang MỞ (foreground). Lúc đó
     // KHÔNG hiện banner/âm thanh — đang dùng app thì khỏi nhắc, tránh "mở app là
     // bị noti". Nhắc lịch thật vẫn hiện khi app ĐÓNG/nền (handler không can thiệp).
-    handleNotification: async (notification) => {
-      // Noti TEST (data.foregroundTest) → hiện cả khi app đang mở (user chủ động
-      // bấm "Gửi thử", cần thấy ngay). Noti nhắc lịch thật vẫn im khi foreground
-      // (tránh "mở app là bị noti") — vẫn hiện bình thường khi app đóng/nền.
-      const fg = !!(notification?.request?.content?.data as any)?.foregroundTest;
-      return {
-        shouldShowAlert: fg,
-        shouldPlaySound: fg,
-        shouldSetBadge: false,
-        shouldShowBanner: fg,
-        shouldShowList: fg,
-      };
-    },
+    // Hiện noti CẢ khi app đang mở (foreground). Trước đây tắt để tránh bug cũ
+    // "mở app là bị bắn tức thì"; nay trigger đã đúng loại (DAILY/WEEKLY/DATE) nên
+    // reminder chỉ bắn đúng giờ → hiện banner trong app là hợp lý, không phải spam.
+    handleNotification: async () => ({
+      shouldShowAlert: true,
+      shouldPlaySound: true,
+      shouldSetBadge: false,
+      shouldShowBanner: true,
+      shouldShowList: true,
+    }),
   });
 } catch {}
 
