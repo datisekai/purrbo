@@ -173,10 +173,12 @@ export default function HomeScreen({ navigation }: any) {
             <Text style={s.hi}>Chào {user?.name || 'bạn'}</Text>
             <Text style={s.sub}>Hôm nay {doneCount}/{todayHabits.length} việc · cùng em nhé</Text>
           </View>
-          <Chip bg="#FFF0E6" fg={colors.coralDark} border="#FFD9C7">
-            <Icon name="flamefill" size={14} color={colors.coralDark} />
-            <Text style={{ fontFamily: fonts.heading, fontSize: 13, color: colors.coralDark }}>{streak}</Text>
-          </Chip>
+          <Pressable onPress={() => navigation?.navigate?.('Leaderboard')}>
+            <Chip bg="#FFF0E6" fg={colors.coralDark} border="#FFD9C7">
+              <Icon name="flamefill" size={14} color={colors.coralDark} />
+              <Text style={{ fontFamily: fonts.heading, fontSize: 13, color: colors.coralDark }}>{streak}</Text>
+            </Chip>
+          </Pressable>
         </View>
 
         <View style={[s.hero, { backgroundColor: personaTheme(persona?.variant).surface }]}>

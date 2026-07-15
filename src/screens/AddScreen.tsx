@@ -28,6 +28,16 @@ function IconX({ name, size = 20, color = colors.ink, stroke = 2.4 }) {
   }
 }
 
+// Mẫu lịch nhanh — chạm để điền sẵn form (user tinh chỉnh rồi tạo).
+const TEMPLATES = [
+  { name: 'Uống nước', icon: 'droplet', mode: 'hours', every: 2, time: '' },
+  { name: 'Đi làm', icon: 'star', mode: 'daily', time: '08:00' },
+  { name: 'Ăn trưa', icon: 'heart', mode: 'daily', time: '12:00' },
+  { name: 'Tập gym', icon: 'dumbbell', mode: 'daily', time: '18:00' },
+  { name: 'Đọc sách', icon: 'book', mode: 'daily', time: '21:00' },
+  { name: 'Ngủ sớm', icon: 'star', mode: 'daily', time: '23:00' },
+];
+
 // Icon chọn được ở chế độ tự nhập (dùng Icon.js có sẵn)
 const ICON_CHOICES = [
   { key: 'droplet', bg: '#E6F7FF', col: colors.skyDark },
@@ -92,6 +102,11 @@ export default function AddScreen({ navigation }) {
       setToast(false);
       navigation?.goBack?.();
     }, 1100);
+  };
+
+  const applyTemplate = (t: any) => {
+    setMName(t.name); setMIcon(t.icon); setRMode(t.mode);
+    if (t.mode === 'hours') setREvery(t.every); else setMTime(t.time);
   };
 
   const createManual = async () => {
@@ -204,6 +219,16 @@ export default function AddScreen({ navigation }) {
 
         {mode === 'manual' && (
           <View style={s.mcard}>
+            <Text style={s.mLabel}>Mẫu nhanh</Text>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} keyboardShouldPersistTaps="always" style={{ marginBottom: 16 }} contentContainerStyle={{ gap: 8 }}>
+              {TEMPLATES.map((t) => (
+                <Pressable key={t.name} onPress={() => applyTemplate(t)} style={s.tpl}>
+                  <Icon name={t.icon} size={15} color={colors.purpleDark} />
+                  <Text style={s.tplTxt}>{t.name}</Text>
+                </Pressable>
+              ))}
+            </ScrollView>
+
             <Text style={s.mLabel}>Tên việc</Text>
             <TextInput
               value={mName}
@@ -492,6 +517,12 @@ const s = StyleSheet.create({
     backgroundColor: '#fff', borderWidth: 1.5, borderColor: '#E3D8FF', borderRadius: radii.pill,
     paddingVertical: 7, paddingHorizontal: 12,
   },
+  tpl: {
+    flexDirection: 'row', alignItems: 'center', gap: 6,
+    backgroundColor: '#F1ECF6', borderWidth: 1.5, borderColor: '#E3D8FF', borderRadius: radii.pill,
+    paddingVertical: 8, paddingHorizontal: 12,
+  },
+  tplTxt: { fontFamily: fonts.heading, fontSize: 13, color: colors.purpleDark },
   exChipTxt: { fontFamily: fonts.heading, fontSize: 12, color: colors.purpleDark },
 
   // Section

@@ -42,9 +42,9 @@ function Eyes({ kind = 'round' }) {
   const eye = (cx) => {
     switch (kind) {
       case 'sparkle':
-        return <G key={cx}><Circle cx={cx} cy={33} r={3.8} fill={D} /><Circle cx={cx + 1.2} cy={31.4} r={1.3} fill="#fff" /><Circle cx={cx - 1} cy={34} r={0.7} fill="#fff" /></G>;
+        return <G key={cx}><Circle cx={cx} cy={33.3} r={4.3} fill={D} /><Circle cx={cx + 1.4} cy={31.2} r={1.6} fill="#fff" /><Circle cx={cx - 1.3} cy={34.4} r={0.9} fill="#fff" /></G>;
       case 'big':
-        return <G key={cx}><Circle cx={cx} cy={33} r={4.6} fill={D} /><Circle cx={cx + 1.4} cy={31} r={1.8} fill="#fff" /><Circle cx={cx - 1.2} cy={34.4} r={0.9} fill="#fff" /></G>;
+        return <G key={cx}><Circle cx={cx} cy={33.2} r={5.1} fill={D} /><Circle cx={cx + 1.7} cy={30.9} r={2.1} fill="#fff" /><Circle cx={cx - 1.5} cy={34.8} r={1} fill="#fff" /></G>;
       case 'wide':
         return <G key={cx}><Circle cx={cx} cy={33} r={4.2} fill="#fff" stroke={D} strokeWidth={2} /><Circle cx={cx} cy={33} r={2} fill={D} /></G>;
       case 'tsun': // nửa mí — lườm dễ thương
@@ -63,7 +63,7 @@ function Eyes({ kind = 'round' }) {
         return <G key={cx}><Circle cx={cx} cy={34} r={3.2} fill={D} /><Circle cx={cx + 0.8} cy={32.8} r={1} fill="#fff" /></G>;
       case 'round':
       default:
-        return <G key={cx}><Circle cx={cx} cy={33} r={3.4} fill={D} /><Circle cx={cx + 1} cy={31.8} r={1} fill="#fff" /></G>;
+        return <G key={cx}><Circle cx={cx} cy={33.4} r={4.3} fill={D} /><Circle cx={cx + 1.4} cy={31.5} r={1.6} fill="#fff" /><Circle cx={cx - 1.5} cy={34.6} r={0.8} fill="#fff" /></G>;
     }
   };
   // mắt angry cần đối xứng (mắt phải nghịch chiều)
@@ -150,8 +150,8 @@ function FaceSvg({ variant = 'mun', items, expr }) {
       ) : (
         <Eyes kind={em.eye} />
       )}
-      <Circle cx="20" cy="41" r={em.blush ? 3.9 : 3.2} fill="#FF7AA8" opacity={em.blush ? 0.9 : 0.6} />
-      <Circle cx="44" cy="41" r={em.blush ? 3.9 : 3.2} fill="#FF7AA8" opacity={em.blush ? 0.9 : 0.6} />
+      <Circle cx="19.5" cy="41.5" r={em.blush ? 4.6 : 3.9} fill="#FF7AA8" opacity={em.blush ? 0.95 : 0.72} />
+      <Circle cx="44.5" cy="41.5" r={em.blush ? 4.6 : 3.9} fill="#FF7AA8" opacity={em.blush ? 0.95 : 0.72} />
       <Mouth kind={em.mouth} />
       {items?.neck && <Accessory k={items.neck} />}
       {items?.hat && <Accessory k={items.hat} />}

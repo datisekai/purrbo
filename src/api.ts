@@ -87,6 +87,7 @@ export const Api = {
   profile: () => req('/profile'),
   updateProfile: (body: { name?: string; timezone?: string }) => req('/profile', { method: 'PUT', body }),
   stats: () => req('/stats') as Promise<{ streak: number; best_streak: number; total_done: number; active_days: number; days: { ymd: string; dd: number; count: number }[] }>,
+  leaderboard: () => req('/leaderboard') as Promise<{ top: { rank: number; name: string; streak: number; level: number; me: boolean }[]; my_rank: number | null }>,
   nlpParse: (text: string) => req('/nlp/parse', { method: 'POST', body: { text, now: new Date().toISOString() } }),
   chatHistory: () => req('/chat'),
   sendChat: (text: string) => req('/chat', { method: 'POST', body: { text } }),
