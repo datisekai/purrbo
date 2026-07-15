@@ -9,6 +9,7 @@ import { colors, fonts, radii, hardShadow } from '../theme';
 import { Icon } from '../components/Icon';
 import { PersonaFace } from '../components/PersonaFace';
 import { personaCopy } from '../personaCopy';
+import { personaTheme } from '../personaTheme';
 import { Api } from '../api';
 
 // Icon còn thiếu trong Icon.js → SVG inline tại chỗ (không sửa Icon.js).
@@ -237,7 +238,7 @@ export default function ChatScreen({ navigation, route }) {
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       >
         {/* Header */}
-        <View style={s.header}>
+        <View style={[s.header, { backgroundColor: personaTheme(persona.variant).surface }]}>
           <HeaderBtn name="back" onPress={() => navigation?.goBack?.()} />
           <View style={s.who}>
             <PersonaFace variant={persona.variant} size={42} ring={persona.rarity === 'SSR' ? 'ssr' : undefined} />

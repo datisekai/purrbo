@@ -10,6 +10,7 @@ import { Button, SkeletonRow } from '../components/ui';
 import { CelebrationModal } from '../components/CelebrationModal';
 import { Api } from '../api';
 import { personaCopy } from '../personaCopy';
+import { personaTheme } from '../personaTheme';
 import { getGcalToken, getLarkToken } from '../googleCalendar';
 import { playSuccess } from '../sound';
 
@@ -328,7 +329,7 @@ export default function CalendarScreen({ navigation }) {
         )}
 
         {/* Persona note */}
-        <View style={s.note}>
+        <View style={[s.note, { backgroundColor: personaTheme(activePersona.variant).surface }]}>
           <PersonaFace variant={activePersona.variant} ring="ssr" size={48} />
           <View style={s.bubble}>
             <View style={s.who}>

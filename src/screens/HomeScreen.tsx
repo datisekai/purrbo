@@ -13,6 +13,7 @@ import { Api } from '../api';
 import { useAuth } from '../auth';
 import { scheduleHabitReminders } from '../notifications';
 import { personaCopy } from '../personaCopy';
+import { personaTheme } from '../personaTheme';
 import { playSuccess } from '../sound';
 
 const NUDGE = 'Ơ 3 tiếng chưa uống giọt nào? Định làm khô mực cho em buồn hả 🙄💧';
@@ -169,7 +170,7 @@ export default function HomeScreen({ navigation }: any) {
           </Chip>
         </View>
 
-        <View style={s.hero}>
+        <View style={[s.hero, { backgroundColor: personaTheme(persona?.variant).surface }]}>
           {/* Nhân vật là hero — nhún nhẹ cho sống; thưởng cảm xúc khi Khoe */}
           <View style={{ alignItems: 'center', justifyContent: 'center', paddingTop: 2 }}>
             <Animated.View style={{ transform: [{ translateY: heroBob.interpolate({ inputRange: [0, 1], outputRange: [3, -7] }) }] }}>
