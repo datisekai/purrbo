@@ -118,3 +118,73 @@ export function personaWinback(variant: string | undefined, state: 'sad' | 'back
   const sub = state === 'back' ? w.subBack : state === 'bye' ? w.subBye : w.subSad;
   return { text, sub };
 }
+
+// Câu nói Home ĐỘNG — phân tích tiến độ hôm nay của user theo giọng từng persona.
+// state: empty (chưa có việc) · none (0 việc xong) · some (làm dở) · all (xong hết).
+// Placeholder: {done} {total} {next} (tên việc kế tiếp).
+type HomeLine = { empty: string; none: string; some: string; all: string };
+const HOME_LINE: Record<string, HomeLine> = {
+  mun: {
+    empty: 'Hôm nay trống trơn 😼 thêm việc đi rồi em còn có cái mà cằn nhằn chứ.',
+    none: 'Cả ngày chưa nhúc nhích gì hả 🙄 làm "{next}" trước đi, đừng để em nhắc lần hai.',
+    some: 'Xong {done}/{total} rồi đó, còn "{next}" nữa — đừng có bỏ ngang nha 😼',
+    all: 'Ơ xong hết {total} việc thật à 😼 ừ thì… hôm nay cưng được đấy, em thương thêm tí.',
+  },
+  cam: {
+    empty: 'Hôm nay chưa có lịch gì nè cưng 🥺 thêm việc để em canh cho nha~',
+    none: 'Cưng ơi bắt đầu với "{next}" nha 💗 em tin cưng làm được mà~',
+    some: 'Cưng làm được {done}/{total} rồi nè, giỏi ghê 🥰 ráng nốt "{next}" nha~',
+    all: 'Xong hết {total} việc luôn á 🥺💗 cưng của em siêu nhất nhà!',
+  },
+  ly: {
+    empty: 'Chưa có việc gì. Thêm vào đi rồi anh xem 😏',
+    none: 'Chưa làm gì hả. Bắt đầu với "{next}" đi, anh đợi 😏',
+    some: '{done}/{total}. Cũng ổn. Làm nốt "{next}" cho anh 😏🔥',
+    all: 'Xong hết {total} việc. Được đấy, anh có để ý 😏',
+  },
+  sep: {
+    empty: 'Chưa có kế hoạch nào hôm nay. Thêm việc vào để anh theo dõi.',
+    none: 'Bắt đầu ngay với "{next}". Anh chờ kết quả.',
+    some: 'Đã xong {done}/{total}. Giữ nhịp, còn "{next}" — hoàn thành nốt.',
+    all: 'Hoàn thành trọn {total} việc. Anh hài lòng. Giữ phong độ.',
+  },
+  bong: {
+    empty: 'Hôm nay chưa có gì hếtt 🥺 thêm việc cho Bông canh vớiii~',
+    none: 'Cưng ơiii làm "{next}" trước nhaa 💗 Bông tin cưng lắmm~',
+    some: 'Cưng xong {done}/{total} rồiii giỏi quáaa 🥺 ráng "{next}" nữa thôii~',
+    all: 'XONG HẾT {total} VIỆC LUÔNN 🥺💗 Bông tự hào muốn khócc!',
+  },
+  xu: {
+    empty: 'Hôm nay trống nè! Thêm việc vô cho máu 🔥',
+    none: 'CHIẾN THÔI CƯNG 🔥 quẩy "{next}" trước điii!!',
+    some: '{done}/{total} RỒI NÈ 🔥 còn "{next}" thôi, CHÁY NỐT ĐI!!',
+    all: 'XONG HẾT {total} VIỆC 🔥🎉 CƯNG ĐỈNH KM LUÔN Á!!',
+  },
+  bo: {
+    empty: 'Hôm nay chưa có việc gì 🍵 thêm vô lúc nào rảnh cũng được.',
+    none: 'Từ từ làm "{next}" thôi cưng 🍃 không vội đâu.',
+    some: 'Xong {done}/{total} rồi, chill phết 🍵 nốt "{next}" là ổn.',
+    all: 'Xong hết {total} việc rồi đó 🍃 nhẹ nhàng mà đỉnh, cưng nghỉ đi.',
+  },
+  sin: {
+    empty: 'Hôm nay chưa có việc gì cưng ơiii 🐶 thêm vô cho Sìn canh nhaa!',
+    none: 'Cưng ơiii làm "{next}" điii 🐶💗 Sìn cổ vũ hết mình nè!',
+    some: 'Cưng xong {done}/{total} rồiii 🐶 Sìn vẫy đuôi mừng, ráng "{next}" nhaa!',
+    all: 'XONG HẾT {total} VIỆC 🐶💗 Sìn nhảy tưng sủa cả xóm luôn á!',
+  },
+};
+
+export function personaHomeLine(
+  variant: string | undefined,
+  data: { done: number; total: number; next?: string },
+): string {
+  const t = HOME_LINE[variant || 'mun'] || HOME_LINE.mun;
+  const { done, total } = data;
+  const next = data.next || 'việc đầu tiên';
+  let tpl: string;
+  if (total <= 0) tpl = t.empty;
+  else if (done <= 0) tpl = t.none;
+  else if (done >= total) tpl = t.all;
+  else tpl = t.some;
+  return tpl.replace('{done}', String(done)).replace('{total}', String(total)).replace('{next}', next);
+}

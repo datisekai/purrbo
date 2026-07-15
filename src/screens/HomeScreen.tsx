@@ -12,7 +12,7 @@ import { Button, Chip, ProgressBar, SkeletonRow } from '../components/ui';
 import { Api } from '../api';
 import { useAuth } from '../auth';
 import { scheduleHabitReminders } from '../notifications';
-import { personaCopy } from '../personaCopy';
+import { personaCopy, personaHomeLine } from '../personaCopy';
 import { personaTheme } from '../personaTheme';
 import { playSuccess } from '../sound';
 
@@ -201,7 +201,7 @@ export default function HomeScreen({ navigation }: any) {
           </View>
           <Text style={s.pTag}>bạn đồng hành · {persona?.tag || 'cà khịa yêu'}</Text>
 
-          <View style={[s.bubble, { marginTop: 12, alignSelf: 'stretch' }]}><Text style={{ fontFamily: fonts.body, fontSize: 14, color: colors.ink, lineHeight: 21 }}>{line || personaCopy(persona?.variant).home}</Text></View>
+          <View style={[s.bubble, { marginTop: 12, alignSelf: 'stretch' }]}><Text style={{ fontFamily: fonts.body, fontSize: 14, color: colors.ink, lineHeight: 21 }}>{line || personaHomeLine(persona?.variant, { done: doneCount, total: todayHabits.length, next: nextUp?.h?.name })}</Text></View>
         </View>
 
         {/* SẮP TỚI — spotlight: người đồng hành đang đợi cưng làm việc kế tiếp */}

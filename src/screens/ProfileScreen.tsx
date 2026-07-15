@@ -1,6 +1,7 @@
-import React, { useCallback, useEffect, useState } from 'react';
-import { View, Text, ScrollView, Pressable, Alert, StyleSheet } from 'react-native';
+import React, { useCallback, useState } from 'react';
+import { View, Text, ScrollView, Pressable, Alert, StyleSheet, RefreshControl } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useFocusEffect } from '@react-navigation/native';
 import Svg, { Path, Circle, Rect } from 'react-native-svg';
 import { colors, fonts, radii, hardShadow } from '../theme';
 import { Icon } from '../components/Icon';
@@ -64,6 +65,9 @@ export default function ProfileScreen({ navigation }: any) {
     ]);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [collection, setCollection] = useState<CollItem[] | null>(null);
+  const [stats, setStats] = useState<any>(null);   // /stats: active_days…
+  const [stateData, setStateData] = useState<any>(null); // /state: affinity_points…
+  const [refreshing, setRefreshing] = useState(false);
 
   const refreshCollection = useCallback(async () => {
     try {
@@ -74,17 +78,18 @@ export default function ProfileScreen({ navigation }: any) {
     }
   }, []);
 
-  useEffect(() => {
-    (async () => {
-      try {
-        const p = await Api.profile();
-        setProfile(p);
-      } catch {
-        // giữ UI mặc định
-      }
-      await refreshCollection();
-    })();
+  const load = useCallback(async () => {
+    // Nạp song song, chỗ nào lỗi thì bỏ qua (giữ UI cũ).
+    const [p, stt, sd] = await Promise.allSettled([Api.profile(), Api.stats(), Api.state()]);
+    if (p.status === 'fulfilled') setProfile(p.value);
+    if (stt.status === 'fulfilled') setStats(stt.value);
+    if (sd.status === 'fulfilled') setStateData(sd.value);
+    await refreshCollection();
   }, [refreshCollection]);
+
+  // Refetch MỖI lần vào màn (sau khoe/mua/mở túi → luôn số mới nhất).
+  useFocusEffect(useCallback(() => { load(); }, [load]));
+  const onRefresh = useCallback(async () => { setRefreshing(true); await load(); setRefreshing(false); }, [load]);
 
   // Tap persona đã sở hữu → đổi bạn đồng hành hiện tại rồi refresh.
   const onPickPersona = async (key?: string) => {
@@ -104,12 +109,12 @@ export default function ProfileScreen({ navigation }: any) {
     .toLowerCase()
     .replace(/\s+/g, '') || 'finn';
 
-  // ----- Stats -----
-  const stats = [
-    { ic: 'flamefill', bg: '#FFF0E6', col: colors.coralDark, n: String(profile?.streak ?? 12), l: 'Streak' },
-    { ic: 'calendar', bg: '#E6F7FF', col: colors.skyDark, n: '47', l: 'Tổng ngày' },
-    { ic: 'check', bg: '#EAF7F1', col: colors.mintDark, n: String(profile?.total_done ?? 320), l: 'Việc xong' },
-    { ic: 'star', bg: '#FFEAF2', col: colors.pinkDark, n: String(profile?.owned_count ?? 1), l: 'Bạn thân SSR' },
+  // ----- Stats (SỐ THẬT — không fallback số giả) -----
+  const statCards = [
+    { ic: 'flamefill', bg: '#FFF0E6', col: colors.coralDark, n: String(profile?.streak ?? 0), l: 'Streak' },
+    { ic: 'calendar', bg: '#E6F7FF', col: colors.skyDark, n: String(stats?.active_days ?? 0), l: 'Ngày chăm' },
+    { ic: 'check', bg: '#EAF7F1', col: colors.mintDark, n: String(profile?.total_done ?? 0), l: 'Việc xong' },
+    { ic: 'star', bg: '#FFEAF2', col: colors.pinkDark, n: String(profile?.owned_count ?? 0), l: 'Bạn đồng hành' },
   ];
 
   // ----- Collection -----
@@ -124,12 +129,16 @@ export default function ProfileScreen({ navigation }: any) {
 
   // ----- Bạn đồng hành hiện tại -----
   const active = source.find((c) => c.active) ?? { name: 'Mèo Mun', variant: 'mun', rarity: 'SSR' };
-  const lvl = profile?.affinity_level ?? 5;
-  const aff = 320;
+  const lvl = profile?.affinity_level ?? stateData?.affinity_level ?? 1;
+  const aff = stateData?.affinity_points ?? 0;
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: colors.bg }} edges={['top']}>
-      <ScrollView contentContainerStyle={{ padding: 18, paddingBottom: 40 }} showsVerticalScrollIndicator={false}>
+      <ScrollView
+        contentContainerStyle={{ padding: 18, paddingBottom: 40 }}
+        showsVerticalScrollIndicator={false}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.pink} colors={[colors.pink]} />}
+      >
         {/* Header */}
         <View style={s.phead}>
           <View style={s.avatar}>
@@ -150,7 +159,7 @@ export default function ProfileScreen({ navigation }: any) {
         {/* Stats — chạm để xem biểu đồ */}
         <Pressable onPress={() => navigation.navigate('Stats')}>
           <View style={s.sgrid}>
-            {stats.map((st, i) => (
+            {statCards.map((st, i) => (
               <View key={i} style={s.stile}>
                 <View style={[s.si, { backgroundColor: st.bg }]}>
                   <Icon name={st.ic} size={18} color={st.col} />

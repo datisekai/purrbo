@@ -1,6 +1,7 @@
 import React from 'react';
-import { View, Text, ScrollView, Pressable, Alert, StyleSheet } from 'react-native';
+import { View, Text, ScrollView, Pressable, Alert, StyleSheet, RefreshControl } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useFocusEffect } from '@react-navigation/native';
 import Svg, { Path, Circle } from 'react-native-svg';
 import { colors, fonts, radii, hardShadow } from '../theme';
 import { Icon } from '../components/Icon';
@@ -45,12 +46,6 @@ const MEMORIES = [
   { ic: 'medal', local: true, bg: '#EEE7FF', col: colors.purpleDark, title: 'Đạt Lv.5 thân thiết', date: '12/7 · mở khóa chương Bạn đồng hành sắp tới' },
 ];
 
-const STATS = [
-  { ic: 'calendar', local: false, bg: '#FFEAF2', col: colors.pinkDark, n: '11', lbl: 'Ngày bên nhau' },
-  { ic: 'chat', local: true, bg: '#EEE7FF', col: colors.purpleDark, n: '428', lbl: 'Tin nhắn' },
-  { ic: 'check', local: false, bg: '#EAF7F1', col: colors.mintDark, n: '96', lbl: 'Việc cùng làm' },
-];
-
 // Câu chuyện theo từng persona (fallback nếu backend chưa trả intro dài).
 const STORY = {
   mun: 'Mèo Mun vốn là chú mèo hoang lạnh nhất khu phố, chẳng thèm để ai lại gần. Cho tới khi gặp cưng — nó giả bộ gắt gỏng nhưng đêm nào cũng đợi cưng "khoe" mới chịu ngủ. Miệng thì cà khịa mà tim thì mềm nhũn 🖤',
@@ -66,10 +61,24 @@ const STORY = {
 export default function PersonaScreen({ navigation, route }) {
   // Thân thiết THẬT (dời khỏi Home → sống ở đây).
   const [st, setSt] = React.useState<any>(null);
-  React.useEffect(() => { Api.state().then(setSt).catch(() => {}); }, []);
+  const [stats, setStats] = React.useState<any>(null);
+  const [refreshing, setRefreshing] = React.useState(false);
+  const load = React.useCallback(async () => {
+    const [s, t] = await Promise.allSettled([Api.state(), Api.stats()]);
+    if (s.status === 'fulfilled') setSt(s.value);
+    if (t.status === 'fulfilled') setStats(t.value);
+  }, []);
+  useFocusEffect(React.useCallback(() => { load(); }, [load]));
+  const onRefresh = React.useCallback(async () => { setRefreshing(true); await load(); setRefreshing(false); }, [load]);
   const max = 500;
   const aff = st?.affinity_points ?? 0;
   const lvl = st?.affinity_level ?? 1;
+  // Chỉ số THẬT (thay số hardcode). Ngày bên nhau = số ngày chăm, việc cùng làm = tổng việc xong.
+  const statCards = [
+    { ic: 'calendar', local: false, bg: '#FFEAF2', col: colors.pinkDark, n: String(stats?.active_days ?? 0), lbl: 'Ngày bên nhau' },
+    { ic: 'heart', local: false, bg: '#EEE7FF', col: colors.purpleDark, n: String(aff), lbl: 'Điểm thân thiết' },
+    { ic: 'check', local: false, bg: '#EAF7F1', col: colors.mintDark, n: String(stats?.total_done ?? 0), lbl: 'Việc cùng làm' },
+  ];
   const p = route?.params?.persona || {};
   const variant = p.variant || 'mun';
   const name = p.name || 'Mèo Mun';
@@ -97,7 +106,11 @@ export default function PersonaScreen({ navigation, route }) {
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: colors.bg }} edges={['top']}>
-      <ScrollView contentContainerStyle={{ padding: 18, paddingBottom: 40 }} showsVerticalScrollIndicator={false}>
+      <ScrollView
+        contentContainerStyle={{ padding: 18, paddingBottom: 40 }}
+        showsVerticalScrollIndicator={false}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.pink} colors={[colors.pink]} />}
+      >
         {/* Header */}
         <View style={s.top}>
           <Pressable onPress={() => navigation.goBack()} style={s.iconbtn}>
@@ -214,7 +227,7 @@ export default function PersonaScreen({ navigation, route }) {
           </View>
         </View>
         <View style={s.stats3}>
-          {STATS.map((st, i) => (
+          {statCards.map((st, i) => (
             <View style={s.stile} key={i}>
               <View style={[s.sic, { backgroundColor: st.bg }]}>
                 <AnyIcon ic={st.ic} local={st.local} size={20} color={st.col} />
