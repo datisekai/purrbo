@@ -9,6 +9,7 @@ import { PersonaFace } from '../components/PersonaFace';
 import { Button, SkeletonRow } from '../components/ui';
 import { CelebrationModal } from '../components/CelebrationModal';
 import { Api } from '../api';
+import { personaCopy } from '../personaCopy';
 import { getGcalToken, getLarkToken } from '../googleCalendar';
 import { playSuccess } from '../sound';
 
@@ -135,7 +136,7 @@ export default function CalendarScreen({ navigation }) {
   const [selDate, setSelDate] = useState<Date>(() => new Date());
   const [loading, setLoading] = useState(true);
   const [view, setView] = useState('week'); // 'week' = 7 ngày · 'month' = 30 ngày
-  const [note, setNote] = useState(NOTE);
+  const [note, setNote] = useState('');
   const [gcalOn, setGcalOn] = useState(false);
   const [st, setSt] = useState(null);
   const [activePersona, setActivePersona] = useState({ variant: 'mun', name: 'Bạn đồng hành' });
@@ -334,7 +335,7 @@ export default function CalendarScreen({ navigation }) {
               <Icon name="heart" size={12} color={colors.purpleDark} />
               <Text style={s.whoTxt}>{activePersona.name}</Text>
             </View>
-            <Text style={s.bubbleTxt}>{note}</Text>
+            <Text style={s.bubbleTxt}>{note || personaCopy(activePersona.variant).calNote}</Text>
           </View>
         </View>
 

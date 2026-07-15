@@ -12,6 +12,7 @@ import { Button, Chip, ProgressBar, SkeletonRow } from '../components/ui';
 import { Api } from '../api';
 import { useAuth } from '../auth';
 import { scheduleHabitReminders } from '../notifications';
+import { personaCopy } from '../personaCopy';
 import { playSuccess } from '../sound';
 
 const NUDGE = 'Ơ 3 tiếng chưa uống giọt nào? Định làm khô mực cho em buồn hả 🙄💧';
@@ -28,7 +29,7 @@ export default function HomeScreen({ navigation }: any) {
   const [st, setSt] = useState<any>(null);
   const [persona, setPersona] = useState<any>(null);
   const [habits, setHabits] = useState<any[]>([]);
-  const [line, setLine] = useState(NUDGE);
+  const [line, setLine] = useState('');
   const [claimable, setClaimable] = useState(0);
   const [equipped, setEquipped] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(true);
@@ -47,7 +48,8 @@ export default function HomeScreen({ navigation }: any) {
     } catch {
       /* backend chưa chạy → giữ trạng thái mặc định */
     }
-    try { const cfg = await Api.config(); if (cfg?.home_nudge) setLine(cfg.home_nudge); } catch {}
+    // KHÔNG dùng home_nudge global (không theo persona) — để personaCopy điều khiển
+    // câu thoại idle cho đúng chất persona đang active.
     try { const m = await Api.missions(); setClaimable(m?.claimable_gems || 0); } catch {}
     try { const e = await Api.equippedItems(); setEquipped(e || {}); } catch {}
   }, []);
@@ -174,7 +176,7 @@ export default function HomeScreen({ navigation }: any) {
             </View>
           </View>
 
-          <View style={s.bubble}><Text style={{ fontFamily: fonts.body, fontSize: 14, color: colors.ink, lineHeight: 21 }}>{line}</Text></View>
+          <View style={s.bubble}><Text style={{ fontFamily: fonts.body, fontSize: 14, color: colors.ink, lineHeight: 21 }}>{line || personaCopy(persona?.variant).home}</Text></View>
 
           <View style={{ marginTop: 12 }}>
             <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 5 }}>

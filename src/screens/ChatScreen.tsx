@@ -8,6 +8,7 @@ import Svg, { Path, Circle, Rect } from 'react-native-svg';
 import { colors, fonts, radii, hardShadow } from '../theme';
 import { Icon } from '../components/Icon';
 import { PersonaFace } from '../components/PersonaFace';
+import { personaCopy } from '../personaCopy';
 import { Api } from '../api';
 
 // Icon còn thiếu trong Icon.js → SVG inline tại chỗ (không sửa Icon.js).
@@ -169,7 +170,7 @@ export default function ChatScreen({ navigation, route }) {
   useEffect(() => () => { if (timer.current) clearTimeout(timer.current); }, []);
 
   // Nạp lịch sử chat thật mỗi khi mở màn / ĐỔI persona. Trống → lời chào của persona.
-  const greet = () => [{ id: 1, who: 'them', text: `Ê ${persona.name} đây nè 🐾 Hôm nay của cưng sao rồi, kể em nghe đi?` }];
+  const greet = () => [{ id: 1, who: 'them', text: personaCopy(persona.variant).greet }];
   useEffect(() => {
     let alive = true;
     setLoading(true);

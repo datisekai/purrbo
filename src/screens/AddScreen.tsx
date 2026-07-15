@@ -143,6 +143,7 @@ export default function AddScreen({ navigation }) {
         icon: 'droplet',
         time: parsed.time,
         hint: parsed.withwho ? 'với ' + parsed.withwho : '',
+        repeat: parsed.repeat || 'daily',   // NLP trả repeat (vd weekly:5) → dùng luôn
       });
       showToast();
     } catch (e) {
