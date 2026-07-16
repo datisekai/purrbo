@@ -6,6 +6,7 @@ import React, { createContext, useCallback, useContext, useEffect, useMemo, useS
 import { makeColors, type AppColors } from './theme';
 import { personaPalette, type PersonaPalette } from './personaTheme';
 import { Api } from './api';
+import { useAuth } from './auth';
 
 type Ctx = {
   c: AppColors;
@@ -25,6 +26,7 @@ const C = createContext<Ctx>({
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const [variant, setVariant] = useState<string | undefined>(undefined);
+  const { token } = useAuth();
 
   // Lấy persona active để biết tông. Chưa đăng nhập → lỗi im lặng, dùng NEUTRAL.
   const refresh = useCallback(async () => {
@@ -35,7 +37,12 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     } catch {}
   }, []);
 
-  useEffect(() => { refresh(); }, [refresh]);
+  // Refetch mỗi khi TOKEN đổi (đăng nhập/đăng xuất) — trước đây chỉ chạy 1 lần lúc
+  // App mount (chưa đăng nhập → luôn fail → kẹt vĩnh viễn ở NEUTRAL dù đã có persona).
+  useEffect(() => {
+    if (token) refresh();
+    else setVariant(undefined);   // đăng xuất → về trung tính
+  }, [token, refresh]);
 
   const pal = useMemo(() => personaPalette(variant), [variant]);
   const c = useMemo(() => makeColors(pal), [pal]);

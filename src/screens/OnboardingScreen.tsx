@@ -4,7 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import Svg, { Path, Circle } from 'react-native-svg';
 import { colors, fonts, radii, hardShadow, type AppColors } from '../theme';
 import { Icon } from '../components/Icon';
-import { useC, usePal } from '../themeContext';
+import { useC, usePal, useTheme } from '../themeContext';
 import { PersonaFace, PurrboMascot } from '../components/PersonaFace';
 import { Button, Bubble, RarityBadge } from '../components/ui';
 import { Api } from '../api';
@@ -83,6 +83,7 @@ export default function OnboardingScreen({ navigation }) {
   const s = useMemo(() => mkStyles(c, pal), [c, pal]);
   const QUIZ = useMemo(() => mkQuiz(c, pal), [c, pal]);
   const { markOnboarded } = useAuth();
+  const { setVariant } = useTheme();
   const [step, setStep] = useState(0); // 0 welcome · 1-3 quiz · 4 túi mù · 5 reveal
   const [scores, setScores] = useState({});
   const [picked, setPicked] = useState(null);
@@ -183,6 +184,7 @@ export default function OnboardingScreen({ navigation }) {
                 label={`Bắt đầu cùng ${picked.name}`}
                 color={c.pink} colorDark={c.pinkDark}
                 onPress={async () => {
+                  setVariant(picked.variant);  // đổi tông app NGAY — khỏi chờ Home load lại mới đúng màu
                   try {
                     await Api.onboardingPick(picked.variant);
                   } catch (e) {

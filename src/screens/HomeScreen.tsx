@@ -3,7 +3,7 @@ import { View, Text, ScrollView, Pressable, RefreshControl, Animated, Easing, St
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect } from '@react-navigation/native';
 import { colors, fonts, radii, hardShadow, type AppColors } from '../theme';
-import { useC, usePal } from '../themeContext';
+import { useC, usePal, useTheme } from '../themeContext';
 import { Icon } from '../components/Icon';
 import { PersonaChibi } from '../components/PersonaFace';
 import { AnimatedMascot } from '../components/AnimatedMascot';
@@ -62,6 +62,7 @@ export default function HomeScreen({ navigation }: any) {
   // Tông màu của persona đang active — dùng cho MỌI nhấn trên màn (bỏ cầu vồng).
   const c = useC();
   const pal = usePal();
+  const { setVariant } = useTheme();
   const s = useMemo(() => mkStyles(c, pal), [c, pal]);
   const [st, setSt] = useState<any>(null);
   const [persona, setPersona] = useState<any>(null);
@@ -86,6 +87,7 @@ export default function HomeScreen({ navigation }: any) {
       setHabits(hs);
       const active = Array.isArray(cat) ? cat.find((p: any) => p.key === state.persona_key) : null;
       if (active) setPersona(active);
+      if (active?.variant) setVariant(active.variant);  // đồng bộ tông app theo persona thật
       scheduleHabitReminders(hs, active?.variant);   // AD-9: nhắc local theo giọng persona
     } catch {
       /* backend chưa chạy → giữ trạng thái mặc định */
