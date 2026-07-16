@@ -5,7 +5,7 @@ export type PersonaPalette = { primary: string; primaryDark: string; surface: st
 export type PersonaTheme = { surface: string; soft: string };  // giữ tương thích cũ
 
 const PALETTE: Record<string, PersonaPalette> = {
-  mun:  { primary: '#6B6480', primaryDark: '#4E4763', surface: '#ECEAF3', soft: '#F4F2F9' }, // tsundere xám-tím
+  mun:  { primary: '#6C63E0', primaryDark: '#4F47B8', surface: '#ECEAFB', soft: '#F5F4FD' }, // tsundere tím-chàm (đổi từ xám-tím đục, phủ cả app nhìn xỉn)
   cam:  { primary: '#FF9E4D', primaryDark: '#E07A22', surface: '#FFF0E1', soft: '#FFF7EE' }, // cam đào
   ly:   { primary: '#E8743B', primaryDark: '#C0561F', surface: '#FBEADF', soft: '#FDF3EC' }, // cam đất
   sep:  { primary: '#8B7BB0', primaryDark: '#6A5B90', surface: '#EDE9F6', soft: '#F5F2FB' }, // tím tổng tài
