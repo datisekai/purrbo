@@ -1,9 +1,10 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useMemo } from 'react';
 import { View, Text, ScrollView, Pressable, RefreshControl, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect } from '@react-navigation/native';
 import Svg, { Path, Rect } from 'react-native-svg';
-import { colors, fonts, radii, hardShadow } from '../theme';
+import { colors, fonts, radii, hardShadow, type AppColors } from '../theme';
+import { useC, usePal } from '../themeContext';
 import { Icon } from '../components/Icon';
 import { PersonaFace } from '../components/PersonaFace';
 import { Button, ProgressBar, RarityBadge, Skeleton } from '../components/ui';
@@ -41,6 +42,9 @@ const TIP = {
 };
 
 export default function CollectionScreen({ navigation }) {
+  const c = useC();
+  const pal = usePal();
+  const s = useMemo(() => mkStyles(c, pal), [c, pal]);
   const [list, setList] = useState<any[]>(FALLBACK);
   const [toast, setToast] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -73,12 +77,12 @@ export default function CollectionScreen({ navigation }) {
     <SafeAreaView style={{ flex: 1, backgroundColor: colors.bg }} edges={['top']}>
       {toast && (
         <View style={s.toast}>
-          <Icon name="heartfill" size={15} color="#FF9BC1" />
+          <Icon name="heartfill" size={15} color={c.pink} />
           <Text style={s.toastTxt}>{toast}</Text>
         </View>
       )}
       <ScrollView contentContainerStyle={{ padding: 18, paddingBottom: 40 }} showsVerticalScrollIndicator={false}
-        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.pink} colors={[colors.pink]} />}>
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={c.pink} colors={[c.pink]} />}>
         {/* Header */}
         <View style={s.hdr}>
           <Pressable onPress={() => navigation?.goBack?.()} style={s.back}>
@@ -94,7 +98,7 @@ export default function CollectionScreen({ navigation }) {
         <View style={s.prog}>
           <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-              <Icon name="star" size={15} color={colors.purpleDark} />
+              <Icon name="star" size={15} color={c.purpleDark} />
               <Text style={s.progTitle}>Đã sưu tầm</Text>
             </View>
             <Text style={s.progNum}>{ownedCount}/{total + UPCOMING}</Text>
@@ -136,12 +140,12 @@ export default function CollectionScreen({ navigation }) {
                 </View>
               ) : p.owned ? (
                 <View style={s.ownedTag}>
-                  <Icon name="check" size={12} color={colors.mintDark} />
+                  <Icon name="check" size={12} color={c.mintDark} />
                   <Text style={s.ownedTxt}>Chạm để xem</Text>
                 </View>
               ) : (
                 <View style={s.lockTag}>
-                  <Lock size={11} color={colors.coralDark} />
+                  <Lock size={11} color={c.coralDark} />
                   <Text style={s.lockTxt}>Mở túi để gặp</Text>
                 </View>
               )}
@@ -172,7 +176,7 @@ export default function CollectionScreen({ navigation }) {
   );
 }
 
-const s = StyleSheet.create({
+const mkStyles = (c: AppColors, pal: any) => StyleSheet.create({
   hdr: { flexDirection: 'row', alignItems: 'center', gap: 12, marginBottom: 18 },
   back: {
     width: 42, height: 42, borderRadius: 14, backgroundColor: '#fff',
@@ -182,11 +186,11 @@ const s = StyleSheet.create({
   hSub: { fontFamily: fonts.body, fontSize: 12, color: colors.muted },
 
   prog: {
-    backgroundColor: '#F6ECFB', borderRadius: 22, padding: 16, marginBottom: 20,
+    backgroundColor: pal.soft, borderRadius: 22, padding: 16, marginBottom: 20,
     borderWidth: 2, borderColor: '#fff', ...hardShadow(5, 0.14),
   },
   progTitle: { fontFamily: fonts.display, fontSize: 15, color: colors.ink },
-  progNum: { fontFamily: fonts.display, fontSize: 15, color: colors.purpleDark },
+  progNum: { fontFamily: fonts.display, fontSize: 15, color: c.purpleDark },
   progHint: { fontFamily: fonts.body, fontSize: 12, color: colors.muted, marginTop: 8 },
 
   grid: { flexDirection: 'row', flexWrap: 'wrap', gap: 12, marginBottom: 18 },
@@ -194,7 +198,7 @@ const s = StyleSheet.create({
     width: '47%', flexGrow: 1, alignItems: 'center', padding: 14,
     backgroundColor: '#fff', borderWidth: 2, borderColor: colors.line, borderRadius: 22, ...hardShadow(5, 0.14),
   },
-  cardActive: { borderColor: colors.purple, backgroundColor: '#FBF8FF' },
+  cardActive: { borderColor: c.purple, backgroundColor: pal.soft },
   cardLocked: { backgroundColor: '#FAFAFC' },
   cardMystery: { borderStyle: 'dashed', borderColor: '#D9CFE6', backgroundColor: '#FFFDFB' },
   lockOverlay: { ...StyleSheet.absoluteFillObject, alignItems: 'center', justifyContent: 'center' },
@@ -203,22 +207,22 @@ const s = StyleSheet.create({
 
   activeTag: {
     flexDirection: 'row', alignItems: 'center', gap: 4, alignSelf: 'stretch', justifyContent: 'center',
-    backgroundColor: colors.purple, borderRadius: radii.pill, paddingVertical: 7,
+    backgroundColor: c.purple, borderRadius: radii.pill, paddingVertical: 7,
   },
   activeTxt: { fontFamily: fonts.heading, fontSize: 12, color: '#fff' },
   ownedTag: {
     flexDirection: 'row', alignItems: 'center', gap: 4, alignSelf: 'stretch', justifyContent: 'center',
-    backgroundColor: '#EAF7F1', borderColor: '#CFEDE0', borderWidth: 2, borderRadius: radii.pill, paddingVertical: 5,
+    backgroundColor: pal.soft, borderColor: pal.surface, borderWidth: 2, borderRadius: radii.pill, paddingVertical: 5,
   },
-  ownedTxt: { fontFamily: fonts.heading, fontSize: 11.5, color: colors.mintDark },
+  ownedTxt: { fontFamily: fonts.heading, fontSize: 11.5, color: c.mintDark },
   lockTag: {
     flexDirection: 'row', alignItems: 'center', gap: 4, alignSelf: 'stretch', justifyContent: 'center',
-    backgroundColor: '#FFF0E6', borderColor: '#FFD9C7', borderWidth: 2, borderRadius: radii.pill, paddingVertical: 5,
+    backgroundColor: pal.soft, borderColor: pal.surface, borderWidth: 2, borderRadius: radii.pill, paddingVertical: 5,
   },
-  lockTxt: { fontFamily: fonts.heading, fontSize: 11, color: colors.coralDark },
+  lockTxt: { fontFamily: fonts.heading, fontSize: 11, color: c.coralDark },
 
   mysteryFace: {
-    width: 66, height: 66, borderRadius: 33, backgroundColor: '#F1ECF6',
+    width: 66, height: 66, borderRadius: 33, backgroundColor: pal.soft,
     alignItems: 'center', justifyContent: 'center', borderWidth: 2, borderColor: '#E4DCEE', borderStyle: 'dashed',
   },
   mysteryQ: { fontFamily: fonts.display, fontSize: 30, color: colors.muted },

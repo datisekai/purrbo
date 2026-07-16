@@ -1,21 +1,15 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { View, Text, ScrollView, Pressable, TextInput, ActivityIndicator, Alert, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { colors, fonts, radii, hardShadow } from '../theme';
+import { colors, fonts, radii, hardShadow, type AppColors } from '../theme';
 import { Icon } from '../components/Icon';
+import { useC, usePal } from '../themeContext';
 import { Button } from '../components/ui';
 import { DatePickerModal } from '../components/DatePickerModal';
 import { Api } from '../api';
 
 const DDMM = (d: Date) => `${d.getDate()}/${d.getMonth() + 1}`;
 
-const ICON_CHOICES = [
-  { key: 'droplet', bg: '#E6F7FF', col: colors.skyDark },
-  { key: 'dumbbell', bg: '#FFEAF2', col: colors.pinkDark },
-  { key: 'book', bg: '#EEE7FF', col: colors.purpleDark },
-  { key: 'heart', bg: '#FFF0E6', col: colors.coralDark },
-  { key: 'star', bg: '#FFF7E0', col: '#C79200' },
-];
 const DOW = ['T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'CN'];
 
 // parse "daily" | "weekly:0,2,4" | "hours:2"
@@ -30,6 +24,16 @@ const ymd = (d: Date) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart
 const addDays = (n: number) => { const d = new Date(); d.setDate(d.getDate() + n); return d; };
 
 export default function HabitEditScreen({ navigation, route }) {
+  const c = useC();
+  const pal = usePal();
+  const s = useMemo(() => mkStyles(c, pal), [c, pal]);
+  const ICON_CHOICES = useMemo(() => ([
+    { key: 'droplet', bg: pal.soft, col: c.skyDark },
+    { key: 'dumbbell', bg: pal.soft, col: c.pinkDark },
+    { key: 'book', bg: pal.soft, col: c.purpleDark },
+    { key: 'heart', bg: pal.soft, col: c.coralDark },
+    { key: 'star', bg: pal.soft, col: c.yellowDark },
+  ]), [c, pal]);
   const habit = route?.params?.habit || {};
   const init = parseRepeat(habit.repeat);
   const [name, setName] = useState(habit.name || '');
@@ -94,11 +98,11 @@ export default function HabitEditScreen({ navigation, route }) {
 
           <Text style={[s.label, { marginTop: 16 }]}>Icon</Text>
           <View style={s.iconRow}>
-            {ICON_CHOICES.map((c) => {
-              const on = icon === c.key;
+            {ICON_CHOICES.map((ic) => {
+              const on = icon === ic.key;
               return (
-                <Pressable key={c.key} onPress={() => setIcon(c.key)} style={[s.iconPick, { backgroundColor: c.bg }, on && s.iconPickOn]}>
-                  <Icon name={c.key} size={22} color={c.col} />
+                <Pressable key={ic.key} onPress={() => setIcon(ic.key)} style={[s.iconPick, { backgroundColor: ic.bg }, on && s.iconPickOn]}>
+                  <Icon name={ic.key} size={22} color={ic.col} />
                 </Pressable>
               );
             })}
@@ -122,7 +126,7 @@ export default function HabitEditScreen({ navigation, route }) {
                 const on = ymd(rDate) === ymd(addDays(o.n));
                 return (
                   <Pressable key={o.n} onPress={() => setRDate(addDays(o.n))} style={[s.qrChip, on && s.qrChipOn]}>
-                    <Text style={[s.qrChipTxt, on && { color: colors.purpleDark }]}>{o.lbl}</Text>
+                    <Text style={[s.qrChipTxt, on && { color: c.purpleDark }]}>{o.lbl}</Text>
                   </Pressable>
                 );
               })}
@@ -130,8 +134,8 @@ export default function HabitEditScreen({ navigation, route }) {
                 const preset = [0, 1, 2].some((n) => ymd(rDate) === ymd(addDays(n)));
                 return (
                   <Pressable onPress={() => setPickerOpen(true)} style={[s.qrChip, !preset && s.qrChipOn, { flexDirection: 'row', gap: 4 }]}>
-                    <Icon name="calendar" size={14} color={colors.purpleDark} />
-                    <Text style={[s.qrChipTxt, { color: colors.purpleDark }]}>{preset ? 'Ngày khác' : DDMM(rDate)}</Text>
+                    <Icon name="calendar" size={14} color={c.purpleDark} />
+                    <Text style={[s.qrChipTxt, { color: c.purpleDark }]}>{preset ? 'Ngày khác' : DDMM(rDate)}</Text>
                   </Pressable>
                 );
               })()}
@@ -159,7 +163,7 @@ export default function HabitEditScreen({ navigation, route }) {
                   const on = rEvery === n;
                   return (
                     <Pressable key={n} onPress={() => setREvery(n)} style={[s.qrChip, on && s.qrChipOn]}>
-                      <Text style={[s.qrChipTxt, on && { color: colors.purpleDark }]}>{n} tiếng</Text>
+                      <Text style={[s.qrChipTxt, on && { color: c.purpleDark }]}>{n} tiếng</Text>
                     </Pressable>
                   );
                 })}
@@ -173,7 +177,7 @@ export default function HabitEditScreen({ navigation, route }) {
           )}
         </View>
 
-        <Button label={busy ? 'Đang lưu…' : 'Lưu thay đổi'} tone="mint" disabled={!valid || busy}
+        <Button label={busy ? 'Đang lưu…' : 'Lưu thay đổi'} color={c.mint} colorDark={c.mintDark} disabled={!valid || busy}
           onPress={save} icon={busy ? <ActivityIndicator color="#fff" /> : <Icon name="check" size={18} color="#fff" />}
           style={{ paddingVertical: 15 }} />
 
@@ -191,7 +195,7 @@ export default function HabitEditScreen({ navigation, route }) {
   );
 }
 
-const s = StyleSheet.create({
+const mkStyles = (c: AppColors, pal: any) => StyleSheet.create({
   hdr: { flexDirection: 'row', alignItems: 'center', gap: 12, marginBottom: 18 },
   back: { width: 42, height: 42, borderRadius: 14, backgroundColor: '#fff', borderWidth: 2, borderColor: colors.line, alignItems: 'center', justifyContent: 'center', ...hardShadow(3, 0.12) },
   hTitle: { fontFamily: fonts.display, fontSize: 20, color: colors.ink },
@@ -209,12 +213,12 @@ const s = StyleSheet.create({
   segTxtOn: { color: '#fff' },
   daysRow: { flexDirection: 'row', gap: 6, marginTop: 12 },
   dayPick: { flex: 1, aspectRatio: 1, borderRadius: 12, alignItems: 'center', justifyContent: 'center', backgroundColor: '#fff', borderWidth: 2, borderColor: colors.line },
-  dayPickOn: { backgroundColor: colors.purple, borderColor: colors.purpleDark },
+  dayPickOn: { backgroundColor: c.purple, borderColor: c.purpleDark },
   dayPickTxt: { fontFamily: fonts.heading, fontSize: 12, color: colors.muted },
   qr: { flexDirection: 'row', gap: 8 },
   qrChip: { flex: 1, backgroundColor: '#fff', borderWidth: 2, borderColor: '#fff', borderRadius: 14, paddingVertical: 11, alignItems: 'center', ...hardShadow(3, 0.12) },
-  qrChipOn: { borderColor: colors.purple },
-  qrChipTxt: { fontFamily: fonts.heading, fontSize: 14, color: colors.purpleDark },
+  qrChipOn: { borderColor: c.purple },
+  qrChipTxt: { fontFamily: fonts.heading, fontSize: 14, color: c.purpleDark },
   delBtn: { alignSelf: 'center', marginTop: 18, padding: 10 },
-  delTxt: { fontFamily: fonts.heading, fontSize: 14, color: colors.coralDark },
+  delTxt: { fontFamily: fonts.heading, fontSize: 14, color: colors.danger },
 });

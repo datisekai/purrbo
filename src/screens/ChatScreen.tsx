@@ -1,11 +1,12 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useMemo } from 'react';
 import {
   View, Text, ScrollView, Pressable, TextInput, KeyboardAvoidingView,
   Platform, Animated, StyleSheet,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Svg, { Path, Circle, Rect } from 'react-native-svg';
-import { colors, fonts, radii, hardShadow } from '../theme';
+import { colors, fonts, radii, hardShadow, type AppColors } from '../theme';
+import { useC, usePal } from '../themeContext';
 import { Icon } from '../components/Icon';
 import { PersonaFace } from '../components/PersonaFace';
 import { personaCopy } from '../personaCopy';
@@ -59,6 +60,9 @@ const CHIPS = [
 ];
 
 function HeaderBtn({ name, onPress }) {
+  const c = useC();
+  const pal = usePal();
+  const s = useMemo(() => mkStyles(c, pal), [c, pal]);
   const [down, setDown] = useState(false);
   return (
     <Pressable
@@ -100,6 +104,9 @@ function TypingDots() {
 }
 
 function QuickChip({ label, onPress }) {
+  const c = useC();
+  const pal = usePal();
+  const s = useMemo(() => mkStyles(c, pal), [c, pal]);
   const [down, setDown] = useState(false);
   return (
     <Pressable
@@ -114,6 +121,9 @@ function QuickChip({ label, onPress }) {
 }
 
 function SendBtn({ onPress }) {
+  const c = useC();
+  const pal = usePal();
+  const s = useMemo(() => mkStyles(c, pal), [c, pal]);
   const [down, setDown] = useState(false);
   return (
     <Pressable
@@ -131,6 +141,9 @@ function SendBtn({ onPress }) {
 }
 
 export default function ChatScreen({ navigation, route }) {
+  const c = useC();
+  const pal = usePal();
+  const s = useMemo(() => mkStyles(c, pal), [c, pal]);
   const [msgs, setMsgs] = useState<any[]>([]);
   const [text, setText] = useState('');
   const dnow = new Date();
@@ -272,7 +285,7 @@ export default function ChatScreen({ navigation, route }) {
                 <View style={s.bubbleThem}>
                   {!!m.mem && (
                     <View style={s.memTag}>
-                      <Glyph name="brain" size={12} color={colors.purpleDark} />
+                      <Glyph name="brain" size={12} color={c.purpleDark} />
                       <Text style={s.memTxt}>Purrbo nhớ: {m.mem}</Text>
                     </View>
                   )}
@@ -331,11 +344,11 @@ export default function ChatScreen({ navigation, route }) {
   );
 }
 
-const s = StyleSheet.create({
+const mkStyles = (c: AppColors, pal: any) => StyleSheet.create({
   header: {
     flexDirection: 'row', alignItems: 'center', gap: 10,
     paddingHorizontal: 14, paddingVertical: 12,
-    backgroundColor: '#F6ECFB', borderBottomWidth: 2, borderBottomColor: '#fff',
+    backgroundColor: pal.soft, borderBottomWidth: 2, borderBottomColor: '#fff',
   },
   iconBtn: {
     width: 40, height: 40, borderRadius: 14, backgroundColor: '#fff',
@@ -344,10 +357,10 @@ const s = StyleSheet.create({
   },
   who: { flex: 1, minWidth: 0, flexDirection: 'row', alignItems: 'center', gap: 10 },
   whoName: { fontFamily: fonts.display, fontSize: 17, color: colors.ink },
-  whoSub: { fontFamily: fonts.heading, fontSize: 12, color: colors.purpleDark },
+  whoSub: { fontFamily: fonts.heading, fontSize: 12, color: c.purpleDark },
   onlineDot: {
-    width: 8, height: 8, borderRadius: 4, backgroundColor: colors.mint,
-    borderWidth: 2, borderColor: '#C7F0E1',
+    width: 8, height: 8, borderRadius: 4, backgroundColor: c.mint,
+    borderWidth: 2, borderColor: pal.surface,
   },
 
   msgs: { padding: 14, paddingBottom: 8, gap: 10 },
@@ -368,27 +381,27 @@ const s = StyleSheet.create({
   },
   txtThem: { fontFamily: fonts.body, fontSize: 14, color: colors.ink, lineHeight: 21 },
   bubbleMe: {
-    maxWidth: '78%', backgroundColor: colors.pink, borderWidth: 2, borderColor: colors.pink,
+    maxWidth: '78%', backgroundColor: c.pink, borderWidth: 2, borderColor: c.pink,
     borderRadius: 18, borderBottomRightRadius: 6, paddingVertical: 11, paddingHorizontal: 14,
-    borderBottomWidth: 2, borderBottomColor: colors.pinkDark,
+    borderBottomWidth: 2, borderBottomColor: c.pinkDark,
     ...hardShadow(3, 0.12),
   },
   txtMe: { fontFamily: fonts.body, fontSize: 14, color: '#fff', lineHeight: 21 },
 
   memTag: {
     flexDirection: 'row', alignItems: 'center', gap: 5, alignSelf: 'flex-start',
-    backgroundColor: '#F1ECFF', borderWidth: 1.5, borderColor: '#E3D8FF',
+    backgroundColor: pal.soft, borderWidth: 1.5, borderColor: pal.surface,
     borderRadius: radii.pill, paddingVertical: 3, paddingHorizontal: 9, marginBottom: 7,
   },
-  memTxt: { fontFamily: fonts.heading, fontSize: 10.5, color: colors.purpleDark },
+  memTxt: { fontFamily: fonts.heading, fontSize: 10.5, color: c.purpleDark },
 
   chipsWrap: { flexGrow: 0, flexShrink: 0, backgroundColor: '#fff' },
   chips: { gap: 8, paddingHorizontal: 14, paddingVertical: 8, alignItems: 'center' },
   chip: {
-    backgroundColor: '#fff', borderWidth: 2, borderColor: '#FFCCDF',
+    backgroundColor: '#fff', borderWidth: 2, borderColor: pal.surface,
     borderRadius: radii.pill, paddingVertical: 8, paddingHorizontal: 13, ...hardShadow(3, 0.12),
   },
-  chipTxt: { fontFamily: fonts.heading, fontSize: 13, color: colors.pinkDark },
+  chipTxt: { fontFamily: fonts.heading, fontSize: 13, color: c.pinkDark },
 
   inbar: {
     flexDirection: 'row', alignItems: 'center', gap: 8,
@@ -406,8 +419,8 @@ const s = StyleSheet.create({
     paddingVertical: Platform.OS === 'ios' ? 8 : 4,
   },
   send: {
-    width: 46, height: 46, borderRadius: 23, backgroundColor: colors.pink,
+    width: 46, height: 46, borderRadius: 23, backgroundColor: c.pink,
     alignItems: 'center', justifyContent: 'center',
-    borderBottomWidth: 4, borderBottomColor: colors.pinkDark,
+    borderBottomWidth: 4, borderBottomColor: c.pinkDark,
   },
 });

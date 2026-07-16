@@ -1,17 +1,20 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useMemo } from 'react';
 import { View, Text, ScrollView, Animated, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Svg, { Path } from 'react-native-svg';
-import { colors, fonts, radii, hardShadow } from '../theme';
+import { colors, fonts, radii, hardShadow, type AppColors } from '../theme';
+import { useC, usePal } from '../themeContext';
 import { Icon } from '../components/Icon';
 import { PersonaFace } from '../components/PersonaFace';
 import { Button, RarityBadge } from '../components/ui';
 
-function Gem({ size = 15, color = colors.yellowDark }) {
+function Gem({ size = 15, color }: { size?: number; color?: string }) {
+  const c = useC();
+  const col = color ?? c.yellowDark;
   return (
     <Svg width={size} height={size} viewBox="0 0 24 24">
-      <Path d="M6 3h12l3 6-9 12L3 9z" fill="none" stroke={color} strokeWidth={2.4} strokeLinejoin="round" strokeLinecap="round" />
-      <Path d="M3 9h18M9 3 6 9l6 12M15 3l3 6-6 12" fill="none" stroke={color} strokeWidth={2.4} strokeLinejoin="round" strokeLinecap="round" />
+      <Path d="M6 3h12l3 6-9 12L3 9z" fill="none" stroke={col} strokeWidth={2.4} strokeLinejoin="round" strokeLinecap="round" />
+      <Path d="M3 9h18M9 3 6 9l6 12M15 3l3 6-6 12" fill="none" stroke={col} strokeWidth={2.4} strokeLinejoin="round" strokeLinecap="round" />
     </Svg>
   );
 }
@@ -19,6 +22,9 @@ function Gem({ size = 15, color = colors.yellowDark }) {
 const RANK = { SSR: 3, 'Hiếm': 2, 'Thường': 1 };
 
 export default function GachaResultScreen({ navigation, route }) {
+  const c = useC();
+  const pal = usePal();
+  const s = useMemo(() => mkStyles(c, pal), [c, pal]);
   const results = route?.params?.results || [];
   const gems = route?.params?.gems;
   // Sắp SSR/Hiếm lên trước cho "đã mắt"
@@ -71,17 +77,17 @@ export default function GachaResultScreen({ navigation, route }) {
       </ScrollView>
 
       <View style={s.footer}>
-        <View style={s.gemChip}><Gem size={15} color={colors.yellowDark} /><Text style={s.gemTxt}>{typeof gems === 'number' ? gems.toLocaleString('en-US') : '—'}</Text></View>
+        <View style={s.gemChip}><Gem size={15} color={c.yellowDark} /><Text style={s.gemTxt}>{typeof gems === 'number' ? gems.toLocaleString('en-US') : '—'}</Text></View>
         <Button label="Tuyệt!" tone="pink" onPress={() => navigation?.goBack?.()} style={{ flex: 1, paddingVertical: 14 }} icon={<Icon name="check" size={17} color="#fff" />} />
       </View>
     </SafeAreaView>
   );
 }
 
-const s = StyleSheet.create({
+const mkStyles = (c: AppColors, pal: any) => StyleSheet.create({
   head: { alignItems: 'center', marginBottom: 18 },
   badge: {
-    flexDirection: 'row', alignItems: 'center', gap: 5, backgroundColor: colors.purple,
+    flexDirection: 'row', alignItems: 'center', gap: 5, backgroundColor: c.purple,
     borderRadius: radii.pill, paddingVertical: 5, paddingHorizontal: 13, marginBottom: 10,
   },
   badgeTxt: { fontFamily: fonts.heading, fontSize: 12, color: '#fff' },
@@ -93,10 +99,10 @@ const s = StyleSheet.create({
     width: '30%', flexGrow: 1, maxWidth: '31%', minWidth: 96, alignItems: 'center', paddingVertical: 14, paddingHorizontal: 6,
     backgroundColor: '#fff', borderWidth: 2, borderColor: colors.line, borderRadius: 20, ...hardShadow(4, 0.12),
   },
-  cardSSR: { borderColor: '#FFD98A', backgroundColor: '#FFFBF0' },
+  cardSSR: { borderColor: pal.surface, backgroundColor: pal.soft },
   name: { fontFamily: fonts.display, fontSize: 14, color: colors.ink, marginTop: 8 },
   newTag: {
-    position: 'absolute', top: 8, left: 8, zIndex: 2, backgroundColor: colors.pink,
+    position: 'absolute', top: 8, left: 8, zIndex: 2, backgroundColor: c.pink,
     borderRadius: radii.pill, paddingVertical: 2, paddingHorizontal: 7,
   },
   newTxt: { fontFamily: fonts.heading, fontSize: 9, color: '#fff', letterSpacing: 0.5 },
@@ -106,8 +112,8 @@ const s = StyleSheet.create({
     borderTopWidth: 2, borderTopColor: colors.line, backgroundColor: '#fff',
   },
   gemChip: {
-    flexDirection: 'row', alignItems: 'center', gap: 5, backgroundColor: '#FFF6DE',
-    borderColor: '#FFE39C', borderWidth: 2, borderRadius: radii.pill, paddingVertical: 9, paddingHorizontal: 13,
+    flexDirection: 'row', alignItems: 'center', gap: 5, backgroundColor: pal.soft,
+    borderColor: pal.surface, borderWidth: 2, borderRadius: radii.pill, paddingVertical: 9, paddingHorizontal: 13,
   },
-  gemTxt: { fontFamily: fonts.heading, fontSize: 14, color: colors.yellowDark },
+  gemTxt: { fontFamily: fonts.heading, fontSize: 14, color: c.yellowDark },
 });

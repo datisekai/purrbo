@@ -1,10 +1,11 @@
-import React, { useEffect, useRef, useState, useCallback } from 'react';
+import React, { useEffect, useRef, useState, useCallback, useMemo } from 'react';
 import { View, Text, ScrollView, Pressable, RefreshControl, StyleSheet, Animated, Alert } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useFocusEffect } from '@react-navigation/native';
 import { LinearGradient } from 'expo-linear-gradient';
 import Svg, { Path, Circle, Rect } from 'react-native-svg';
-import { colors, fonts, radii, hardShadow } from '../theme';
+import { colors, fonts, radii, hardShadow, type AppColors } from '../theme';
+import { useC, usePal } from '../themeContext';
 import { Icon } from '../components/Icon';
 import { PersonaFace } from '../components/PersonaFace';
 import { Button, Card, Chip, RarityBadge, Skeleton } from '../components/ui';
@@ -46,36 +47,38 @@ const POOL = [
   { variant: 'bo', name: 'Bơ', rar: 'Thường' },
 ];
 
-const BAGS = [
+// Màu theo persona đang active → dựng theo c/pal thay vì hằng số tĩnh.
+// Chấm tỉ lệ dùng 3 sắc độ rarity (rSSR/rRare/rCommon) để vẫn phân biệt được.
+const makeBags = (c: AppColors, pal: any) => [
   {
     id: 'thuong',
     ic: 'gift',
     icBg: '#EDEFF5',
-    icCol: colors.rCommon,
+    icCol: c.rCommon,
     name: 'Túi mù Thường',
     sub: 'rẻ, mở nhiều cho vui',
     price: '40',
     tone: 'soft',
     odds: [
-      { c: colors.pink, t: 'SSR 1%' },
-      { c: colors.sky, t: 'Hiếm 14%' },
-      { c: colors.rCommon, t: 'Thường 85%' },
+      { c: c.rSSR, t: 'SSR 1%' },
+      { c: c.rRare, t: 'Hiếm 14%' },
+      { c: c.rCommon, t: 'Thường 85%' },
     ],
   },
   {
     id: 'cao',
     ic: 'crown',
-    icBg: '#FFE9B8',
-    icCol: colors.pink,
+    icBg: pal.soft,
+    icCol: c.pink,
     name: 'Túi mù Cao cấp',
     sub: 'tỉ lệ SSR cao hơn hẳn',
     price: '120',
     tone: 'pink',
     prem: true,
     odds: [
-      { c: colors.pink, t: 'SSR 3%' },
-      { c: colors.sky, t: 'Hiếm 22%' },
-      { c: colors.rCommon, t: 'Thường 75%' },
+      { c: c.rSSR, t: 'SSR 3%' },
+      { c: c.rRare, t: 'Hiếm 22%' },
+      { c: c.rCommon, t: 'Thường 75%' },
     ],
   },
 ];
@@ -91,6 +94,10 @@ const SHOP = [
 const PRICE_BY_VARIANT = { mun: '600', cam: '600', ly: '600', sep: '420', bong: '420', xu: '420', bo: '150', sin: '150' };
 
 export default function ShopScreen({ navigation }) {
+  const c = useC();
+  const pal = usePal();
+  const s = useMemo(() => mkStyles(c, pal), [c, pal]);
+  const BAGS = useMemo(() => makeBags(c, pal), [c, pal]);
   const insets = useSafeAreaInsets();
   const [balance, setBalance] = useState(0);
   const [shop, setShop] = useState(SHOP);
@@ -236,7 +243,7 @@ export default function ShopScreen({ navigation }) {
       )}
 
       <ScrollView contentContainerStyle={{ padding: 18, paddingBottom: 40 }} showsVerticalScrollIndicator={false}
-        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.pink} colors={[colors.pink]} />}>
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={c.pink} colors={[c.pink]} />}>
         {/* Header */}
         <View style={s.top}>
           <View style={{ flex: 1 }}>
@@ -244,9 +251,9 @@ export default function ShopScreen({ navigation }) {
             <Text style={s.sub}>túi mù & persona · chơi vui, chơi minh bạch</Text>
           </View>
           <Pressable onPress={() => navigation?.navigate?.('Topup')}>
-            <Chip bg="#FFF6DE" fg={colors.yellowDark} border="#FFE39C">
-              <MiniIcon name="gem" size={15} color={colors.yellowDark} />
-              <Text style={{ fontFamily: fonts.heading, fontSize: 14, color: colors.yellowDark }}>
+            <Chip bg={pal.soft} fg={c.yellowDark} border={pal.surface}>
+              <MiniIcon name="gem" size={15} color={c.yellowDark} />
+              <Text style={{ fontFamily: fonts.heading, fontSize: 14, color: c.yellowDark }}>
                 {balance.toLocaleString('en-US')}
               </Text>
             </Chip>
@@ -259,7 +266,7 @@ export default function ShopScreen({ navigation }) {
 
         {/* Featured banner */}
         <LinearGradient
-          colors={[colors.pink, colors.purple, colors.yellow]}
+          colors={[pal.primary, pal.primary, pal.primaryDark]}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 1 }}
           style={s.feat}
@@ -276,14 +283,17 @@ export default function ShopScreen({ navigation }) {
               label="Mở túi · 120"
               tone="soft"
               onPress={() => openBag('caocap')}
-              icon={<Icon name="gift" size={16} color={colors.pinkDark} />}
-              style={{ backgroundColor: '#fff', borderBottomColor: '#F1D9E4' }}
+              icon={<Icon name="gift" size={16} color={c.pinkDark} />}
+              style={{ backgroundColor: '#fff', borderBottomColor: pal.surface }}
             />
             <Button
               label="Mở x10"
-              tone="yellow"
+              /* Banner đã là pal.primary → nút phải TƯƠNG PHẢN, không dùng màu persona
+                 (nếu không sẽ chìm vào nền). Trắng = nút chính, ink = nút phụ. */
+              color={colors.ink}
+              colorDark="#1D1A29"
               onPress={() => openBag10('caocap')}
-              icon={<MiniIcon name="layers" size={15} color={colors.ink} />}
+              icon={<MiniIcon name="layers" size={15} color="#fff" />}
               style={{ paddingHorizontal: 16 }}
             />
           </View>
@@ -301,7 +311,7 @@ export default function ShopScreen({ navigation }) {
             <Text style={s.dressTitle}>Trang bị & phụ kiện</Text>
             <Text style={s.dressSub}>mũ, kính, trang sức — diện đồ đổi ngoại hình cho bạn đồng hành</Text>
           </View>
-          <Icon name="plus" size={18} color={colors.purpleDark} />
+          <Icon name="plus" size={18} color={c.purpleDark} />
         </Pressable>
 
         {/* Chọn túi mù */}
@@ -319,14 +329,14 @@ export default function ShopScreen({ navigation }) {
               key={b.id}
               style={[
                 { flex: 1, padding: 14 },
-                b.prem && { borderColor: '#FFE39C', backgroundColor: '#FFFBF0' },
+                b.prem && { borderColor: pal.surface, backgroundColor: pal.soft },
               ]}
             >
               <View style={[s.bagIc, { backgroundColor: b.icBg }]}>
                 <Icon name="gift" size={40} color={b.icCol} />
                 {b.ic === 'crown' && (
                   <View style={{ position: 'absolute', top: 10, right: 12 }}>
-                    <MiniIcon name="crown" size={22} color={colors.yellowDark} />
+                    <MiniIcon name="crown" size={22} color={c.yellowDark} />
                   </View>
                 )}
               </View>
@@ -341,12 +351,14 @@ export default function ShopScreen({ navigation }) {
                 ))}
               </View>
               <View style={s.bagPrice}>
-                <MiniIcon name="gem" size={14} color={colors.yellowDark} />
+                <MiniIcon name="gem" size={14} color={c.yellowDark} />
                 <Text style={s.bagPriceTxt}>{b.price}</Text>
               </View>
               <Button
                 label="Mở túi"
                 tone={b.tone}
+                color={b.tone === 'pink' ? c.pink : undefined}
+                colorDark={b.tone === 'pink' ? c.pinkDark : undefined}
                 onPress={() => openBag(b.id === 'cao' ? 'caocap' : 'thuong')}
                 icon={<Icon name="gift" size={15} color={b.tone === 'pink' ? '#fff' : '#807892'} />}
                 style={{ paddingVertical: 9, paddingHorizontal: 12 }}
@@ -360,7 +372,7 @@ export default function ShopScreen({ navigation }) {
           <Text style={s.stitleTxt}>Persona đang bán</Text>
           <Pressable onPress={() => navigation?.navigate?.('Collection')} style={s.seeAll}>
             <Text style={s.seeAllTxt}>Xem thư viện</Text>
-            <Icon name="star" size={12} color={colors.purpleDark} />
+            <Icon name="star" size={12} color={c.purpleDark} />
           </Pressable>
         </View>
 
@@ -378,7 +390,7 @@ export default function ShopScreen({ navigation }) {
               key={p.name}
               style={[
                 s.pcard,
-                p.owned && { backgroundColor: '#F2FBF7', borderColor: '#CFEDE0' },
+                p.owned && { backgroundColor: pal.soft, borderColor: pal.surface },
               ]}
             >
               <View style={{ position: 'absolute', top: 12, right: 12, zIndex: 2 }}>
@@ -390,7 +402,8 @@ export default function ShopScreen({ navigation }) {
               {p.owned ? (
                 <Button
                   label="Đã sở hữu"
-                  tone="mint"
+                  color={c.mint}
+                  colorDark={c.mintDark}
                   onPress={() => {}}
                   icon={<Icon name="check" size={15} color="#fff" />}
                   style={{ paddingVertical: 9, paddingHorizontal: 12, alignSelf: 'stretch' }}
@@ -398,7 +411,8 @@ export default function ShopScreen({ navigation }) {
               ) : (
                 <Button
                   label={buyingKey === p.key ? 'Đang mua…' : p.price}
-                  tone="purple"
+                  color={c.purple}
+                  colorDark={c.purpleDark}
                   disabled={buyingKey === p.key}
                   onPress={() => buyPersona(p)}
                   icon={buyingKey === p.key ? null : <MiniIcon name="gem" size={14} color="#fff" />}
@@ -412,7 +426,7 @@ export default function ShopScreen({ navigation }) {
 
         {/* Ethic note — chơi vui, không móc túi */}
         <View style={s.ethic}>
-          <MiniIcon name="shield" size={18} color={colors.mintDark} />
+          <MiniIcon name="shield" size={18} color={c.mintDark} />
           <View style={{ flex: 1 }}>
             <Text style={s.ethicTitle}>Chơi vui, không móc túi</Text>
             <Text style={s.ethicTxt}>
@@ -425,26 +439,26 @@ export default function ShopScreen({ navigation }) {
   );
 }
 
-const s = StyleSheet.create({
+const mkStyles = (c: AppColors, pal: any) => StyleSheet.create({
   top: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 18 },
   hi: { fontFamily: fonts.display, fontSize: 22, color: colors.ink },
   sub: { fontFamily: fonts.body, fontSize: 13, color: colors.muted },
   topupBtn: {
-    flexDirection: 'row', alignItems: 'center', gap: 3, backgroundColor: colors.pink,
+    flexDirection: 'row', alignItems: 'center', gap: 3, backgroundColor: c.pink,
     borderRadius: radii.pill, paddingVertical: 7, paddingHorizontal: 12,
-    borderBottomWidth: 3, borderBottomColor: colors.pinkDark,
+    borderBottomWidth: 3, borderBottomColor: c.pinkDark,
   },
   topupTxt: { fontFamily: fonts.heading, fontSize: 13, color: '#fff' },
   seeAll: {
     flexDirection: 'row', alignItems: 'center', gap: 4,
-    backgroundColor: '#F1ECFB', borderRadius: radii.pill, paddingVertical: 5, paddingHorizontal: 11,
+    backgroundColor: pal.soft, borderRadius: radii.pill, paddingVertical: 5, paddingHorizontal: 11,
   },
-  seeAllTxt: { fontFamily: fonts.heading, fontSize: 12, color: colors.purpleDark },
+  seeAllTxt: { fontFamily: fonts.heading, fontSize: 12, color: c.purpleDark },
   dressCard: {
     flexDirection: 'row', alignItems: 'center', gap: 12, marginBottom: 22,
-    backgroundColor: '#EEE7FF', borderRadius: 20, padding: 14, borderWidth: 2, borderColor: '#fff', ...hardShadow(5, 0.14),
+    backgroundColor: pal.soft, borderRadius: 20, padding: 14, borderWidth: 2, borderColor: '#fff', ...hardShadow(5, 0.14),
   },
-  dressIc: { width: 44, height: 44, borderRadius: 14, backgroundColor: colors.purple, alignItems: 'center', justifyContent: 'center' },
+  dressIc: { width: 44, height: 44, borderRadius: 14, backgroundColor: c.purple, alignItems: 'center', justifyContent: 'center' },
   dressTitle: { fontFamily: fonts.display, fontSize: 16, color: colors.ink },
   dressSub: { fontFamily: fonts.body, fontSize: 11.5, color: colors.muted, marginTop: 1, lineHeight: 15 },
 
@@ -476,7 +490,7 @@ const s = StyleSheet.create({
   bagSub: { fontFamily: fonts.body, fontSize: 11, color: colors.muted, marginTop: 2, marginBottom: 9, lineHeight: 16 },
   miniOdds: { fontFamily: fonts.body, fontSize: 11, color: colors.muted },
   bagPrice: { flexDirection: 'row', alignItems: 'center', gap: 4, marginBottom: 10 },
-  bagPriceTxt: { fontFamily: fonts.display, fontSize: 15, color: colors.yellowDark },
+  bagPriceTxt: { fontFamily: fonts.display, fontSize: 15, color: c.yellowDark },
 
   grid: { flexDirection: 'row', flexWrap: 'wrap', gap: 12, marginBottom: 22 },
   pcard: { width: '47%', flexGrow: 1, alignItems: 'center', padding: 13 },
@@ -492,18 +506,18 @@ const s = StyleSheet.create({
   pkgSub: { fontFamily: fonts.body, fontSize: 11.5, color: colors.muted, lineHeight: 16, marginTop: 2 },
   pkgTag: {
     alignSelf: 'flex-start', flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 7,
-    backgroundColor: '#F1ECFB', borderRadius: radii.pill, paddingVertical: 3, paddingHorizontal: 9,
+    backgroundColor: pal.soft, borderRadius: radii.pill, paddingVertical: 3, paddingHorizontal: 9,
   },
-  pkgTagTxt: { fontFamily: fonts.heading, fontSize: 10, color: colors.purpleDark },
-  pkgPrice: { fontFamily: fonts.display, fontSize: 13, color: colors.yellowDark, marginTop: 8 },
+  pkgTagTxt: { fontFamily: fonts.heading, fontSize: 10, color: c.purpleDark },
+  pkgPrice: { fontFamily: fonts.display, fontSize: 13, color: c.yellowDark, marginTop: 8 },
 
   ethic: {
     flexDirection: 'row', alignItems: 'flex-start', gap: 9,
-    backgroundColor: '#EAF7F1', borderColor: '#CFEDE0', borderWidth: 2,
+    backgroundColor: pal.soft, borderColor: pal.surface, borderWidth: 2,
     borderRadius: 18, padding: 13, marginHorizontal: 4, marginTop: 2,
   },
-  ethicTitle: { fontFamily: fonts.display, fontSize: 13, color: colors.mintDark },
-  ethicTxt: { fontFamily: fonts.body, fontSize: 11.5, color: '#4E7767', lineHeight: 17, marginTop: 2 },
+  ethicTitle: { fontFamily: fonts.display, fontSize: 13, color: c.mintDark },
+  ethicTxt: { fontFamily: fonts.body, fontSize: 11.5, color: colors.muted, lineHeight: 17, marginTop: 2 },
 
   reveal: {
     position: 'absolute', top: 12, left: '50%', zIndex: 50, width: 236,

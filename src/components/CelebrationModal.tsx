@@ -2,20 +2,24 @@ import React, { useEffect, useRef } from 'react';
 import { Modal, View, Text, Pressable, Animated, Easing, StyleSheet, Dimensions } from 'react-native';
 import Svg, { Path } from 'react-native-svg';
 import { colors, fonts, radii, hardShadow } from '../theme';
+import { useC, usePal } from '../themeContext';
 import { PersonaChibi } from './PersonaFace';
 import { personaCelebrate } from '../personaCopy';
 import { Button } from './ui';
 
 const { width: SCRW } = Dimensions.get('window');
-const CONFETTI_COLORS = [colors.pink, colors.purple, colors.yellow, colors.mint, colors.sky, colors.coral];
 
 // Một mảnh confetti rơi + xoay (deterministic theo index, không cần Math.random).
 function Confetti({ i }: { i: number }) {
+  const c = useC();
+  const pal = usePal();
+  // Confetti monochrome: 3 sắc độ của tông persona.
+  const confettiColors = [c.pink, c.pinkDark, pal.surface];
   const fall = useRef(new Animated.Value(0)).current;
   const x = ((i * 53) % 100) / 100 * (SCRW - 24) + 12;
   const delay = (i % 6) * 120;
   const size = 7 + (i % 3) * 3;
-  const color = CONFETTI_COLORS[i % CONFETTI_COLORS.length];
+  const color = confettiColors[i % confettiColors.length];
   const round = i % 2 === 0;
 
   useEffect(() => {
@@ -54,6 +58,7 @@ function Flame({ size = 30, color = '#fff' }) {
 type Celebration = { type: 'level' | 'streak'; value: number; persona?: any; items?: Record<string, string> } | null;
 
 export function CelebrationModal({ data, onClose }: { data: Celebration; onClose: () => void }) {
+  const c = useC();
   const pop = useRef(new Animated.Value(0)).current;
   const visible = !!data;
 
@@ -76,7 +81,7 @@ export function CelebrationModal({ data, onClose }: { data: Celebration; onClose
       <View style={s.backdrop}>
         {Array.from({ length: 16 }).map((_, i) => <Confetti key={i} i={i} />)}
         <Animated.View style={[s.card, { opacity: pop, transform: [{ scale }] }]}>
-          <View style={[s.crown, { backgroundColor: isLevel ? colors.pink : colors.coral }]}>
+          <View style={[s.crown, { backgroundColor: isLevel ? c.pink : c.coral }]}>
             {isLevel
               ? <Text style={s.crownTxt}>Lv.{data.value}</Text>
               : <View style={{ flexDirection: 'row', alignItems: 'center', gap: 3 }}><Flame size={20} /><Text style={s.crownTxt}>{data.value}</Text></View>}

@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { Modal, View, Text, Pressable, StyleSheet } from 'react-native';
-import { colors, fonts, radii, hardShadow } from '../theme';
+import { colors, fonts, radii, hardShadow, type AppColors } from '../theme';
+import { useC } from '../themeContext';
 import { Icon } from './Icon';
 
 const DOW = ['T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'CN'];
@@ -21,6 +22,8 @@ export function DatePickerModal({
   onClose: () => void;
   minToday?: boolean;
 }) {
+  const c = useC();
+  const s = useMemo(() => mkStyles(c), [c]);
   const [view, setView] = useState(() => new Date(value.getFullYear(), value.getMonth(), 1));
 
   // Reset tháng đang xem về tháng của value mỗi lần mở.
@@ -94,7 +97,7 @@ export function DatePickerModal({
 }
 
 const CELL = 40;
-const s = StyleSheet.create({
+const mkStyles = (c: AppColors) => StyleSheet.create({
   backdrop: { flex: 1, backgroundColor: 'rgba(46,42,63,0.45)', alignItems: 'center', justifyContent: 'center', padding: 24 },
   card: { width: '100%', maxWidth: 340, backgroundColor: '#fff', borderRadius: 24, borderWidth: 2, borderColor: colors.line, padding: 16, ...hardShadow(6, 0.2) },
   hdr: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 },
@@ -104,9 +107,9 @@ const s = StyleSheet.create({
   dow: { width: CELL, textAlign: 'center', fontFamily: fonts.heading, fontSize: 11, color: colors.muted },
   grid: { flexDirection: 'row', flexWrap: 'wrap' },
   cell: { width: CELL, height: CELL, alignItems: 'center', justifyContent: 'center', borderRadius: 12 },
-  cellSel: { backgroundColor: colors.purple },
+  cellSel: { backgroundColor: c.purple },
   day: { fontFamily: fonts.body, fontSize: 15, color: colors.ink },
-  dayToday: { fontFamily: fonts.heading, color: colors.purpleDark },
+  dayToday: { fontFamily: fonts.heading, color: c.purpleDark },
   daySel: { color: '#fff', fontFamily: fonts.display },
   dayOff: { color: '#CBC7D6' },
   closeBtn: { alignSelf: 'center', marginTop: 8, paddingVertical: 8, paddingHorizontal: 20 },

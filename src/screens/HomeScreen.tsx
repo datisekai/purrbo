@@ -1,8 +1,9 @@
-import React, { useEffect, useState, useCallback, useRef } from 'react';
+import React, { useEffect, useState, useCallback, useRef, useMemo } from 'react';
 import { View, Text, ScrollView, Pressable, RefreshControl, Animated, Easing, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect } from '@react-navigation/native';
-import { colors, fonts, radii, hardShadow } from '../theme';
+import { colors, fonts, radii, hardShadow, type AppColors } from '../theme';
+import { useC, usePal } from '../themeContext';
 import { Icon } from '../components/Icon';
 import { PersonaFace, PersonaChibi } from '../components/PersonaFace';
 import { AnimatedMascot } from '../components/AnimatedMascot';
@@ -14,7 +15,7 @@ import { useAuth } from '../auth';
 import { scheduleHabitReminders } from '../notifications';
 import { personaCopy, personaHomeLine } from '../personaCopy';
 import { pushWidget } from '../widget';
-import { personaTheme, personaPalette, type PersonaPalette } from '../personaTheme';
+import { type PersonaPalette } from '../personaTheme';
 import { playSuccess } from '../sound';
 
 const NUDGE = 'Ơ 3 tiếng chưa uống giọt nào? Định làm khô mực cho em buồn hả 🙄💧';
@@ -25,6 +26,10 @@ const istyle = (pal: PersonaPalette) => ({ bg: pal.soft, col: pal.primaryDark })
 
 export default function HomeScreen({ navigation }: any) {
   const { user } = useAuth();
+  // Tông màu của persona đang active — dùng cho MỌI nhấn trên màn (bỏ cầu vồng).
+  const c = useC();
+  const pal = usePal();
+  const s = useMemo(() => mkStyles(c, pal), [c, pal]);
   const [st, setSt] = useState<any>(null);
   const [persona, setPersona] = useState<any>(null);
   const [habits, setHabits] = useState<any[]>([]);
@@ -127,8 +132,6 @@ export default function HomeScreen({ navigation }: any) {
   const aff = st?.affinity_points ?? 0;
   const lvl = st?.affinity_level ?? 1;
   const streak = st?.streak ?? 0;
-  // Tông màu của persona đang active — dùng cho MỌI nhấn trên màn (bỏ cầu vồng).
-  const pal = personaPalette(persona?.variant);
 
   // ── Việc SẮP TỚI: undone gần giờ hiện tại nhất (ưu tiên còn phía trước trong ngày) ──
   const parseHM = (t: string) => { const m = String(t || '').match(/(\d{1,2})[:h](\d{0,2})/); return m ? Number(m[1]) * 60 + Number(m[2] || 0) : null; };
@@ -181,7 +184,7 @@ export default function HomeScreen({ navigation }: any) {
       >
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 14 }}>
           <AnimatedMascot size={34} />
-          <Text style={{ fontFamily: fonts.display, fontSize: 20, color: colors.ink }}>Purr<Text style={{ color: colors.pink }}>bo</Text></Text>
+          <Text style={{ fontFamily: fonts.display, fontSize: 20, color: colors.ink }}>Purr<Text style={{ color: c.pink }}>bo</Text></Text>
         </View>
         <View style={s.top}>
           <View style={{ flex: 1 }}>
@@ -278,9 +281,9 @@ export default function HomeScreen({ navigation }: any) {
                 </View>
               </Pressable>
               {h.done ? (
-                <Button label="Đã khoe" tone="mint" onPress={() => {}} icon={<Icon name="check" size={15} color={colors.mintDark} />} style={{ paddingVertical: 9, paddingHorizontal: 14 }} />
+                <Button label="Đã khoe" color={c.mint} colorDark={c.mintDark} onPress={() => {}} icon={<Icon name="check" size={15} color={c.mintDark} />} style={{ paddingVertical: 9, paddingHorizontal: 14 }} />
               ) : (
-                <Button label="Khoe" tone="mint" onPress={() => khoe(h)} icon={<Icon name="heart" size={15} color="#fff" />} style={{ paddingVertical: 9, paddingHorizontal: 14 }} />
+                <Button label="Khoe" color={c.mint} colorDark={c.mintDark} onPress={() => khoe(h)} icon={<Icon name="heart" size={15} color="#fff" />} style={{ paddingVertical: 9, paddingHorizontal: 14 }} />
               )}
             </View>
           );
@@ -297,34 +300,34 @@ export default function HomeScreen({ navigation }: any) {
   );
 }
 
-const s = StyleSheet.create({
+const mkStyles = (c: AppColors, pal: any) => StyleSheet.create({
   top: { flexDirection: 'row', alignItems: 'center', marginBottom: 16 },
   quest: {
     flexDirection: 'row', alignItems: 'center', gap: 12, marginBottom: 20,
-    backgroundColor: colors.purple, borderRadius: 20, padding: 13,
+    backgroundColor: c.purple, borderRadius: 20, padding: 13,
     borderWidth: 2, borderColor: '#fff', ...hardShadow(5, 0.16),
   },
   questIc: { width: 44, height: 44, borderRadius: 14, backgroundColor: '#ffffff30', alignItems: 'center', justifyContent: 'center' },
   questTitle: { fontFamily: fonts.display, fontSize: 16, color: '#fff' },
   questSub: { fontFamily: fonts.body, fontSize: 12, color: '#fff', opacity: 0.92, marginTop: 1 },
-  questDot: { minWidth: 26, height: 26, borderRadius: 13, backgroundColor: colors.yellow, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 6 },
+  questDot: { minWidth: 26, height: 26, borderRadius: 13, backgroundColor: c.yellow, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 6 },
   questDotTxt: { fontFamily: fonts.display, fontSize: 13, color: colors.ink },
   hi: { fontFamily: fonts.display, fontSize: 22, color: colors.ink },
   sub: { fontFamily: fonts.body, fontSize: 13, color: colors.muted },
   hero: {
-    backgroundColor: '#F1E7FA', borderRadius: 28, padding: 18, marginBottom: 20,
+    backgroundColor: pal.surface, borderRadius: 28, padding: 18, marginBottom: 20,
     borderWidth: 2, borderColor: '#fff', alignItems: 'center', ...hardShadow(5, 0.14),
   },
   pName: { fontFamily: fonts.display, fontSize: 22, color: colors.ink },
   pTag: { fontFamily: fonts.body, fontSize: 12, color: colors.muted, marginTop: 2, textAlign: 'center' },
-  float: { fontFamily: fonts.display, fontSize: 22, color: colors.pinkDark },
-  questStrip: { flexDirection: 'row', alignItems: 'center', gap: 9, backgroundColor: '#EDE9FB', borderRadius: 16, paddingVertical: 10, paddingHorizontal: 12, marginTop: 8 },
+  float: { fontFamily: fonts.display, fontSize: 22, color: c.pinkDark },
+  questStrip: { flexDirection: 'row', alignItems: 'center', gap: 9, backgroundColor: pal.soft, borderRadius: 16, paddingVertical: 10, paddingHorizontal: 12, marginTop: 8 },
   questStripIc: { width: 28, height: 28, borderRadius: 9, backgroundColor: '#fff', alignItems: 'center', justifyContent: 'center' },
-  questStripTxt: { flex: 1, fontFamily: fonts.heading, fontSize: 12.5, color: colors.purpleDark },
-  ssr: { flexDirection: 'row', alignItems: 'center', gap: 3, backgroundColor: colors.pink, borderRadius: radii.pill, paddingVertical: 2, paddingHorizontal: 8 },
+  questStripTxt: { flex: 1, fontFamily: fonts.heading, fontSize: 12.5, color: c.purpleDark },
+  ssr: { flexDirection: 'row', alignItems: 'center', gap: 3, backgroundColor: c.pink, borderRadius: radii.pill, paddingVertical: 2, paddingHorizontal: 8 },
   bubble: { backgroundColor: '#fff', borderRadius: 18, borderBottomLeftRadius: 5, padding: 12, ...hardShadow(3, 0.12) },
   next: {
-    backgroundColor: colors.pink, borderRadius: 26, padding: 16, marginBottom: 20,
+    backgroundColor: c.pink, borderRadius: 26, padding: 16, marginBottom: 20,
     borderWidth: 3, borderColor: '#fff', ...hardShadow(7, 0.2),
   },
   nextTag: {
@@ -337,13 +340,13 @@ const s = StyleSheet.create({
   stitle: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12, marginHorizontal: 4 },
   stitleTxt: { fontFamily: fonts.display, fontSize: 17, color: colors.ink },
   addBtn: {
-    flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: colors.pink,
+    flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: c.pink,
     borderRadius: radii.pill, paddingVertical: 6, paddingHorizontal: 12,
-    borderBottomWidth: 3, borderBottomColor: colors.pinkDark,
+    borderBottomWidth: 3, borderBottomColor: c.pinkDark,
   },
   addBtnTxt: { fontFamily: fonts.heading, fontSize: 12, color: '#fff' },
   empty: {
-    alignItems: 'center', backgroundColor: '#F6ECFB', borderRadius: 24, padding: 24,
+    alignItems: 'center', backgroundColor: pal.soft, borderRadius: 24, padding: 24,
     borderWidth: 2, borderColor: '#fff', ...hardShadow(5, 0.14),
   },
   emptyTitle: { fontFamily: fonts.display, fontSize: 17, color: colors.ink, marginTop: 10 },

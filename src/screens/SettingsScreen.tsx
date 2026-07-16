@@ -1,10 +1,11 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { View, Text, ScrollView, Pressable, Switch, Alert, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Svg, { Path, Circle, Rect } from 'react-native-svg';
-import { colors, fonts, radii, hardShadow } from '../theme';
+import { colors, fonts, radii, hardShadow, type AppColors } from '../theme';
+import { useC, usePal } from '../themeContext';
 import { Api } from '../api';
 import { useAuth } from '../auth';
 import { ensureNotifPermission, sendTestNotification } from '../notifications';
@@ -44,6 +45,9 @@ const LAY_MOOD = { 0: 'dịu dàng', 1: 'cà khịa', 2: 'gắt cháy' };
 
 // Selector dạng pill (thay slider) — chọn = pill màu ink
 function Segmented({ options, value, onChange }) {
+  const c = useC();
+  const pal = usePal();
+  const s = useMemo(() => mkStyles(c, pal), [c, pal]);
   return (
     <View style={s.seg}>
       {options.map((opt, i) => {
@@ -59,6 +63,9 @@ function Segmented({ options, value, onChange }) {
 }
 
 function ControlRow({ icon, mini, iconBg, iconCol, label, options, value, onChange, last }) {
+  const c = useC();
+  const pal = usePal();
+  const s = useMemo(() => mkStyles(c, pal), [c, pal]);
   return (
     <View style={{ marginBottom: last ? 0 : 18 }}>
       <View style={s.ctrlHead}>
@@ -73,6 +80,9 @@ function ControlRow({ icon, mini, iconBg, iconCol, label, options, value, onChan
 }
 
 function SwitchRow({ icon, mini, iconBg, iconCol, title, sub, value, onValueChange, last }) {
+  const c = useC();
+  const pal = usePal();
+  const s = useMemo(() => mkStyles(c, pal), [c, pal]);
   return (
     <View style={[s.row, last && { borderBottomWidth: 0, paddingBottom: 2 }]}>
       <View style={[s.rowIc, { backgroundColor: iconBg }]}>
@@ -85,7 +95,7 @@ function SwitchRow({ icon, mini, iconBg, iconCol, title, sub, value, onValueChan
       <Switch
         value={value}
         onValueChange={onValueChange}
-        trackColor={{ false: '#E4DCEE', true: colors.pink }}
+        trackColor={{ false: '#E4DCEE', true: c.pink }}
         thumbColor="#fff"
         ios_backgroundColor="#E4DCEE"
       />
@@ -94,6 +104,9 @@ function SwitchRow({ icon, mini, iconBg, iconCol, title, sub, value, onValueChan
 }
 
 function NavRow({ icon, mini, iconBg, iconCol, title, sub, onPress, last }) {
+  const c = useC();
+  const pal = usePal();
+  const s = useMemo(() => mkStyles(c, pal), [c, pal]);
   return (
     <Pressable onPress={onPress} style={[s.row, last && { borderBottomWidth: 0, paddingBottom: 2 }]}>
       <View style={[s.rowIc, { backgroundColor: iconBg }]}>
@@ -109,6 +122,9 @@ function NavRow({ icon, mini, iconBg, iconCol, title, sub, onPress, last }) {
 }
 
 function SectionTitle({ icon, mini, bg, col, children }) {
+  const c = useC();
+  const pal = usePal();
+  const s = useMemo(() => mkStyles(c, pal), [c, pal]);
   return (
     <View style={s.stitle}>
       <View style={[s.sic, { backgroundColor: bg }]}>
@@ -120,6 +136,9 @@ function SectionTitle({ icon, mini, bg, col, children }) {
 }
 
 export default function SettingsScreen({ navigation }) {
+  const c = useC();
+  const pal = usePal();
+  const s = useMemo(() => mkStyles(c, pal), [c, pal]);
   const { user, logout } = useAuth();
   const [intimacy, setIntimacy] = useState(1); // nhẹ / vừa / đắm
   const [lay, setLay] = useState(1);           // dịu / vừa / gắt
@@ -259,7 +278,7 @@ export default function SettingsScreen({ navigation }) {
         {/* Live preview */}
         <View style={s.preview}>
           <View style={s.moodtag}>
-            <Icon name="flame" size={12} color={colors.purpleDark} />
+            <Icon name="flame" size={12} color={c.purpleDark} />
             <Text style={s.moodtagTxt}>Mood: {LAY_MOOD[lay]}</Text>
           </View>
 
@@ -280,53 +299,53 @@ export default function SettingsScreen({ navigation }) {
           <Bubble text={LAY_MSG[lay]} />
 
           <View style={s.previewHint}>
-            <Icon name="sparkles" size={13} color={colors.purpleDark} />
+            <Icon name="sparkles" size={13} color={c.purpleDark} />
             <Text style={s.previewHintTxt}>Chọn "Độ lầy" bên dưới, em đổi giọng liền cho coi</Text>
           </View>
         </View>
 
         {/* Tính cách bạn đồng hành */}
-        <SectionTitle icon="sliders" mini bg="#FFEAF2" col={colors.pinkDark}>Tính cách bạn đồng hành</SectionTitle>
+        <SectionTitle icon="sliders" mini bg={pal.soft} col={c.pinkDark}>Tính cách bạn đồng hành</SectionTitle>
         <Card style={{ marginBottom: 22 }}>
-          <ControlRow icon="heart" iconBg="#FFEAF2" iconCol={colors.pinkDark}
+          <ControlRow icon="heart" iconBg={pal.soft} iconCol={c.pinkDark}
             label="Độ thân mật" options={['nhẹ', 'vừa', 'đắm']} value={intimacy} onChange={changeIntimacy} />
-          <ControlRow icon="flame" iconBg="#FFF0E6" iconCol={colors.coralDark}
+          <ControlRow icon="flame" iconBg={pal.soft} iconCol={c.coralDark}
             label="Độ lầy" options={['dịu', 'vừa', 'gắt']} value={lay} onChange={changeLay} />
-          <ControlRow icon="bell" mini iconBg="#EEE7FF" iconCol={colors.purpleDark}
+          <ControlRow icon="bell" mini iconBg={pal.soft} iconCol={c.purpleDark}
             label="Tần suất nhắc" options={['ít', 'vừa', 'nhiều']} value={freq} onChange={changeFreq} last />
         </Card>
 
         {/* Ranh giới */}
-        <SectionTitle icon="shield" mini bg="#EEE7FF" col={colors.purpleDark}>Ranh giới</SectionTitle>
+        <SectionTitle icon="shield" mini bg={pal.soft} col={c.purpleDark}>Ranh giới</SectionTitle>
         <Card style={{ marginBottom: 22 }}>
-          <SwitchRow icon="heart" iconBg="#FFEAF2" iconCol={colors.pinkDark}
+          <SwitchRow icon="heart" iconBg={pal.soft} iconCol={c.pinkDark}
             title="Cho phép thả thính" sub="để em buông lời ngọt xỉu"
             value={thinh} onValueChange={onThinh} />
-          <SwitchRow icon="lock" mini iconBg="#FFF0E6" iconCol={colors.coralDark}
+          <SwitchRow icon="lock" mini iconBg={pal.soft} iconCol={c.coralDark}
             title="Chế độ 18+" sub="chặn nếu cưng chưa đủ tuổi"
             value={adult} onValueChange={onAdult} />
-          <SwitchRow icon="moon" mini iconBg="#EEE7FF" iconCol={colors.purpleDark}
+          <SwitchRow icon="moon" mini iconBg={pal.soft} iconCol={c.purpleDark}
             title="Yên tĩnh ban đêm" sub="22h–7h em im ru cho cưng ngủ"
             value={quiet} onValueChange={onQuiet} last />
         </Card>
 
         {/* Âm thanh */}
-        <SectionTitle icon="bell" mini bg="#FFF7E0" col={colors.yellowDark}>Âm thanh</SectionTitle>
+        <SectionTitle icon="bell" mini bg={pal.soft} col={c.yellowDark}>Âm thanh</SectionTitle>
         <Card style={{ marginBottom: 22 }}>
-          <SwitchRow icon="bell" mini iconBg="#FFF7E0" iconCol={colors.yellowDark}
+          <SwitchRow icon="bell" mini iconBg={pal.soft} iconCol={c.yellowDark}
             title="Nhạc nền" sub="giai điệu êm khi mở app"
             value={bgm} onValueChange={onBgm} />
-          <SwitchRow icon="sparkles" iconBg="#EEE7FF" iconCol={colors.purpleDark}
+          <SwitchRow icon="sparkles" iconBg={pal.soft} iconCol={c.purpleDark}
             title="Hiệu ứng & rung" sub="tiếng khi chạm nút, khoe, mở túi"
             value={sfx} onValueChange={onSfx} last />
         </Card>
 
         {/* Đồng bộ lịch */}
-        <SectionTitle icon="calendar" bg="#E6F7FF" col={colors.skyDark}>Đồng bộ lịch</SectionTitle>
+        <SectionTitle icon="calendar" bg={pal.soft} col={c.skyDark}>Đồng bộ lịch</SectionTitle>
         <Card style={{ marginBottom: 22 }}>
           <View style={[s.row, { borderBottomWidth: 0, paddingBottom: gcalOn ? 11 : 12 }]}>
-            <View style={[s.rowIc, { backgroundColor: '#E6F7FF' }]}>
-              <Icon name="calendar" size={20} color={colors.skyDark} />
+            <View style={[s.rowIc, { backgroundColor: pal.soft }]}>
+              <Icon name="calendar" size={20} color={c.skyDark} />
             </View>
             <View style={{ flex: 1 }}>
               <Text style={s.rowTitle}>Google Calendar</Text>
@@ -334,7 +353,7 @@ export default function SettingsScreen({ navigation }) {
             </View>
             {gcalOn && (
               <View style={s.okPill}>
-                <Icon name="check" size={12} color={colors.mintDark} />
+                <Icon name="check" size={12} color={c.mintDark} />
                 <Text style={s.okPillTxt}>bật</Text>
               </View>
             )}
@@ -347,7 +366,7 @@ export default function SettingsScreen({ navigation }) {
             <GcalConnectButton onConnected={() => setGcalOn(true)} />
           ) : (
             <View style={s.cfgNote}>
-              <Icon name="info" size={14} color={colors.coralDark} />
+              <Icon name="info" size={14} color={c.coralDark} />
               <Text style={s.cfgNoteTxt}>
                 Cần cấu hình client ID Google (iOS/Android/Web) để bật đồng bộ Google Calendar.
               </Text>
@@ -357,8 +376,8 @@ export default function SettingsScreen({ navigation }) {
           {/* Lark (Feishu) */}
           <View style={{ height: 2, backgroundColor: colors.line, marginVertical: 12 }} />
           <Pressable onPress={larkAction} style={[s.row, { borderBottomWidth: 0, paddingVertical: 4 }]}>
-            <View style={[s.rowIc, { backgroundColor: '#EAF7F1' }]}>
-              <Icon name="calendar" size={20} color={colors.mintDark} />
+            <View style={[s.rowIc, { backgroundColor: pal.soft }]}>
+              <Icon name="calendar" size={20} color={c.mintDark} />
             </View>
             <View style={{ flex: 1 }}>
               <Text style={s.rowTitle}>Lark Calendar</Text>
@@ -366,7 +385,7 @@ export default function SettingsScreen({ navigation }) {
             </View>
             {larkOn ? (
               <View style={s.okPill}>
-                <Icon name="check" size={12} color={colors.mintDark} />
+                <Icon name="check" size={12} color={c.mintDark} />
                 <Text style={s.okPillTxt}>bật</Text>
               </View>
             ) : (
@@ -376,13 +395,13 @@ export default function SettingsScreen({ navigation }) {
         </Card>
 
         {/* Khác */}
-        <SectionTitle icon="sliders" mini bg="#E6F7FF" col={colors.skyDark}>Khác</SectionTitle>
+        <SectionTitle icon="sliders" mini bg={pal.soft} col={c.skyDark}>Khác</SectionTitle>
         <Card style={{ marginBottom: 16 }}>
-          <NavRow icon="bell" mini iconBg="#FFEAF2" iconCol={colors.pinkDark}
+          <NavRow icon="bell" mini iconBg={pal.soft} iconCol={c.pinkDark}
             title="Thông báo" sub="nhắc lịch đúng giờ" onPress={onNotif} />
-          <NavRow icon="globe" mini iconBg="#EAF7F1" iconCol={colors.mintDark}
+          <NavRow icon="globe" mini iconBg={pal.soft} iconCol={c.mintDark}
             title="Ngôn ngữ" sub="Tiếng Việt" onPress={() => Alert.alert('Ngôn ngữ', 'Hiện Purrbo chỉ có Tiếng Việt 🇻🇳 — thêm ngôn ngữ khác ở bản sau nha.')} />
-          <NavRow icon="user" iconBg="#EEE7FF" iconCol={colors.purpleDark}
+          <NavRow icon="user" iconBg={pal.soft} iconCol={c.purpleDark}
             title="Tài khoản" sub={user?.email || user?.name || 'Khách'} onPress={onLogout} last />
         </Card>
 
@@ -394,7 +413,7 @@ export default function SettingsScreen({ navigation }) {
   );
 }
 
-const s = StyleSheet.create({
+const mkStyles = (c: AppColors, pal: any) => StyleSheet.create({
   top: { flexDirection: 'row', alignItems: 'center', gap: 12, marginBottom: 18 },
   back: {
     width: 42, height: 42, borderRadius: 14, backgroundColor: '#fff',
@@ -404,17 +423,17 @@ const s = StyleSheet.create({
   sub: { fontFamily: fonts.body, fontSize: 13, color: colors.muted },
 
   preview: {
-    backgroundColor: '#F6ECFB', borderRadius: 28, padding: 18, marginBottom: 22,
+    backgroundColor: pal.soft, borderRadius: 28, padding: 18, marginBottom: 22,
     borderWidth: 2, borderColor: '#fff', ...hardShadow(5, 0.14),
   },
   moodtag: {
     position: 'absolute', top: 14, right: 14, flexDirection: 'row', alignItems: 'center', gap: 5,
     backgroundColor: '#fff', paddingVertical: 5, paddingHorizontal: 10, borderRadius: radii.pill, ...hardShadow(3, 0.12),
   },
-  moodtagTxt: { fontFamily: fonts.heading, fontSize: 12, color: colors.purpleDark },
-  ssr: { flexDirection: 'row', alignItems: 'center', gap: 3, backgroundColor: colors.pink, borderRadius: radii.pill, paddingVertical: 2, paddingHorizontal: 8 },
+  moodtagTxt: { fontFamily: fonts.heading, fontSize: 12, color: c.purpleDark },
+  ssr: { flexDirection: 'row', alignItems: 'center', gap: 3, backgroundColor: c.pink, borderRadius: radii.pill, paddingVertical: 2, paddingHorizontal: 8 },
   previewHint: { flexDirection: 'row', alignItems: 'center', gap: 5, marginTop: 10 },
-  previewHintTxt: { fontFamily: fonts.heading, fontSize: 11, color: colors.purpleDark },
+  previewHintTxt: { fontFamily: fonts.heading, fontSize: 11, color: c.purpleDark },
 
   stitle: { flexDirection: 'row', alignItems: 'center', gap: 7, marginHorizontal: 4, marginBottom: 12 },
   sic: { width: 26, height: 26, borderRadius: 9, alignItems: 'center', justifyContent: 'center', ...hardShadow(3, 0.12) },
@@ -443,16 +462,16 @@ const s = StyleSheet.create({
 
   okPill: {
     flexDirection: 'row', alignItems: 'center', gap: 4,
-    backgroundColor: '#EAF7F1', borderColor: '#CFEDE0', borderWidth: 2,
+    backgroundColor: pal.soft, borderColor: pal.surface, borderWidth: 2,
     borderRadius: radii.pill, paddingVertical: 4, paddingHorizontal: 9,
   },
-  okPillTxt: { fontFamily: fonts.heading, fontSize: 11, color: colors.mintDark },
+  okPillTxt: { fontFamily: fonts.heading, fontSize: 11, color: c.mintDark },
   disconnect: { alignSelf: 'center', paddingVertical: 6, paddingHorizontal: 12, marginTop: 4 },
-  disconnectTxt: { fontFamily: fonts.heading, fontSize: 13, color: colors.coralDark },
+  disconnectTxt: { fontFamily: fonts.heading, fontSize: 13, color: c.coralDark },
   cfgNote: {
     flexDirection: 'row', alignItems: 'flex-start', gap: 8, marginTop: 4,
-    backgroundColor: '#FFF6F1', borderColor: '#FFD9C7', borderWidth: 2, borderRadius: 14, padding: 11,
+    backgroundColor: pal.soft, borderColor: pal.surface, borderWidth: 2, borderRadius: 14, padding: 11,
   },
-  cfgNoteTxt: { flex: 1, fontFamily: fonts.body, fontSize: 12, color: colors.coralDark, lineHeight: 17 },
+  cfgNoteTxt: { flex: 1, fontFamily: fonts.body, fontSize: 12, color: c.coralDark, lineHeight: 17 },
   logout: { fontFamily: fonts.heading, fontSize: 14, color: colors.muted },
 });

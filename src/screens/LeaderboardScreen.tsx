@@ -1,14 +1,18 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useMemo } from 'react';
 import { View, Text, ScrollView, Pressable, ActivityIndicator, RefreshControl, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect } from '@react-navigation/native';
-import { colors, fonts, radii, hardShadow } from '../theme';
+import { colors, fonts, radii, hardShadow, type AppColors } from '../theme';
+import { useC, usePal } from '../themeContext';
 import { Icon } from '../components/Icon';
 import { Api } from '../api';
 
-const MEDAL = ['#FFC93C', '#C7CCD6', '#E29B5B']; // vàng · bạc · đồng (rank 1-3)
-
 export default function LeaderboardScreen({ navigation }: any) {
+  const c = useC();
+  const pal = usePal();
+  const s = useMemo(() => mkStyles(c, pal), [c, pal]);
+  // Huy hiệu top 1-3: 3 sắc độ của tông persona (thay vì vàng · bạc · đồng cố định).
+  const MEDAL = useMemo(() => [c.pinkDark, c.pink, pal.surface], [c, pal]);
   const [top, setTop] = useState<any[]>([]);
   const [myRank, setMyRank] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
@@ -32,7 +36,7 @@ export default function LeaderboardScreen({ navigation }: any) {
       <ScrollView
         contentContainerStyle={{ padding: 18, paddingBottom: 40 }}
         showsVerticalScrollIndicator={false}
-        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.pink} colors={[colors.pink]} />}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={c.pink} colors={[c.pink]} />}
       >
         <View style={s.hdr}>
           <Pressable onPress={() => navigation?.goBack?.()} style={s.back}>
@@ -52,7 +56,7 @@ export default function LeaderboardScreen({ navigation }: any) {
         )}
 
         {loading ? (
-          <ActivityIndicator color={colors.pink} style={{ marginTop: 40 }} />
+          <ActivityIndicator color={c.pink} style={{ marginTop: 40 }} />
         ) : err ? (
           <View style={s.empty}>
             <Text style={s.emptyTxt}>Không tải được bảng xếp hạng 😿</Text>
@@ -69,14 +73,15 @@ export default function LeaderboardScreen({ navigation }: any) {
             return (
               <View key={u.rank} style={[s.row, u.me && s.rowMe]}>
                 <View style={[s.rank, medal ? { backgroundColor: medal } : null]}>
-                  <Text style={[s.rankTxt, medal ? { color: '#2E2A3F' } : null]}>{u.rank}</Text>
+                  {/* rank 3 dùng sắc nhạt → chữ ink; rank 1-2 sắc đậm → chữ trắng */}
+                  <Text style={[s.rankTxt, medal ? { color: u.rank === 3 ? colors.ink : '#fff' } : null]}>{u.rank}</Text>
                 </View>
-                <Text style={[s.name, u.me && { color: colors.pinkDark }]} numberOfLines={1}>
+                <Text style={[s.name, u.me && { color: c.pinkDark }]} numberOfLines={1}>
                   {u.name}{u.me ? ' (cưng)' : ''}
                 </Text>
-                <View style={s.lv}><Icon name="heartfill" size={11} color={colors.pinkDark} /><Text style={s.lvTxt}>Lv.{u.level}</Text></View>
+                <View style={s.lv}><Icon name="heartfill" size={11} color={c.pinkDark} /><Text style={s.lvTxt}>Lv.{u.level}</Text></View>
                 <View style={s.streak}>
-                  <Icon name="flamefill" size={13} color={colors.coralDark} />
+                  <Icon name="flamefill" size={13} color={c.coralDark} />
                   <Text style={s.streakTxt}>{u.streak}</Text>
                 </View>
               </View>
@@ -88,24 +93,24 @@ export default function LeaderboardScreen({ navigation }: any) {
   );
 }
 
-const s = StyleSheet.create({
+const mkStyles = (c: AppColors, pal: any) => StyleSheet.create({
   hdr: { flexDirection: 'row', alignItems: 'center', gap: 12, marginBottom: 16 },
   back: { width: 42, height: 42, borderRadius: 14, backgroundColor: '#fff', borderWidth: 2, borderColor: colors.line, alignItems: 'center', justifyContent: 'center', ...hardShadow(3, 0.12) },
   hTitle: { fontFamily: fonts.display, fontSize: 20, color: colors.ink },
   hSub: { fontFamily: fonts.body, fontSize: 12, color: colors.muted },
 
-  mineBanner: { flexDirection: 'row', alignItems: 'center', gap: 8, backgroundColor: colors.pink, borderRadius: 16, paddingVertical: 11, paddingHorizontal: 14, marginBottom: 16, borderWidth: 2, borderColor: '#fff', ...hardShadow(4, 0.16) },
+  mineBanner: { flexDirection: 'row', alignItems: 'center', gap: 8, backgroundColor: c.pink, borderRadius: 16, paddingVertical: 11, paddingHorizontal: 14, marginBottom: 16, borderWidth: 2, borderColor: '#fff', ...hardShadow(4, 0.16) },
   mineTxt: { fontFamily: fonts.display, fontSize: 15, color: '#fff' },
 
   row: { flexDirection: 'row', alignItems: 'center', gap: 10, backgroundColor: '#fff', borderWidth: 2, borderColor: colors.line, borderRadius: 18, paddingVertical: 11, paddingHorizontal: 12, marginBottom: 9, ...hardShadow(3, 0.1) },
-  rowMe: { borderColor: colors.pink, backgroundColor: '#FFF6F9' },
+  rowMe: { borderColor: c.pink, backgroundColor: pal.soft },
   rank: { width: 30, height: 30, borderRadius: 10, backgroundColor: '#F0EAF6', alignItems: 'center', justifyContent: 'center' },
   rankTxt: { fontFamily: fonts.display, fontSize: 14, color: colors.muted },
   name: { flex: 1, minWidth: 0, fontFamily: fonts.heading, fontSize: 15, color: colors.ink },
-  lv: { flexDirection: 'row', alignItems: 'center', gap: 3, backgroundColor: '#FFEAF2', borderRadius: radii.pill, paddingVertical: 3, paddingHorizontal: 8 },
-  lvTxt: { fontFamily: fonts.heading, fontSize: 11, color: colors.pinkDark },
-  streak: { flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: '#FFF0E6', borderRadius: radii.pill, paddingVertical: 4, paddingHorizontal: 9 },
-  streakTxt: { fontFamily: fonts.heading, fontSize: 13, color: colors.coralDark },
+  lv: { flexDirection: 'row', alignItems: 'center', gap: 3, backgroundColor: pal.soft, borderRadius: radii.pill, paddingVertical: 3, paddingHorizontal: 8 },
+  lvTxt: { fontFamily: fonts.heading, fontSize: 11, color: c.pinkDark },
+  streak: { flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: pal.soft, borderRadius: radii.pill, paddingVertical: 4, paddingHorizontal: 9 },
+  streakTxt: { fontFamily: fonts.heading, fontSize: 13, color: c.coralDark },
 
   empty: { alignItems: 'center', paddingVertical: 40 },
   emptyTxt: { fontFamily: fonts.display, fontSize: 16, color: colors.ink },

@@ -1,12 +1,16 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { View, Text, TextInput, Pressable, ActivityIndicator, Alert, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { colors, fonts, radii, hardShadow } from '../theme';
+import { colors, fonts, radii, hardShadow, type AppColors } from '../theme';
+import { useC } from '../themeContext';
 import { AnimatedMascot } from '../components/AnimatedMascot';
 import { useAuth } from '../auth';
 import GoogleButton, { GOOGLE_LOGIN_READY } from './GoogleButton';
 
+// Màn này chạy TRƯỚC khi có persona → useC() trả tông NEUTRAL (đúng ý đồ).
 export default function NameScreen() {
+  const c = useC();
+  const s = useMemo(() => mkStyles(c), [c]);
   const { loginDev } = useAuth();
   const [name, setName] = useState('');
   const [busy, setBusy] = useState(false);
@@ -26,7 +30,7 @@ export default function NameScreen() {
     <SafeAreaView style={s.root}>
       <View style={s.hero}>
         <AnimatedMascot size={120} />
-        <Text style={[s.word, { marginTop: 12 }]}>Purr<Text style={{ color: colors.pink }}>bo</Text></Text>
+        <Text style={[s.word, { marginTop: 12 }]}>Purr<Text style={{ color: c.pink }}>bo</Text></Text>
         <Text style={s.tag}>Mình gọi bạn là gì cho thân thương nè? 🐾</Text>
       </View>
 
@@ -59,7 +63,7 @@ export default function NameScreen() {
   );
 }
 
-const s = StyleSheet.create({
+const mkStyles = (c: AppColors) => StyleSheet.create({
   root: { flex: 1, backgroundColor: colors.bg, paddingHorizontal: 28, paddingBottom: 40, justifyContent: 'center', gap: 38 },
   hero: { alignItems: 'center' },
   word: { fontFamily: fonts.display, fontSize: 44, color: colors.ink },
@@ -68,7 +72,7 @@ const s = StyleSheet.create({
     height: 56, borderRadius: radii.md, backgroundColor: '#fff', borderWidth: 2, borderColor: colors.line,
     paddingHorizontal: 18, fontFamily: fonts.bodyBold, fontSize: 17, color: colors.ink, ...hardShadow(4, 0.12),
   },
-  start: { height: 54, borderRadius: radii.pill, backgroundColor: colors.pink, alignItems: 'center', justifyContent: 'center', borderBottomWidth: 5, borderBottomColor: colors.pinkDark },
+  start: { height: 54, borderRadius: radii.pill, backgroundColor: c.pink, alignItems: 'center', justifyContent: 'center', borderBottomWidth: 5, borderBottomColor: c.pinkDark },
   startTxt: { fontFamily: fonts.heading, fontSize: 17, color: '#fff' },
   or: { fontFamily: fonts.body, fontSize: 13, color: colors.muted, textAlign: 'center' },
   note: { fontFamily: fonts.body, fontSize: 12, color: colors.muted, textAlign: 'center', marginTop: 4, lineHeight: 18 },

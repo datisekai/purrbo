@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Pressable, View, Text, Animated, StyleSheet } from 'react-native';
 import { colors, radii, fonts, hardShadow } from '../theme';
+import { useC, usePal } from '../themeContext';
 import { playTap } from '../sound';
 
 // Skeleton loading (nhấp nháy) — dùng khi chờ API.
@@ -37,13 +38,14 @@ export function SkeletonRow() {
 // color/colorDark: đè tone cố định bằng MÀU PERSONA (personaPalette) — để 1 màn
 // chỉ dùng tông của persona đang active thay vì cầu vồng nhiều màu.
 export function Button({ label, onPress, tone = 'pink', color, colorDark, icon = null, disabled, style }) {
+  const c = useC();
   const [down, setDown] = useState(false);
   const handlePress = disabled ? undefined : (e: any) => { playTap(); onPress?.(e); };
   const map = {
-    pink: [colors.pink, colors.pinkDark, '#fff'],
-    purple: [colors.purple, colors.purpleDark, '#fff'],
-    yellow: [colors.yellow, colors.yellowDark, colors.ink],
-    mint: [colors.mint, colors.mintDark, '#fff'],
+    pink: [c.pink, c.pinkDark, '#fff'],
+    purple: [c.purple, c.purpleDark, '#fff'],
+    yellow: [c.yellow, c.yellowDark, '#fff'],
+    mint: [c.mint, c.mintDark, '#fff'],
     soft: ['#F1ECF6', '#E1D8EC', '#807892'],
   };
   const [bg, foot, fg] = disabled
@@ -79,15 +81,21 @@ export function Card({ children, style }) {
   );
 }
 
-export function Chip({ children, bg = '#FFEAF2', fg = colors.pinkDark, border = '#FFCCDF', style }) {
+// bg/fg/border vẫn nhận từ ngoài như cũ — bỏ trống thì lấy MẶC ĐỊNH theo persona.
+export function Chip({ children, bg, fg, border, style }) {
+  const c = useC();
+  const pal = usePal();
+  const _bg = bg ?? pal.soft;
+  const _fg = fg ?? c.pinkDark;
+  const _border = border ?? pal.surface;
   return (
     <View style={[{
       flexDirection: 'row', alignItems: 'center', gap: 6,
-      backgroundColor: bg, borderColor: border, borderWidth: 2,
+      backgroundColor: _bg, borderColor: _border, borderWidth: 2,
       borderRadius: radii.pill, paddingVertical: 7, paddingHorizontal: 12, ...hardShadow(3, 0.12),
     }, style]}>
       {typeof children === 'string'
-        ? <Text style={{ fontFamily: fonts.semi, fontSize: 13, color: fg }}>{children}</Text>
+        ? <Text style={{ fontFamily: fonts.semi, fontSize: 13, color: _fg }}>{children}</Text>
         : children}
     </View>
   );
@@ -104,17 +112,20 @@ export function Bubble({ text, style }) {
   );
 }
 
-export function ProgressBar({ pct = 0, from = colors.pink, to = colors.purple }) {
+export function ProgressBar({ pct = 0, from, to }: { pct?: number; from?: string; to?: string }) {
   // Gradient tuyến tính đơn giản: dùng màu "to" làm nền thanh, "from" ở đầu (xấp xỉ).
+  const c = useC();
+  const _from = from ?? c.pink;
   return (
     <View style={{ height: 14, backgroundColor: '#F0EAF6', borderRadius: radii.pill, borderWidth: 2, borderColor: colors.line, overflow: 'hidden' }}>
-      <View style={{ width: `${Math.max(0, Math.min(100, pct))}%`, height: '100%', backgroundColor: from, borderRadius: radii.pill }} />
+      <View style={{ width: `${Math.max(0, Math.min(100, pct))}%`, height: '100%', backgroundColor: _from, borderRadius: radii.pill }} />
     </View>
   );
 }
 
 export function RarityBadge({ rar = 'Thường' }) {
-  const bg = rar === 'SSR' ? colors.rSSR : rar === 'Hiếm' ? colors.rRare : colors.rCommon;
+  const c = useC();
+  const bg = rar === 'SSR' ? c.rSSR : rar === 'Hiếm' ? c.rRare : c.rCommon;
   return (
     <View style={{ backgroundColor: bg, borderRadius: radii.pill, paddingVertical: 3, paddingHorizontal: 10, ...hardShadow(3, 0.12) }}>
       <Text style={{ fontFamily: fonts.heading, fontSize: 11, color: '#fff', letterSpacing: 0.5 }}>{rar.toUpperCase()}</Text>

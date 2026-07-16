@@ -1,16 +1,16 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useMemo } from 'react';
 import { View, Text, ScrollView, Pressable, RefreshControl, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect } from '@react-navigation/native';
 import Svg, { Path, Rect, Circle } from 'react-native-svg';
-import { colors, fonts, radii, hardShadow } from '../theme';
+import { colors, fonts, radii, hardShadow, type AppColors } from '../theme';
+import { useC, usePal } from '../themeContext';
 import { Icon } from '../components/Icon';
 import { PersonaFace } from '../components/PersonaFace';
 import { Button, SkeletonRow } from '../components/ui';
 import { CelebrationModal } from '../components/CelebrationModal';
 import { Api } from '../api';
 import { personaCopy } from '../personaCopy';
-import { personaTheme, personaPalette } from '../personaTheme';
 import { getGcalToken, getLarkToken } from '../googleCalendar';
 import { playSuccess } from '../sound';
 
@@ -74,17 +74,14 @@ const DOTS = new Set([9, 11, 13, 16, 20, 25, 28]);
 const SHARED = { droplet: true, dumbbell: true, book: true };
 
 // Map habit.icon (từ backend) → cách render icon của màn hình (ic + màu nền/viền)
+// Chỉ map habit.icon → TÊN icon. Màu do palette persona quyết định lúc render.
 const HABIT_STYLE = {
-  droplet: { ic: 'droplet', bg: '#E6F7FF', col: colors.skyDark },
-  water: { ic: 'droplet', bg: '#E6F7FF', col: colors.skyDark },
-  dumbbell: { ic: 'dumbbell', bg: '#FFEAF2', col: colors.pinkDark },
-  gym: { ic: 'dumbbell', bg: '#FFEAF2', col: colors.pinkDark },
-  book: { ic: 'book', bg: '#EEE7FF', col: colors.purpleDark },
-  coffee: { ic: 'coffee', bg: '#FFF0E6', col: colors.coralDark },
-  briefcase: { ic: 'briefcase', bg: '#EEE7FF', col: colors.purpleDark },
-  mic: { ic: 'mic', bg: '#FFF0E6', col: colors.coralDark },
+  droplet: { ic: 'droplet' }, water: { ic: 'droplet' },
+  dumbbell: { ic: 'dumbbell' }, gym: { ic: 'dumbbell' },
+  book: { ic: 'book' }, coffee: { ic: 'coffee' },
+  briefcase: { ic: 'briefcase' }, mic: { ic: 'mic' },
 };
-const DEFAULT_STYLE = { ic: 'droplet', bg: '#F1ECF6', col: colors.purpleDark };
+const DEFAULT_STYLE = { ic: 'droplet' };
 
 // SA / CH / TỐI suy ra từ giờ
 function ampmOf(time) {
@@ -122,8 +119,6 @@ function gEventToItem(e, i) {
     time: hm || '—',
     ampm: hm ? ampmOf(hm) : 'CẢ NGÀY',
     ic: 'briefcase',
-    bg: '#E6F7FF',
-    col: colors.skyDark,
     name: e.title || '(không tiêu đề)',
     nudge: e.location ? 'ở ' + e.location : 'lịch từ Google Calendar',
   };
@@ -143,7 +138,9 @@ export default function CalendarScreen({ navigation }) {
   const [st, setSt] = useState(null);
   const [activePersona, setActivePersona] = useState({ variant: 'mun', name: 'Bạn đồng hành' });
   // Tông persona cho MỌI nhấn trên màn (bỏ cầu vồng mỗi icon 1 màu).
-  const pal = personaPalette(activePersona?.variant);
+  const c = useC();
+  const pal = usePal();
+  const s = useMemo(() => mkStyles(c, pal), [c, pal]);
   const [celebration, setCelebration] = useState(null);
   // KHÔNG bịa habit mẫu — chỉ hiện việc thật từ backend (rỗng → empty state).
   const [items, setItems] = useState<any[]>([]);
@@ -264,7 +261,7 @@ export default function CalendarScreen({ navigation }) {
             <Icon
               name={gcalOn ? 'check' : 'calendar'}
               size={13}
-              color={gcalOn ? colors.mintDark : colors.muted}
+              color={gcalOn ? c.mintDark : colors.muted}
             />
             <Text style={[s.syncedTxt, !gcalOn && s.syncedOffTxt]}>
               Google Calendar{'\n'}{gcalOn ? 'đã đồng bộ' : 'chạm để kết nối'}
@@ -336,11 +333,11 @@ export default function CalendarScreen({ navigation }) {
         )}
 
         {/* Persona note */}
-        <View style={[s.note, { backgroundColor: personaTheme(activePersona.variant).surface }]}>
+        <View style={[s.note, { backgroundColor: pal.surface }]}>
           <PersonaFace variant={activePersona.variant} ring="ssr" size={48} />
           <View style={s.bubble}>
             <View style={s.who}>
-              <Icon name="heart" size={12} color={colors.purpleDark} />
+              <Icon name="heart" size={12} color={c.purpleDark} />
               <Text style={s.whoTxt}>{activePersona.name}</Text>
             </View>
             <Text style={s.bubbleTxt}>{note || personaCopy(activePersona.variant).calNote}</Text>
@@ -386,7 +383,7 @@ export default function CalendarScreen({ navigation }) {
                       <Text style={[s.itemName, it.done && { textDecorationLine: 'line-through' }]}>{it.name}</Text>
                       {it.type === 'sync' && (
                         <View style={s.gtag}>
-                          <Icon name="calendar" size={9} color={colors.skyDark} />
+                          <Icon name="calendar" size={9} color={c.skyDark} />
                           <Text style={s.gtagTxt}>từ Google</Text>
                         </View>
                       )}
@@ -399,9 +396,9 @@ export default function CalendarScreen({ navigation }) {
                 </Pressable>
                 {it.type === 'habit' && (
                   it.done ? (
-                    <Button label="Đã khoe" tone="mint" onPress={() => {}} icon={<Icon name="check" size={14} color={colors.mintDark} />} style={s.khoeBtn} />
+                    <Button label="Đã khoe" color={c.mint} colorDark={c.mintDark} onPress={() => {}} icon={<Icon name="check" size={14} color={c.mintDark} />} style={s.khoeBtn} />
                   ) : (
-                    <Button label="Khoe" tone="mint" onPress={() => khoe(it)} icon={<Icon name="heart" size={14} color="#fff" />} style={s.khoeBtn} />
+                    <Button label="Khoe" color={c.mint} colorDark={c.mintDark} onPress={() => khoe(it)} icon={<Icon name="heart" size={14} color="#fff" />} style={s.khoeBtn} />
                   )
                 )}
               </View>
@@ -423,7 +420,7 @@ export default function CalendarScreen({ navigation }) {
             <Text style={s.nlpTitle}>"mai 7h cà phê với crush..."</Text>
             <Text style={s.nlpSub}>Purrbo tự hiểu & hỏi thêm nếu thiếu giờ</Text>
           </View>
-          <Icon name="plus" size={20} color={colors.purpleDark} />
+          <Icon name="plus" size={20} color={c.purpleDark} />
         </Pressable>
       </ScrollView>
 
@@ -437,17 +434,17 @@ export default function CalendarScreen({ navigation }) {
   );
 }
 
-const s = StyleSheet.create({
+const mkStyles = (c: AppColors, pal: any) => StyleSheet.create({
   top: { flexDirection: 'row', alignItems: 'flex-start', marginBottom: 14 },
   hi: { fontFamily: fonts.display, fontSize: 22, color: colors.ink },
   sub: { fontFamily: fonts.body, fontSize: 13, color: colors.muted },
   synced: {
     flexDirection: 'row', alignItems: 'center', gap: 5,
-    backgroundColor: '#EAF7F1', borderColor: '#CFEDE0', borderWidth: 2,
+    backgroundColor: pal.soft, borderColor: pal.surface, borderWidth: 2,
     borderRadius: radii.pill, paddingVertical: 7, paddingHorizontal: 10, ...hardShadow(3, 0.12),
   },
   syncedOff: { backgroundColor: '#F0EAF6', borderColor: colors.line },
-  syncedTxt: { fontFamily: fonts.heading, fontSize: 11, color: colors.mintDark, lineHeight: 13 },
+  syncedTxt: { fontFamily: fonts.heading, fontSize: 11, color: c.mintDark, lineHeight: 13 },
   syncedOffTxt: { color: colors.muted },
 
   viewSeg: {
@@ -468,26 +465,26 @@ const s = StyleSheet.create({
   mGrid: { flexDirection: 'row', flexWrap: 'wrap' },
   mCellWrap: { width: `${100 / 7}%`, alignItems: 'center', paddingVertical: 3 },
   mCell: { width: 38, height: 38, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
-  mCellToday: { backgroundColor: colors.pink, borderBottomWidth: 2, borderBottomColor: colors.pinkDark },
-  mCellSel: { borderWidth: 2, borderColor: colors.purple },
+  mCellToday: { backgroundColor: c.pink, borderBottomWidth: 2, borderBottomColor: c.pinkDark },
+  mCellSel: { borderWidth: 2, borderColor: c.purple },
   mNum: { fontFamily: fonts.heading, fontSize: 14, color: colors.ink },
-  mDot: { width: 4, height: 4, borderRadius: 2, backgroundColor: colors.yellow, marginTop: 2 },
+  mDot: { width: 4, height: 4, borderRadius: 2, backgroundColor: c.yellow, marginTop: 2 },
 
   week: { flexDirection: 'row', gap: 7, marginBottom: 20 },
   day: {
     flex: 1, backgroundColor: '#fff', borderWidth: 2, borderColor: colors.line, borderRadius: 18,
     paddingVertical: 9, alignItems: 'center', ...hardShadow(3, 0.12),
   },
-  dayToday: { backgroundColor: colors.pink, borderColor: colors.pink, borderBottomWidth: 2, borderBottomColor: colors.pinkDark },
-  daySel: { borderColor: colors.purple, borderBottomWidth: 4, borderBottomColor: colors.purpleDark },
+  dayToday: { backgroundColor: c.pink, borderColor: c.pink, borderBottomWidth: 2, borderBottomColor: c.pinkDark },
+  daySel: { borderColor: c.purple, borderBottomWidth: 4, borderBottomColor: c.purpleDark },
   dow: { fontFamily: fonts.heading, fontSize: 11, color: colors.muted },
   num: { fontFamily: fonts.display, fontSize: 17, color: colors.ink, marginTop: 2 },
   dayTodayTxt: { color: '#fff' },
-  dot: { width: 5, height: 5, borderRadius: 3, backgroundColor: colors.yellow, marginTop: 4 },
+  dot: { width: 5, height: 5, borderRadius: 3, backgroundColor: c.yellow, marginTop: 4 },
 
   note: {
     flexDirection: 'row', alignItems: 'flex-start', gap: 11,
-    backgroundColor: '#F6ECFB', borderWidth: 2, borderColor: '#fff', borderRadius: 24,
+    backgroundColor: pal.surface, borderWidth: 2, borderColor: '#fff', borderRadius: 24,
     padding: 14, marginBottom: 18, ...hardShadow(5, 0.14),
   },
   bubble: {
@@ -495,7 +492,7 @@ const s = StyleSheet.create({
     borderRadius: 16, borderBottomLeftRadius: 5, padding: 11, ...hardShadow(3, 0.12),
   },
   who: { flexDirection: 'row', alignItems: 'center', gap: 5, marginBottom: 5 },
-  whoTxt: { fontFamily: fonts.display, fontSize: 12, color: colors.purpleDark },
+  whoTxt: { fontFamily: fonts.display, fontSize: 12, color: c.purpleDark },
   bubbleTxt: { fontFamily: fonts.body, fontSize: 13.5, color: colors.ink, lineHeight: 20 },
 
   stitle: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginHorizontal: 4, marginBottom: 12 },
@@ -518,10 +515,10 @@ const s = StyleSheet.create({
   itemName: { fontFamily: fonts.heading, fontSize: 15, color: colors.ink },
   gtag: {
     flexDirection: 'row', alignItems: 'center', gap: 4,
-    backgroundColor: '#E6F7FF', borderColor: '#C5ECFF', borderWidth: 1.5,
+    backgroundColor: pal.soft, borderColor: pal.surface, borderWidth: 1.5,
     borderRadius: radii.pill, paddingVertical: 2, paddingHorizontal: 7,
   },
-  gtagTxt: { fontFamily: fonts.heading, fontSize: 9.5, color: colors.skyDark },
+  gtagTxt: { fontFamily: fonts.heading, fontSize: 9.5, color: c.skyDark },
   nudge: { flexDirection: 'row', alignItems: 'center', gap: 5, marginTop: 3 },
   nudgeTxt: { flex: 1, fontFamily: fonts.body, fontSize: 11.5, color: colors.muted, lineHeight: 16 },
   khoeBtn: { paddingVertical: 8, paddingHorizontal: 12 },
@@ -531,13 +528,13 @@ const s = StyleSheet.create({
     borderWidth: 2, borderColor: '#D9CFE6', borderStyle: 'dashed',
     backgroundColor: '#FFFDFB', borderRadius: 22, padding: 13, marginTop: 6,
   },
-  nlpIc: { width: 44, height: 44, borderRadius: 14, alignItems: 'center', justifyContent: 'center', backgroundColor: '#F1ECF6' },
+  nlpIc: { width: 44, height: 44, borderRadius: 14, alignItems: 'center', justifyContent: 'center', backgroundColor: pal.soft },
   nlpTitle: { fontFamily: fonts.heading, fontSize: 15, color: colors.muted },
   nlpSub: { fontFamily: fonts.body, fontSize: 11.5, color: colors.muted, marginTop: 1 },
 
   fab: {
     position: 'absolute', right: 20, bottom: 26, width: 56, height: 56, borderRadius: 28,
-    backgroundColor: colors.purple, alignItems: 'center', justifyContent: 'center',
+    backgroundColor: c.purple, alignItems: 'center', justifyContent: 'center',
     borderWidth: 4, borderColor: '#fff', ...hardShadow(5, 0.18),
   },
 });

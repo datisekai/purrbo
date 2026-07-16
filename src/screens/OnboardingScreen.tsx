@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { View, Text, ScrollView, Pressable, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Svg, { Path, Circle } from 'react-native-svg';
-import { colors, fonts, radii, hardShadow } from '../theme';
+import { colors, fonts, radii, hardShadow, type AppColors } from '../theme';
 import { Icon } from '../components/Icon';
+import { useC, usePal } from '../themeContext';
 import { PersonaFace, PurrboMascot } from '../components/PersonaFace';
 import { Button, Bubble, RarityBadge } from '../components/ui';
 import { Api } from '../api';
@@ -36,27 +37,30 @@ const PERSONA = {
   xu:   { name: 'Xu',    variant: 'xu',   rar: 'Hiếm', tag: 'hype · năng lượng vô cực', line: 'YO chào cậu 👾 Xu đây! Chuẩn bị quẩy tung cái list việc luôn nha, đi đi đi khum có lười 🔥' },
 };
 
-const QUIZ = [
+const mkQuiz = (c: AppColors, pal: any) => [
   { q: 'Cậu muốn được nhắc theo kiểu nào?', opts: [
-    { t: 'Dịu dàng, ngọt xỉu dỗ mình',    ic: 'heart',  bg: '#FFEAF2', col: colors.pinkDark,   p: 'cam' },
-    { t: 'Cà khịa, chọc quê cho tự ái',   ic: 'smile',  bg: '#EEE7FF', col: colors.purpleDark, p: 'mun' },
-    { t: 'Dứt khoát, ra lệnh luôn',        ic: 'target', bg: '#E6F7FF', col: colors.skyDark,    p: 'sep' },
-    { t: 'Lầy lội, rủ rê cho vui',         ic: 'zap',    bg: '#E9FBF3', col: colors.mintDark,   p: 'xu' },
+    { t: 'Dịu dàng, ngọt xỉu dỗ mình',    ic: 'heart',  bg: pal.soft, col: c.pinkDark,   p: 'cam' },
+    { t: 'Cà khịa, chọc quê cho tự ái',   ic: 'smile',  bg: pal.soft, col: c.purpleDark, p: 'mun' },
+    { t: 'Dứt khoát, ra lệnh luôn',        ic: 'target', bg: pal.soft, col: c.skyDark,    p: 'sep' },
+    { t: 'Lầy lội, rủ rê cho vui',         ic: 'zap',    bg: pal.soft, col: c.mintDark,   p: 'xu' },
   ] },
   { q: 'Cuối tuần lý tưởng của cậu là?', opts: [
-    { t: 'Cuộn chăn ở nhà, chill',        ic: 'moon',   bg: '#FFEAF2', col: colors.pinkDark,   p: 'cam' },
-    { t: 'Đi chơi quẩy tưng bừng',         ic: 'party',  bg: '#E9FBF3', col: colors.mintDark,   p: 'xu' },
-    { t: 'Lên kế hoạch, làm việc',         ic: 'target', bg: '#E6F7FF', col: colors.skyDark,    p: 'sep' },
+    { t: 'Cuộn chăn ở nhà, chill',        ic: 'moon',   bg: pal.soft, col: c.pinkDark,   p: 'cam' },
+    { t: 'Đi chơi quẩy tưng bừng',         ic: 'party',  bg: pal.soft, col: c.mintDark,   p: 'xu' },
+    { t: 'Lên kế hoạch, làm việc',         ic: 'target', bg: pal.soft, col: c.skyDark,    p: 'sep' },
   ] },
   { q: 'Lúc lười biếng, cậu cần ai đó...', opts: [
-    { t: 'Ôm ấp dỗ dành mình',             ic: 'heart',  bg: '#FFEAF2', col: colors.pinkDark,   p: 'cam' },
-    { t: 'Chọc quê cho mình đứng dậy',     ic: 'smile',  bg: '#EEE7FF', col: colors.purpleDark, p: 'mun' },
-    { t: 'Hô hào rủ mình quẩy',            ic: 'zap',    bg: '#E9FBF3', col: colors.mintDark,   p: 'xu' },
+    { t: 'Ôm ấp dỗ dành mình',             ic: 'heart',  bg: pal.soft, col: c.pinkDark,   p: 'cam' },
+    { t: 'Chọc quê cho mình đứng dậy',     ic: 'smile',  bg: pal.soft, col: c.purpleDark, p: 'mun' },
+    { t: 'Hô hào rủ mình quẩy',            ic: 'zap',    bg: pal.soft, col: c.mintDark,   p: 'xu' },
   ] },
 ];
 
 // Option quiz — có hiệu ứng lún như Button.
 function QuizOption({ opt, onPress }) {
+  const c = useC();
+  const pal = usePal();
+  const s = useMemo(() => mkStyles(c, pal), [c, pal]);
   const [down, setDown] = useState(false);
   return (
     <Pressable
@@ -74,6 +78,10 @@ function QuizOption({ opt, onPress }) {
 }
 
 export default function OnboardingScreen({ navigation }) {
+  const c = useC();
+  const pal = usePal();
+  const s = useMemo(() => mkStyles(c, pal), [c, pal]);
+  const QUIZ = useMemo(() => mkQuiz(c, pal), [c, pal]);
   const { markOnboarded } = useAuth();
   const [step, setStep] = useState(0); // 0 welcome · 1-3 quiz · 4 túi mù · 5 reveal
   const [scores, setScores] = useState({});
@@ -97,7 +105,7 @@ export default function OnboardingScreen({ navigation }) {
   };
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: '#F6ECFB' }} edges={['top', 'bottom']}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: pal.soft }} edges={['top', 'bottom']}>
       <ScrollView
         contentContainerStyle={{ flexGrow: 1, padding: 22, paddingBottom: 34 }}
         showsVerticalScrollIndicator={false}
@@ -106,14 +114,14 @@ export default function OnboardingScreen({ navigation }) {
         {step === 0 && (
           <View style={s.center}>
             <PurrboMascot size={120} />
-            <Text style={s.wordmark}>Purr<Text style={{ color: colors.pink }}>bo</Text></Text>
+            <Text style={s.wordmark}>Purr<Text style={{ color: c.pink }}>bo</Text></Text>
             <Text style={s.welcomeSub}>
               Chào cậu! Trước tiên, để Purrbo ghép cậu với một người đồng hành hợp gu nha 💘
             </Text>
             <View style={{ width: '100%', marginTop: 14 }}>
               <Button
                 label="Bắt đầu thôi"
-                tone="pink"
+                color={c.pink} colorDark={c.pinkDark}
                 onPress={() => setStep(1)}
                 icon={<Icon name="sparkles" size={18} color="#fff" />}
               />
@@ -140,7 +148,7 @@ export default function OnboardingScreen({ navigation }) {
         {step === 4 && (
           <View style={s.center}>
             <View style={s.hintChip}>
-              <Icon name="sparkles" size={13} color={colors.pinkDark} />
+              <Icon name="sparkles" size={13} color={c.pinkDark} />
               <Text style={s.hintChipTxt}>Dựa trên tính cách của cậu</Text>
             </View>
             <Text style={s.capTitle}>Túi mù của cậu đây!</Text>
@@ -152,7 +160,7 @@ export default function OnboardingScreen({ navigation }) {
             <View style={{ width: '100%', marginTop: 18 }}>
               <Button
                 label="Mở túi mù"
-                tone="pink"
+                color={c.pink} colorDark={c.pinkDark}
                 onPress={openCapsule}
                 icon={<Icon name="gift" size={18} color="#fff" />}
               />
@@ -173,7 +181,7 @@ export default function OnboardingScreen({ navigation }) {
             <View style={{ width: '100%', marginTop: 18 }}>
               <Button
                 label={`Bắt đầu cùng ${picked.name}`}
-                tone="pink"
+                color={c.pink} colorDark={c.pinkDark}
                 onPress={async () => {
                   try {
                     await Api.onboardingPick(picked.variant);
@@ -196,7 +204,7 @@ export default function OnboardingScreen({ navigation }) {
   );
 }
 
-const s = StyleSheet.create({
+const mkStyles = (c: AppColors, pal: any) => StyleSheet.create({
   center: { flex: 1, alignItems: 'center', justifyContent: 'center' },
 
   // welcome
@@ -209,7 +217,7 @@ const s = StyleSheet.create({
   // quiz
   dots: { flexDirection: 'row', gap: 6, justifyContent: 'center', marginBottom: 24, marginTop: 6 },
   dot: { width: 26, height: 7, borderRadius: radii.pill, backgroundColor: '#E4DCEC' },
-  dotOn: { backgroundColor: colors.pink },
+  dotOn: { backgroundColor: c.pink },
   qhead: { fontFamily: fonts.display, fontSize: 22, color: colors.ink, lineHeight: 28, marginBottom: 18 },
   opt: {
     flexDirection: 'row', alignItems: 'center', gap: 12,
@@ -222,15 +230,16 @@ const s = StyleSheet.create({
   // túi mù
   hintChip: {
     flexDirection: 'row', alignItems: 'center', gap: 6,
-    backgroundColor: '#FFEAF2', borderColor: '#FFCCDF', borderWidth: 2,
+    // Nền màn đã là pal.soft → chip phải dùng TRẮNG mới nổi (soft-trên-soft là chìm).
+    backgroundColor: '#fff', borderColor: pal.surface, borderWidth: 2,
     borderRadius: radii.pill, paddingVertical: 6, paddingHorizontal: 12, marginBottom: 14, ...hardShadow(3, 0.12),
   },
-  hintChipTxt: { fontFamily: fonts.semi, fontSize: 13, color: colors.pinkDark },
+  hintChipTxt: { fontFamily: fonts.semi, fontSize: 13, color: c.pinkDark },
   capTitle: { fontFamily: fonts.display, fontSize: 24, color: colors.ink, marginBottom: 4 },
   capSub: { fontFamily: fonts.body, fontSize: 14, color: colors.muted, marginBottom: 8 },
   capsule: {
     width: 170, height: 170, borderRadius: 85, marginTop: 8,
-    backgroundColor: '#FF7AA8', borderWidth: 5, borderColor: '#fff',
+    backgroundColor: c.pink, borderWidth: 5, borderColor: '#fff',
     alignItems: 'center', justifyContent: 'center', overflow: 'hidden',
     ...hardShadow(10, 0.16),
   },

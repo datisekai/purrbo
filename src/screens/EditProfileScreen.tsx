@@ -1,14 +1,18 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { View, Text, ScrollView, Pressable, TextInput, ActivityIndicator, Alert, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Svg, { Circle, Path } from 'react-native-svg';
-import { colors, fonts, radii, hardShadow } from '../theme';
+import { colors, fonts, radii, hardShadow, type AppColors } from '../theme';
+import { useC, usePal } from '../themeContext';
 import { Icon } from '../components/Icon';
 import { Button } from '../components/ui';
 import { Api } from '../api';
 import { useAuth } from '../auth';
 
 export default function EditProfileScreen({ navigation }) {
+  const c = useC();
+  const pal = usePal();
+  const s = useMemo(() => mkStyles(c, pal), [c, pal]);
   const { user, updateUser } = useAuth();
   const [name, setName] = useState(user?.name || '');
   const [busy, setBusy] = useState(false);
@@ -47,8 +51,8 @@ export default function EditProfileScreen({ navigation }) {
         <View style={{ alignItems: 'center', marginBottom: 22 }}>
           <View style={s.avatar}>
             <Svg viewBox="0 0 64 64" width={64} height={64}>
-              <Circle cx="32" cy="24" r="12" fill={colors.purple} stroke="#2E2A3F" strokeWidth="3" />
-              <Path d="M12 56c0-11 9-17 20-17s20 6 20 17z" fill={colors.pink} stroke="#2E2A3F" strokeWidth="3" />
+              <Circle cx="32" cy="24" r="12" fill={c.purple} stroke="#2E2A3F" strokeWidth="3" />
+              <Path d="M12 56c0-11 9-17 20-17s20 6 20 17z" fill={c.pink} stroke="#2E2A3F" strokeWidth="3" />
             </Svg>
           </View>
           <Text style={s.email}>{user?.email || 'Khách'}</Text>
@@ -79,7 +83,7 @@ export default function EditProfileScreen({ navigation }) {
   );
 }
 
-const s = StyleSheet.create({
+const mkStyles = (c: AppColors, pal: any) => StyleSheet.create({
   hdr: { flexDirection: 'row', alignItems: 'center', gap: 12, marginBottom: 22 },
   back: {
     width: 42, height: 42, borderRadius: 14, backgroundColor: '#fff',
@@ -89,7 +93,7 @@ const s = StyleSheet.create({
   hSub: { fontFamily: fonts.body, fontSize: 12, color: colors.muted },
 
   avatar: {
-    width: 88, height: 88, borderRadius: 30, backgroundColor: '#F6ECFB',
+    width: 88, height: 88, borderRadius: 30, backgroundColor: pal.soft,
     alignItems: 'center', justifyContent: 'center', borderWidth: 2, borderColor: '#fff', ...hardShadow(5, 0.14),
   },
   email: { fontFamily: fonts.body, fontSize: 12.5, color: colors.muted, marginTop: 10 },

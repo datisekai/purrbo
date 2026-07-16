@@ -1,9 +1,14 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useMemo, useRef } from 'react';
 import { View, Text, Animated, Easing, StyleSheet } from 'react-native';
-import { colors, fonts, hardShadow } from '../theme';
+import { colors, fonts, hardShadow, type AppColors } from '../theme';
+import { useC, usePal } from '../themeContext';
 import { PurrboMascot } from '../components/PersonaFace';
 
+// Màn này chạy TRƯỚC khi có persona → useC() trả tông NEUTRAL (đúng ý đồ).
 export default function SplashScreen({ navigation }) {
+  const c = useC();
+  const pal = usePal();
+  const s = useMemo(() => mkStyles(c, pal), [c, pal]);
   const bounce = useRef(new Animated.Value(0)).current;
   const dot1 = useRef(new Animated.Value(0)).current;
   const dot2 = useRef(new Animated.Value(0)).current;
@@ -85,7 +90,7 @@ export default function SplashScreen({ navigation }) {
         </Animated.View>
 
         <Text style={s.wordmark}>
-          Purr<Text style={{ color: colors.pink }}>bo</Text>
+          Purr<Text style={{ color: c.pink }}>bo</Text>
         </Text>
         <Text style={s.tagline}>Người luôn ở bên, nhắc bạn sống tử tế mỗi ngày</Text>
       </View>
@@ -93,9 +98,10 @@ export default function SplashScreen({ navigation }) {
       {/* Loading */}
       <View style={s.loading}>
         <View style={s.dots}>
-          <Animated.View style={[s.dot, dotStyle(dot1, colors.pink)]} />
-          <Animated.View style={[s.dot, dotStyle(dot2, '#FF6FA3')]} />
-          <Animated.View style={[s.dot, dotStyle(dot3, '#FF92BC')]} />
+          {/* 3 chấm = 3 sắc độ của tông đang dùng */}
+          <Animated.View style={[s.dot, dotStyle(dot1, c.pinkDark)]} />
+          <Animated.View style={[s.dot, dotStyle(dot2, c.pink)]} />
+          <Animated.View style={[s.dot, dotStyle(dot3, pal.surface)]} />
         </View>
         <Text style={s.loadtext}>Đang đánh thức người đồng hành của bạn...</Text>
       </View>
@@ -103,10 +109,10 @@ export default function SplashScreen({ navigation }) {
   );
 }
 
-const s = StyleSheet.create({
+const mkStyles = (c: AppColors, pal: any) => StyleSheet.create({
   root: {
     flex: 1,
-    backgroundColor: '#F3ECF7',
+    backgroundColor: pal.soft,
     alignItems: 'center',
     justifyContent: 'center',
     overflow: 'hidden',
@@ -118,7 +124,7 @@ const s = StyleSheet.create({
     width: 220,
     height: 220,
     borderRadius: 110,
-    backgroundColor: '#FFB8D4',
+    backgroundColor: c.pink,
     opacity: 0.4,
   },
   glowPurple: {
@@ -128,7 +134,7 @@ const s = StyleSheet.create({
     width: 240,
     height: 240,
     borderRadius: 120,
-    backgroundColor: '#C9B8FF',
+    backgroundColor: pal.surface,
     opacity: 0.35,
   },
   hero: { alignItems: 'center', zIndex: 2 },

@@ -1,8 +1,9 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Pressable, Text, View, Alert, ActivityIndicator, StyleSheet } from 'react-native';
 import * as WebBrowser from 'expo-web-browser';
 import * as Google from 'expo-auth-session/providers/google';
-import { colors, fonts, radii, hardShadow } from '../theme';
+import { fonts, radii, hardShadow, type AppColors } from '../theme';
+import { useC } from '../themeContext';
 import { Icon } from '../components/Icon';
 import { GCAL_SCOPE, setGcalToken } from '../googleCalendar';
 import { GOOGLE_IDS } from './GoogleButton';
@@ -18,6 +19,8 @@ export default function GcalConnectButton({
   label?: string;
   onConnected?: () => void;
 }) {
+  const c = useC();
+  const s = useMemo(() => mkStyles(c), [c]);
   const [busy, setBusy] = useState(false);
   const [request, response, promptAsync] = Google.useAuthRequest({
     iosClientId: GOOGLE_IDS.ios,
@@ -56,11 +59,11 @@ export default function GcalConnectButton({
   );
 }
 
-const s = StyleSheet.create({
+const mkStyles = (c: AppColors) => StyleSheet.create({
   btn: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 9,
-    paddingVertical: 13, borderRadius: radii.pill, backgroundColor: colors.skyDark,
-    borderBottomWidth: 4, borderBottomColor: '#2A7FB8', ...hardShadow(4, 0.16),
+    paddingVertical: 13, borderRadius: radii.pill, backgroundColor: c.sky,
+    borderBottomWidth: 4, borderBottomColor: c.skyDark, ...hardShadow(4, 0.16),
   },
   txt: { fontFamily: fonts.heading, fontSize: 15, color: '#fff' },
 });

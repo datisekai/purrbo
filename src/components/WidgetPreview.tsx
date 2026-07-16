@@ -1,22 +1,21 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import { colors, fonts, radii, hardShadow } from '../theme';
+import { colors, fonts, radii, hardShadow, type AppColors } from '../theme';
+import { useC, usePal } from '../themeContext';
 import { Icon } from '../components/Icon';
 import { PurrboMascot } from './PersonaFace';
 
 // Bản xem trước WIDGET màn hình chính: "hôm nay có gì · sắp tới gì".
 // Widget native thật (WidgetKit iOS / Glance Android) cần dev build — đây là
 // thiết kế/preview trong app để chốt bố cục trước khi dựng native.
-const ICON_TINT: Record<string, { bg: string; col: string }> = {
-  droplet: { bg: '#E6F7FF', col: colors.skyDark },
-  dumbbell: { bg: '#FFEAF2', col: colors.pinkDark },
-  book: { bg: '#EEE7FF', col: colors.purpleDark },
-};
-const tint = (ic: string) => ICON_TINT[ic] ?? { bg: '#F1ECF6', col: colors.purpleDark };
-
 type Habit = { id?: any; name: string; icon?: string; time?: string; done?: boolean };
 
 export function WidgetPreview({ habits = [], dateLabel = 'Hôm nay' }: { habits?: Habit[]; dateLabel?: string }) {
+  const c = useC();
+  const pal = usePal();
+  const s = useMemo(() => mkStyles(c, pal), [c, pal]);
+  // Mọi icon tint đều về 1 tông persona.
+  const tint = (_ic: string) => ({ bg: pal.soft, col: c.purpleDark });
   const pending = habits.filter((h) => !h.done);
   const next = pending[0];
   const upcoming = pending[1];
@@ -25,7 +24,7 @@ export function WidgetPreview({ habits = [], dateLabel = 'Hôm nay' }: { habits?
   return (
     <View>
       <View style={s.tagRow}>
-        <Icon name="sparkles" size={13} color={colors.purpleDark} />
+        <Icon name="sparkles" size={13} color={c.purpleDark} />
         <Text style={s.tag}>Widget màn hình chính</Text>
         <Text style={s.tagHint}>xem trước</Text>
       </View>
@@ -54,7 +53,7 @@ export function WidgetPreview({ habits = [], dateLabel = 'Hôm nay' }: { habits?
           </View>
         ) : (
           <View style={s.allDone}>
-            <Icon name="heartfill" size={16} color={colors.pink} />
+            <Icon name="heartfill" size={16} color={c.pink} />
             <Text style={s.allDoneTxt}>Xong hết rồi, giỏi xỉu 💗</Text>
           </View>
         )}
@@ -62,7 +61,7 @@ export function WidgetPreview({ habits = [], dateLabel = 'Hôm nay' }: { habits?
         {/* Footer: đếm + sắp tới */}
         <View style={s.foot}>
           <View style={s.pill}>
-            <Icon name="check" size={11} color={colors.mintDark} />
+            <Icon name="check" size={11} color={c.mintDark} />
             <Text style={s.pillTxt}>{doneCount}/{habits.length} xong</Text>
           </View>
           {upcoming ? (
@@ -81,14 +80,14 @@ export function WidgetPreview({ habits = [], dateLabel = 'Hôm nay' }: { habits?
   );
 }
 
-const s = StyleSheet.create({
+const mkStyles = (c: AppColors, pal: any) => StyleSheet.create({
   tagRow: { flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 8, marginHorizontal: 4 },
-  tag: { fontFamily: fonts.heading, fontSize: 13, color: colors.purpleDark },
+  tag: { fontFamily: fonts.heading, fontSize: 13, color: c.purpleDark },
   tagHint: { fontFamily: fonts.bodyBold, fontSize: 11, color: colors.muted },
 
   widget: {
-    backgroundColor: '#FBF8FF', borderRadius: 24, padding: 15,
-    borderWidth: 2, borderColor: '#E9E0F5', ...hardShadow(6, 0.16),
+    backgroundColor: pal.soft, borderRadius: 24, padding: 15,
+    borderWidth: 2, borderColor: pal.surface, ...hardShadow(6, 0.16),
   },
   head: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 },
   brand: { fontFamily: fonts.display, fontSize: 15, color: colors.ink },
@@ -101,7 +100,7 @@ const s = StyleSheet.create({
   nIc: { width: 40, height: 40, borderRadius: 13, alignItems: 'center', justifyContent: 'center' },
   nLabel: { fontFamily: fonts.bodyBold, fontSize: 10.5, color: colors.muted },
   nName: { fontFamily: fonts.heading, fontSize: 15, color: colors.ink },
-  nTime: { fontFamily: fonts.display, fontSize: 14, color: colors.purpleDark },
+  nTime: { fontFamily: fonts.display, fontSize: 14, color: c.purpleDark },
 
   allDone: {
     flexDirection: 'row', alignItems: 'center', gap: 7,
@@ -112,10 +111,10 @@ const s = StyleSheet.create({
   foot: { flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 11 },
   pill: {
     flexDirection: 'row', alignItems: 'center', gap: 4,
-    backgroundColor: '#EAF7F1', borderColor: '#CFEDE0', borderWidth: 1.5,
+    backgroundColor: pal.soft, borderColor: pal.surface, borderWidth: 1.5,
     borderRadius: radii.pill, paddingVertical: 4, paddingHorizontal: 9,
   },
-  pillTxt: { fontFamily: fonts.heading, fontSize: 11, color: colors.mintDark },
+  pillTxt: { fontFamily: fonts.heading, fontSize: 11, color: c.mintDark },
   soon: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: 4, minWidth: 0 },
   soonTxt: { flex: 1, fontFamily: fonts.body, fontSize: 11, color: colors.muted },
 

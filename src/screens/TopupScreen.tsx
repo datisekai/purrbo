@@ -1,13 +1,14 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { View, Text, ScrollView, Pressable, ActivityIndicator, Alert, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Svg, { Path } from 'react-native-svg';
-import { colors, fonts, radii, hardShadow } from '../theme';
+import { colors, fonts, radii, hardShadow, type AppColors } from '../theme';
 import { Icon } from '../components/Icon';
+import { useC, usePal } from '../themeContext';
 import { Api } from '../api';
 import { playSuccess } from '../sound';
 
-function Gem({ size = 20, color = colors.yellowDark, stroke = 2.4 }) {
+function Gem({ size = 20, color = colors.ink, stroke = 2.4 }) {
   return (
     <Svg width={size} height={size} viewBox="0 0 24 24">
       <Path d="M6 3h12l3 6-9 12L3 9z" fill="none" stroke={color} strokeWidth={stroke} strokeLinejoin="round" strokeLinecap="round" />
@@ -16,7 +17,7 @@ function Gem({ size = 20, color = colors.yellowDark, stroke = 2.4 }) {
   );
 }
 
-function Shield({ size = 16, color = colors.mintDark, stroke = 2.4 }) {
+function Shield({ size = 16, color = colors.ink, stroke = 2.4 }) {
   return (
     <Svg width={size} height={size} viewBox="0 0 24 24">
       <Path d="M12 3l7 3v6c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9V6z" fill="none" stroke={color} strokeWidth={stroke} strokeLinejoin="round" strokeLinecap="round" />
@@ -25,12 +26,6 @@ function Shield({ size = 16, color = colors.mintDark, stroke = 2.4 }) {
 }
 
 // Gói nạp mặc định — có thể ghi đè động từ web admin (/v1/config → gem_packs).
-const TONES = [
-  { tone: '#EDEFF5', col: colors.rCommon },
-  { tone: '#E6F7FF', col: colors.skyDark },
-  { tone: '#EEE7FF', col: colors.purpleDark },
-  { tone: '#FFF7E0', col: colors.yellowDark },
-];
 const DEFAULT_PACKS = [
   { id: 'p1', gems: 100, bonus: 0, price: '20.000₫' },
   { id: 'p2', gems: 500, bonus: 50, price: '99.000₫' },
@@ -39,6 +34,15 @@ const DEFAULT_PACKS = [
 ];
 
 export default function TopupScreen({ navigation }) {
+  const c = useC();
+  const pal = usePal();
+  const s = useMemo(() => mkStyles(c, pal), [c, pal]);
+  const TONES = useMemo(() => ([
+    { tone: pal.soft, col: c.rCommon },
+    { tone: pal.soft, col: c.skyDark },
+    { tone: pal.soft, col: c.purpleDark },
+    { tone: pal.soft, col: c.yellowDark },
+  ]), [c, pal]);
   const [balance, setBalance] = useState<number | null>(null);
   const [busy, setBusy] = useState<string | null>(null);
   const [packs, setPacks] = useState<any[]>(DEFAULT_PACKS);
@@ -56,7 +60,7 @@ export default function TopupScreen({ navigation }) {
     })();
   }, []);
 
-  const buy = async (p: typeof PACKS[number]) => {
+  const buy = async (p: any) => {
     if (busy) return;
     setBusy(p.id);
     const total = p.gems + p.bonus;
@@ -134,7 +138,7 @@ export default function TopupScreen({ navigation }) {
 
         {/* Ethic */}
         <View style={s.note}>
-          <Shield size={16} color={colors.mintDark} />
+          <Shield size={16} color={c.mintDark} />
           <Text style={s.noteTxt}>
             Thanh toán qua App Store / Google Play. Purrbo xác thực hoá đơn ở máy chủ rồi mới cộng đá quý — an toàn, minh bạch.
           </Text>
@@ -144,7 +148,7 @@ export default function TopupScreen({ navigation }) {
   );
 }
 
-const s = StyleSheet.create({
+const mkStyles = (c: AppColors, pal: any) => StyleSheet.create({
   hdr: { flexDirection: 'row', alignItems: 'center', gap: 12, marginBottom: 18 },
   back: {
     width: 42, height: 42, borderRadius: 14, backgroundColor: '#fff',
@@ -154,7 +158,7 @@ const s = StyleSheet.create({
   hSub: { fontFamily: fonts.body, fontSize: 12, color: colors.muted },
 
   balCard: {
-    backgroundColor: colors.purple, borderRadius: 24, padding: 18, marginBottom: 20,
+    backgroundColor: c.purple, borderRadius: 24, padding: 18, marginBottom: 20,
     borderWidth: 2, borderColor: '#fff', ...hardShadow(5, 0.16),
   },
   balLabel: { fontFamily: fonts.heading, fontSize: 12, color: '#fff', opacity: 0.9 },
@@ -164,27 +168,27 @@ const s = StyleSheet.create({
     flexDirection: 'row', alignItems: 'center', gap: 13, backgroundColor: '#fff',
     borderWidth: 2, borderColor: colors.line, borderRadius: 20, padding: 13, marginBottom: 12, ...hardShadow(5, 0.14),
   },
-  packBest: { borderColor: '#E3D2FF', backgroundColor: '#FBF8FF' },
+  packBest: { borderColor: pal.surface, backgroundColor: pal.soft },
   bestTag: {
     position: 'absolute', top: -10, right: 14, flexDirection: 'row', alignItems: 'center', gap: 4, zIndex: 2,
-    backgroundColor: colors.purple, borderRadius: radii.pill, paddingVertical: 3, paddingHorizontal: 9, ...hardShadow(3, 0.14),
+    backgroundColor: c.purple, borderRadius: radii.pill, paddingVertical: 3, paddingHorizontal: 9, ...hardShadow(3, 0.14),
   },
   bestTagTxt: { fontFamily: fonts.heading, fontSize: 10, color: '#fff' },
   packIc: { width: 52, height: 52, borderRadius: 16, alignItems: 'center', justifyContent: 'center', ...hardShadow(3, 0.12) },
   packGems: { fontFamily: fonts.display, fontSize: 20, color: colors.ink },
   packSub: { fontFamily: fonts.body, fontSize: 12, color: colors.muted },
-  bonus: { backgroundColor: '#EAF7F1', borderColor: '#CFEDE0', borderWidth: 1.5, borderRadius: radii.pill, paddingVertical: 2, paddingHorizontal: 8 },
-  bonusTxt: { fontFamily: fonts.heading, fontSize: 10.5, color: colors.mintDark },
+  bonus: { backgroundColor: pal.soft, borderColor: pal.surface, borderWidth: 1.5, borderRadius: radii.pill, paddingVertical: 2, paddingHorizontal: 8 },
+  bonusTxt: { fontFamily: fonts.heading, fontSize: 10.5, color: c.mintDark },
   buyBtn: {
-    backgroundColor: colors.pink, borderRadius: radii.pill, paddingVertical: 10, paddingHorizontal: 16,
-    borderBottomWidth: 4, borderBottomColor: colors.pinkDark, minWidth: 96, alignItems: 'center',
+    backgroundColor: c.pink, borderRadius: radii.pill, paddingVertical: 10, paddingHorizontal: 16,
+    borderBottomWidth: 4, borderBottomColor: c.pinkDark, minWidth: 96, alignItems: 'center',
   },
   buyTxt: { fontFamily: fonts.heading, fontSize: 14, color: '#fff' },
 
   note: {
     flexDirection: 'row', alignItems: 'flex-start', gap: 9,
-    backgroundColor: '#EAF7F1', borderColor: '#CFEDE0', borderWidth: 2,
+    backgroundColor: pal.soft, borderColor: pal.surface, borderWidth: 2,
     borderRadius: 18, padding: 13, marginTop: 6,
   },
-  noteTxt: { flex: 1, fontFamily: fonts.body, fontSize: 11.5, color: '#4E7767', lineHeight: 17 },
+  noteTxt: { flex: 1, fontFamily: fonts.body, fontSize: 11.5, color: c.mintDark, lineHeight: 17 },
 });

@@ -3,7 +3,8 @@ import { View, Text, ScrollView, Pressable, Alert, StyleSheet, RefreshControl } 
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect } from '@react-navigation/native';
 import Svg, { Path, Circle } from 'react-native-svg';
-import { colors, fonts, radii, hardShadow } from '../theme';
+import { colors, fonts, radii, hardShadow, type AppColors } from '../theme';
+import { useC, usePal, useTheme } from '../themeContext';
 import { Icon } from '../components/Icon';
 import { PersonaFace, PersonaChibi } from '../components/PersonaFace';
 import { Button, Card, ProgressBar } from '../components/ui';
@@ -53,6 +54,11 @@ const STORY = {
 };
 
 export default function PersonaScreen({ navigation, route }) {
+  // Tông màu của persona đang active — dùng cho MỌI nhấn trên màn.
+  const c = useC();
+  const pal = usePal();
+  const { setVariant } = useTheme();
+  const s = React.useMemo(() => mkStyles(c, pal), [c, pal]);
   // Thân thiết THẬT (dời khỏi Home → sống ở đây).
   const [st, setSt] = React.useState<any>(null);
   const [stats, setStats] = React.useState<any>(null);
@@ -69,9 +75,9 @@ export default function PersonaScreen({ navigation, route }) {
   const lvl = st?.affinity_level ?? 1;
   // Chỉ số THẬT (thay số hardcode). Ngày bên nhau = số ngày chăm, việc cùng làm = tổng việc xong.
   const statCards = [
-    { ic: 'calendar', local: false, bg: '#FFEAF2', col: colors.pinkDark, n: String(stats?.active_days ?? 0), lbl: 'Ngày bên nhau' },
-    { ic: 'heart', local: false, bg: '#EEE7FF', col: colors.purpleDark, n: String(aff), lbl: 'Điểm thân thiết' },
-    { ic: 'check', local: false, bg: '#EAF7F1', col: colors.mintDark, n: String(stats?.total_done ?? 0), lbl: 'Việc cùng làm' },
+    { ic: 'calendar', local: false, bg: pal.soft, col: c.pinkDark, n: String(stats?.active_days ?? 0), lbl: 'Ngày bên nhau' },
+    { ic: 'heart', local: false, bg: pal.soft, col: c.purpleDark, n: String(aff), lbl: 'Điểm thân thiết' },
+    { ic: 'check', local: false, bg: pal.soft, col: c.mintDark, n: String(stats?.total_done ?? 0), lbl: 'Việc cùng làm' },
   ];
   const p = route?.params?.persona || {};
   const variant = p.variant || 'mun';
@@ -86,11 +92,11 @@ export default function PersonaScreen({ navigation, route }) {
   const curStage = lvl <= 1 ? 0 : lvl <= 3 ? 1 : lvl <= 5 ? 2 : 3;
   // Kỷ niệm TỪ SỐ THẬT (không bịa ngày/sự kiện).
   const memories: any[] = [
-    { ic: 'heartfill', local: false, bg: '#FFEAF2', col: colors.pinkDark, title: `Thân thiết Lv.${lvl}`, date: `${aff}/${max} điểm thân thiết` },
+    { ic: 'heartfill', local: false, bg: pal.soft, col: c.pinkDark, title: `Thân thiết Lv.${lvl}`, date: `${aff}/${max} điểm thân thiết` },
   ];
-  if (stats?.best_streak) memories.push({ ic: 'flamefill', local: false, bg: '#FFF0E6', col: colors.coralDark, title: `Streak dài nhất ${stats.best_streak} ngày`, date: 'kỷ lục cùng nhau 🔥' });
-  if (stats?.total_done) memories.push({ ic: 'check', local: false, bg: '#EAF7F1', col: colors.mintDark, title: `Đã cùng làm ${stats.total_done} việc`, date: 'và còn tiếp tục 💪' });
-  if (stats?.active_days) memories.push({ ic: 'calendar', local: false, bg: '#EEE7FF', col: colors.purpleDark, title: `${stats.active_days} ngày bên nhau`, date: 'cảm ơn cưng đã ở lại 🐾' });
+  if (stats?.best_streak) memories.push({ ic: 'flamefill', local: false, bg: pal.soft, col: c.coralDark, title: `Streak dài nhất ${stats.best_streak} ngày`, date: 'kỷ lục cùng nhau 🔥' });
+  if (stats?.total_done) memories.push({ ic: 'check', local: false, bg: pal.soft, col: c.mintDark, title: `Đã cùng làm ${stats.total_done} việc`, date: 'và còn tiếp tục 💪' });
+  if (stats?.active_days) memories.push({ ic: 'calendar', local: false, bg: pal.soft, col: c.purpleDark, title: `${stats.active_days} ngày bên nhau`, date: 'cảm ơn cưng đã ở lại 🐾' });
   const moodLabel = st?.mood || 'bình thường';
 
   const [saving, setSaving] = React.useState(false);
@@ -101,6 +107,7 @@ export default function PersonaScreen({ navigation, route }) {
       await Api.setPersona(p.key);
       playSuccess();
       setActive(true);
+      setVariant(variant);   // đổi tông cả app NGAY theo persona vừa chọn
       Alert.alert('Đã đổi!', `Từ giờ ${name} sẽ đồng hành cùng cưng 💗`);
     } catch (e: any) {
       Alert.alert('Chưa đổi được', String(e?.message ?? e).includes('403') ? 'Cưng chưa sở hữu bạn này — mở túi mù để gặp nha!' : 'Thử lại sau nha.');
@@ -114,7 +121,7 @@ export default function PersonaScreen({ navigation, route }) {
       <ScrollView
         contentContainerStyle={{ padding: 18, paddingBottom: 40 }}
         showsVerticalScrollIndicator={false}
-        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.pink} colors={[colors.pink]} />}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={c.pink} colors={[c.pink]} />}
       >
         {/* Header */}
         <View style={s.top}>
@@ -123,15 +130,15 @@ export default function PersonaScreen({ navigation, route }) {
           </Pressable>
           <Text style={s.htitle}>Hồ sơ bạn đồng hành</Text>
           <View style={[s.iconbtn, s.iconbtnLove]}>
-            <Icon name="heartfill" size={18} color={colors.pinkDark} />
+            <Icon name="heartfill" size={18} color={c.pinkDark} />
           </View>
         </View>
 
         {/* Hero */}
         <View style={s.hero}>
           <View style={s.moodtag}>
-            <Icon name="flame" size={13} color={colors.purpleDark} />
-            <Text style={{ fontFamily: fonts.heading, fontSize: 12, color: colors.purpleDark }}>Mood: {moodLabel}</Text>
+            <Icon name="flame" size={13} color={c.purpleDark} />
+            <Text style={{ fontFamily: fonts.heading, fontSize: 12, color: c.purpleDark }}>Mood: {moodLabel}</Text>
           </View>
 
           <View style={{ alignItems: 'center' }}>
@@ -143,7 +150,7 @@ export default function PersonaScreen({ navigation, route }) {
                 <Text style={{ fontFamily: fonts.heading, fontSize: 11, color: '#fff' }}>{rarity}</Text>
               </View>
             </View>
-            <Text style={{ fontFamily: fonts.bodyBold, fontSize: 13, color: colors.purpleDark, marginTop: 4 }}>{tag}</Text>
+            <Text style={{ fontFamily: fonts.bodyBold, fontSize: 13, color: c.purpleDark, marginTop: 4 }}>{tag}</Text>
             <Text style={s.bio}>{bio}</Text>
           </View>
         </View>
@@ -166,21 +173,21 @@ export default function PersonaScreen({ navigation, route }) {
               <View style={s.step} key={stg.key}>
                 <View style={[s.dot, state === 'done' && s.dotDone, state === 'cur' && s.dotCur]}>
                   {state === 'done' ? (
-                    <Icon name="check" size={16} color={colors.pinkDark} />
+                    <Icon name="check" size={16} color={c.pinkDark} />
                   ) : state === 'cur' ? (
                     <Icon name="heartfill" size={15} color="#fff" />
                   ) : (
                     <Icon name="star" size={13} color={colors.muted} />
                   )}
                 </View>
-                <Text style={[s.stepLabel, state === 'cur' && { color: colors.pinkDark }]}>{stg.label}</Text>
+                <Text style={[s.stepLabel, state === 'cur' && { color: c.pinkDark }]}>{stg.label}</Text>
               </View>
               );
             })}
           </View>
 
           <View style={s.progline}>
-            <Text style={{ fontFamily: fonts.heading, fontSize: 12, color: colors.pinkDark }}>Thân thiết Lv.{lvl}</Text>
+            <Text style={{ fontFamily: fonts.heading, fontSize: 12, color: c.pinkDark }}>Thân thiết Lv.{lvl}</Text>
             <Text style={{ fontFamily: fonts.heading, fontSize: 12, color: colors.muted }}>{aff} / {max} → Bạn đồng hành</Text>
           </View>
           <ProgressBar pct={(aff / max) * 100} />
@@ -250,14 +257,17 @@ export default function PersonaScreen({ navigation, route }) {
         <View style={s.actions}>
           <Button
             label="Nhắn tin"
-            tone="pink"
+            color={c.pink}
+            colorDark={c.pinkDark}
             onPress={() => navigation.navigate('Chat', { persona: { key: p.key, name, variant, rarity, tag, level: 1 } })}
             icon={<LocalIcon name="chat" size={17} color="#fff" />}
             style={{ flex: 1 }}
           />
           <Button
             label={active ? 'Đang dùng' : saving ? 'Đang đổi…' : 'Dùng bạn này'}
-            tone={active ? 'soft' : 'mint'}
+            tone={active ? 'soft' : undefined}
+            color={active ? undefined : c.mint}
+            colorDark={active ? undefined : c.mintDark}
             disabled={saving}
             onPress={useThis}
             icon={<Icon name={active ? 'check' : 'heart'} size={17} color={active ? '#807892' : '#fff'} />}
@@ -269,17 +279,17 @@ export default function PersonaScreen({ navigation, route }) {
   );
 }
 
-const s = StyleSheet.create({
+const mkStyles = (c: AppColors, pal: any) => StyleSheet.create({
   top: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 },
   htitle: { fontFamily: fonts.display, fontSize: 18, color: colors.ink },
   iconbtn: {
     width: 40, height: 40, borderRadius: 14, alignItems: 'center', justifyContent: 'center',
     backgroundColor: '#fff', borderWidth: 2, borderColor: colors.line, ...hardShadow(3, 0.12),
   },
-  iconbtnLove: { backgroundColor: '#FFEAF2', borderColor: '#FFCCDF' },
+  iconbtnLove: { backgroundColor: pal.soft, borderColor: pal.surface },
 
   hero: {
-    backgroundColor: '#F6ECFB', borderRadius: 28, padding: 20, marginBottom: 20,
+    backgroundColor: pal.surface, borderRadius: 28, padding: 20, marginBottom: 20,
     borderWidth: 2, borderColor: '#fff', ...hardShadow(5, 0.14),
   },
   moodtag: {
@@ -287,7 +297,7 @@ const s = StyleSheet.create({
     flexDirection: 'row', alignItems: 'center', gap: 5,
     backgroundColor: '#fff', borderRadius: radii.pill, paddingVertical: 5, paddingHorizontal: 10, ...hardShadow(3, 0.12),
   },
-  ssr: { flexDirection: 'row', alignItems: 'center', gap: 3, backgroundColor: colors.pink, borderRadius: radii.pill, paddingVertical: 3, paddingHorizontal: 9 },
+  ssr: { flexDirection: 'row', alignItems: 'center', gap: 3, backgroundColor: c.pink, borderRadius: radii.pill, paddingVertical: 3, paddingHorizontal: 9 },
   bio: { fontFamily: fonts.body, fontSize: 13, color: colors.ink, marginTop: 8, opacity: 0.82, lineHeight: 20, textAlign: 'center', paddingHorizontal: 6 },
 
   stitle: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12, marginHorizontal: 4 },
@@ -297,16 +307,16 @@ const s = StyleSheet.create({
 
   stepper: { flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 16 },
   track: { position: 'absolute', top: 16, left: '14%', right: '14%', height: 4, backgroundColor: colors.line, borderRadius: radii.pill },
-  trackfill: { position: 'absolute', top: 16, left: '14%', width: '24%', height: 4, backgroundColor: colors.pink, borderRadius: radii.pill },
+  trackfill: { position: 'absolute', top: 16, left: '14%', width: '24%', height: 4, backgroundColor: c.pink, borderRadius: radii.pill },
   step: { flex: 1, alignItems: 'center', gap: 6 },
   dot: { width: 34, height: 34, borderRadius: 17, alignItems: 'center', justifyContent: 'center', backgroundColor: '#fff', borderWidth: 3, borderColor: colors.line },
-  dotDone: { backgroundColor: '#FFEAF2', borderColor: colors.pink },
-  dotCur: { backgroundColor: colors.pink, borderColor: '#fff', ...hardShadow(3, 0.12) },
+  dotDone: { backgroundColor: pal.soft, borderColor: c.pink },
+  dotCur: { backgroundColor: c.pink, borderColor: '#fff', ...hardShadow(3, 0.12) },
   stepLabel: { fontFamily: fonts.heading, fontSize: 11, color: colors.muted, textAlign: 'center' },
 
   progline: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 },
 
-  story: { backgroundColor: '#FBF4FA', borderColor: '#fff', marginBottom: 20 },
+  story: { backgroundColor: pal.soft, borderColor: '#fff', marginBottom: 20 },
 
   mem: { flexDirection: 'row', gap: 14, paddingBottom: 16 },
   rail: { alignItems: 'center' },

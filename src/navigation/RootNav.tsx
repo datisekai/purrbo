@@ -2,7 +2,8 @@ import React from 'react';
 import { Text } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import { colors, fonts } from '../theme';
+import { colors, fonts, type AppColors } from '../theme';
+import { useC } from '../themeContext';
 import { Icon } from '../components/Icon';
 import { LoadingScreen } from '../components/LoadingScreen';
 import { useAuth } from '../auth';
@@ -31,14 +32,16 @@ import LeaderboardScreen from '../screens/LeaderboardScreen';
 const Tab = createBottomTabNavigator();
 const Stack = createNativeStackNavigator();
 
-const tabIcon = (name: string) => ({ focused }: { focused: boolean }) => (
-  <Icon name={name} size={24} color={focused ? colors.pink : colors.muted} />
+// Màu tab active theo PERSONA → truyền c vào (không gọi hook trong hàm render của navigator).
+const tabIcon = (name: string, c: AppColors) => ({ focused }: { focused: boolean }) => (
+  <Icon name={name} size={24} color={focused ? c.pink : colors.muted} />
 );
-const tabLabel = (label: string) => ({ focused }: { focused: boolean }) => (
-  <Text style={{ fontFamily: fonts.heading, fontSize: 10, color: focused ? colors.pink : colors.muted }}>{label}</Text>
+const tabLabel = (label: string, c: AppColors) => ({ focused }: { focused: boolean }) => (
+  <Text style={{ fontFamily: fonts.heading, fontSize: 10, color: focused ? c.pink : colors.muted }}>{label}</Text>
 );
 
 function MainTabs() {
+  const c = useC();
   return (
     <Tab.Navigator
       screenOptions={{
@@ -46,11 +49,11 @@ function MainTabs() {
         tabBarStyle: { height: 76, paddingBottom: 12, paddingTop: 8, borderTopWidth: 2, borderTopColor: colors.line, backgroundColor: '#fff' },
       }}
     >
-      <Tab.Screen name="Home" component={HomeScreen} options={{ tabBarIcon: tabIcon('home'), tabBarLabel: tabLabel('Home') }} />
-      <Tab.Screen name="Lịch" component={CalendarScreen} options={{ tabBarIcon: tabIcon('calendar'), tabBarLabel: tabLabel('Lịch') }} />
-      <Tab.Screen name="Nhiệm vụ" component={RewardsScreen} options={{ tabBarIcon: tabIcon('star'), tabBarLabel: tabLabel('Nhiệm vụ') }} />
-      <Tab.Screen name="Shop" component={ShopScreen} options={{ tabBarIcon: tabIcon('gift'), tabBarLabel: tabLabel('Túi mù') }} />
-      <Tab.Screen name="Mình" component={ProfileScreen} options={{ tabBarIcon: tabIcon('user'), tabBarLabel: tabLabel('Mình') }} />
+      <Tab.Screen name="Home" component={HomeScreen} options={{ tabBarIcon: tabIcon('home', c), tabBarLabel: tabLabel('Home', c) }} />
+      <Tab.Screen name="Lịch" component={CalendarScreen} options={{ tabBarIcon: tabIcon('calendar', c), tabBarLabel: tabLabel('Lịch', c) }} />
+      <Tab.Screen name="Nhiệm vụ" component={RewardsScreen} options={{ tabBarIcon: tabIcon('star', c), tabBarLabel: tabLabel('Nhiệm vụ', c) }} />
+      <Tab.Screen name="Shop" component={ShopScreen} options={{ tabBarIcon: tabIcon('gift', c), tabBarLabel: tabLabel('Túi mù', c) }} />
+      <Tab.Screen name="Mình" component={ProfileScreen} options={{ tabBarIcon: tabIcon('user', c), tabBarLabel: tabLabel('Mình', c) }} />
     </Tab.Navigator>
   );
 }

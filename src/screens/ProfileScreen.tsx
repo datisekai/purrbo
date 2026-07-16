@@ -1,9 +1,10 @@
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import { View, Text, ScrollView, Pressable, Alert, StyleSheet, RefreshControl } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect } from '@react-navigation/native';
 import Svg, { Path, Circle, Rect } from 'react-native-svg';
-import { colors, fonts, radii, hardShadow } from '../theme';
+import { colors, fonts, radii, hardShadow, type AppColors } from '../theme';
+import { useC, usePal } from '../themeContext';
 import { Icon } from '../components/Icon';
 import { PersonaFace } from '../components/PersonaFace';
 import { Button, Card, ProgressBar, RarityBadge } from '../components/ui';
@@ -48,16 +49,21 @@ const FALLBACK_COLLECTION: CollItem[] = [
   { placeholder: true, hint: 'Thường' },
 ];
 
-const SETTINGS = [
-  { ic: 'bell', bg: '#FFF0E6', col: colors.coralDark, title: 'Thông báo', sub: 'nhắc việc & tin nhắn bạn đồng hành' },
-  { ic: 'sync', bg: '#E6F7FF', col: colors.skyDark, title: 'Đồng bộ lịch', sub: 'Google Calendar' },
-  { ic: 'mic', bg: '#EEE7FF', col: colors.purpleDark, title: 'Giọng & độ thân mật', sub: 'tone của persona · cà khịa yêu' },
-  { ic: 'globe', bg: '#EAF7F1', col: colors.mintDark, title: 'Ngôn ngữ', sub: 'Tiếng Việt' },
-  { ic: 'shield', bg: '#FFEAF2', col: colors.pinkDark, title: 'Tài khoản', sub: 'datly · bảo mật & dữ liệu' },
+const mkSettings = (c: AppColors, pal: any) => [
+  { ic: 'bell', bg: pal.soft, col: c.coralDark, title: 'Thông báo', sub: 'nhắc việc & tin nhắn bạn đồng hành' },
+  { ic: 'sync', bg: pal.soft, col: c.skyDark, title: 'Đồng bộ lịch', sub: 'Google Calendar' },
+  { ic: 'mic', bg: pal.soft, col: c.purpleDark, title: 'Giọng & độ thân mật', sub: 'tone của persona · cà khịa yêu' },
+  { ic: 'globe', bg: pal.soft, col: c.mintDark, title: 'Ngôn ngữ', sub: 'Tiếng Việt' },
+  { ic: 'shield', bg: pal.soft, col: c.pinkDark, title: 'Tài khoản', sub: 'datly · bảo mật & dữ liệu' },
 ];
 
 export default function ProfileScreen({ navigation }: any) {
   const { user, logout } = useAuth();
+  // Tông màu của persona đang active — dùng cho MỌI nhấn trên màn.
+  const c = useC();
+  const pal = usePal();
+  const s = useMemo(() => mkStyles(c, pal), [c, pal]);
+  const SETTINGS = useMemo(() => mkSettings(c, pal), [c, pal]);
   const onLogout = () =>
     Alert.alert('Đăng xuất?', 'Cưng sẽ về màn nhập tên. Dữ liệu vẫn còn khi đăng nhập lại.', [
       { text: 'Ở lại', style: 'cancel' },
@@ -111,10 +117,10 @@ export default function ProfileScreen({ navigation }: any) {
 
   // ----- Stats (SỐ THẬT — không fallback số giả) -----
   const statCards = [
-    { ic: 'flamefill', bg: '#FFF0E6', col: colors.coralDark, n: String(profile?.streak ?? 0), l: 'Streak' },
-    { ic: 'calendar', bg: '#E6F7FF', col: colors.skyDark, n: String(stats?.active_days ?? 0), l: 'Ngày chăm' },
-    { ic: 'check', bg: '#EAF7F1', col: colors.mintDark, n: String(profile?.total_done ?? 0), l: 'Việc xong' },
-    { ic: 'star', bg: '#FFEAF2', col: colors.pinkDark, n: String(profile?.owned_count ?? 0), l: 'Bạn đồng hành' },
+    { ic: 'flamefill', bg: pal.soft, col: c.coralDark, n: String(profile?.streak ?? 0), l: 'Streak' },
+    { ic: 'calendar', bg: pal.soft, col: c.skyDark, n: String(stats?.active_days ?? 0), l: 'Ngày chăm' },
+    { ic: 'check', bg: pal.soft, col: c.mintDark, n: String(profile?.total_done ?? 0), l: 'Việc xong' },
+    { ic: 'star', bg: pal.soft, col: c.pinkDark, n: String(profile?.owned_count ?? 0), l: 'Bạn đồng hành' },
   ];
 
   // ----- Collection -----
@@ -137,14 +143,14 @@ export default function ProfileScreen({ navigation }: any) {
       <ScrollView
         contentContainerStyle={{ padding: 18, paddingBottom: 40 }}
         showsVerticalScrollIndicator={false}
-        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.pink} colors={[colors.pink]} />}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={c.pink} colors={[c.pink]} />}
       >
         {/* Header */}
         <View style={s.phead}>
           <View style={s.avatar}>
             <Svg viewBox="0 0 64 64" width={48} height={48}>
-              <Circle cx="32" cy="24" r="12" fill={colors.purple} stroke="#2E2A3F" strokeWidth="3" />
-              <Path d="M12 56c0-11 9-17 20-17s20 6 20 17z" fill={colors.pink} stroke="#2E2A3F" strokeWidth="3" />
+              <Circle cx="32" cy="24" r="12" fill={c.purple} stroke="#2E2A3F" strokeWidth="3" />
+              <Path d="M12 56c0-11 9-17 20-17s20 6 20 17z" fill={c.pink} stroke="#2E2A3F" strokeWidth="3" />
             </Svg>
           </View>
           <View style={{ flex: 1, minWidth: 0 }}>
@@ -152,7 +158,7 @@ export default function ProfileScreen({ navigation }: any) {
             <Text style={s.handle}>@{handleName}</Text>
           </View>
           <Pressable style={s.iconbtn} onPress={() => navigation.navigate('EditProfile')}>
-            <LocalIcon name="pencil" size={19} color={colors.purpleDark} />
+            <LocalIcon name="pencil" size={19} color={c.purpleDark} />
           </Pressable>
         </View>
 
@@ -170,8 +176,8 @@ export default function ProfileScreen({ navigation }: any) {
             ))}
           </View>
           <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 4, marginTop: 8 }}>
-            <Text style={{ fontFamily: fonts.heading, fontSize: 12, color: colors.purpleDark }}>Xem thống kê chi tiết</Text>
-            <Icon name="star" size={12} color={colors.purpleDark} />
+            <Text style={{ fontFamily: fonts.heading, fontSize: 12, color: c.purpleDark }}>Xem thống kê chi tiết</Text>
+            <Icon name="star" size={12} color={c.purpleDark} />
           </View>
         </Pressable>
 
@@ -212,7 +218,8 @@ export default function ProfileScreen({ navigation }: any) {
           <View style={{ flexDirection: 'row', justifyContent: 'flex-end', marginTop: 13 }}>
             <Button
               label="Nhắn tin"
-              tone="pink"
+              color={c.pink}
+              colorDark={c.pinkDark}
               onPress={() => navigation.navigate('Chat')}
               icon={<LocalIcon name="message" size={15} color="#fff" />}
               style={{ paddingVertical: 9, paddingHorizontal: 16 }}
@@ -224,8 +231,8 @@ export default function ProfileScreen({ navigation }: any) {
         <View style={s.stitle}>
           <Text style={s.stitleTxt}>Bộ sưu tập</Text>
           <Pressable onPress={() => navigation.navigate('Collection')} style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
-            <Text style={[s.stitleSub, { color: colors.purpleDark }]}>Thư viện {ownedCount}/{total}</Text>
-            <Icon name="star" size={12} color={colors.purpleDark} />
+            <Text style={[s.stitleSub, { color: c.purpleDark }]}>Thư viện {ownedCount}/{total}</Text>
+            <Icon name="star" size={12} color={c.purpleDark} />
           </Pressable>
         </View>
         <View style={s.cgrid}>
@@ -250,7 +257,7 @@ export default function ProfileScreen({ navigation }: any) {
                 </View>
                 <Text style={[s.sname, { color: colors.muted }]}>? {slot.hint ?? slot.rarity ?? '???'}</Text>
                 <View style={s.hintbtn}>
-                  <Icon name="gift" size={11} color={colors.purpleDark} />
+                  <Icon name="gift" size={11} color={c.purpleDark} />
                   <Text style={s.hintbtnTxt}>Mở túi mù</Text>
                 </View>
               </View>
@@ -291,12 +298,12 @@ export default function ProfileScreen({ navigation }: any) {
   );
 }
 
-const s = StyleSheet.create({
+const mkStyles = (c: AppColors, pal: any) => StyleSheet.create({
   // Header
   phead: { flexDirection: 'row', alignItems: 'center', gap: 14, marginBottom: 18 },
   avatar: {
     width: 70, height: 70, borderRadius: 35, alignItems: 'center', justifyContent: 'center',
-    backgroundColor: '#F6ECFB', borderWidth: 3, borderColor: '#fff', ...hardShadow(5, 0.14),
+    backgroundColor: pal.soft, borderWidth: 3, borderColor: '#fff', ...hardShadow(5, 0.14),
   },
   name: { fontFamily: fonts.display, fontSize: 23, color: colors.ink },
   handle: { fontFamily: fonts.body, fontSize: 12.5, color: colors.muted, marginTop: 2 },
@@ -322,10 +329,10 @@ const s = StyleSheet.create({
 
   // Hero
   hero: {
-    backgroundColor: '#F6ECFB', borderRadius: 28, padding: 16, marginBottom: 22,
+    backgroundColor: pal.surface, borderRadius: 28, padding: 16, marginBottom: 22,
     borderWidth: 2, borderColor: '#fff', ...hardShadow(5, 0.14),
   },
-  ssr: { flexDirection: 'row', alignItems: 'center', gap: 3, backgroundColor: colors.pink, borderRadius: radii.pill, paddingVertical: 2, paddingHorizontal: 8 },
+  ssr: { flexDirection: 'row', alignItems: 'center', gap: 3, backgroundColor: c.pink, borderRadius: radii.pill, paddingVertical: 2, paddingHorizontal: 8 },
 
   // Collection
   cgrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 11, marginBottom: 22 },
@@ -333,17 +340,17 @@ const s = StyleSheet.create({
     width: '31%', flexGrow: 1, backgroundColor: '#fff', borderWidth: 2, borderColor: colors.line, borderRadius: 20,
     paddingVertical: 13, paddingHorizontal: 6, alignItems: 'center', ...hardShadow(3, 0.12),
   },
-  slotActive: { borderColor: colors.rSSR },
+  slotActive: { borderColor: c.rSSR },
   slotLocked: { backgroundColor: '#FBF7F3', borderStyle: 'dashed' },
   activetag: {
     position: 'absolute', top: 8, left: 8, width: 20, height: 20, borderRadius: 10, zIndex: 2,
-    backgroundColor: colors.pink, alignItems: 'center', justifyContent: 'center', ...hardShadow(3, 0.12),
+    backgroundColor: c.pink, alignItems: 'center', justifyContent: 'center', ...hardShadow(3, 0.12),
   },
   badge: { position: 'absolute', top: 8, right: 8, zIndex: 2 },
   sname: { fontFamily: fonts.display, fontSize: 12.5, color: colors.ink, marginTop: 8, textAlign: 'center' },
-  lockbox: { width: 54, height: 54, borderRadius: 27, backgroundColor: '#F1ECF6', alignItems: 'center', justifyContent: 'center' },
+  lockbox: { width: 54, height: 54, borderRadius: 27, backgroundColor: pal.soft, alignItems: 'center', justifyContent: 'center' },
   hintbtn: { flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 7 },
-  hintbtnTxt: { fontFamily: fonts.heading, fontSize: 10, color: colors.purpleDark },
+  hintbtnTxt: { fontFamily: fonts.heading, fontSize: 10, color: c.purpleDark },
 
   // Settings
   setrow: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 14, paddingHorizontal: 15 },

@@ -1,9 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { View, Text, ScrollView, Pressable, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Svg, { Path } from 'react-native-svg';
-import { colors, fonts, radii, hardShadow } from '../theme';
+import { colors, fonts, radii, hardShadow, type AppColors } from '../theme';
 import { Icon } from '../components/Icon';
+import { useC, usePal } from '../themeContext';
 import { PersonaFace } from '../components/PersonaFace';
 import { Api } from '../api';
 import { Button, Card, ProgressBar, Bubble } from '../components/ui';
@@ -47,6 +48,9 @@ function LocalIcon({ name, size = 20, color = colors.ink, stroke = 2.4 }) {
 }
 
 export default function WinbackScreen({ navigation }) {
+  const c = useC();
+  const pal = usePal();
+  const s = useMemo(() => mkStyles(c, pal), [c, pal]);
   // state: 'sad' (mặc định) | 'back' | 'bye'
   const [state, setState] = useState('sad');
   const glad = state === 'back';
@@ -82,8 +86,8 @@ export default function WinbackScreen({ navigation }) {
         {/* ===== Vùng persona: dỗi (dimmed) ↔ vui (bừng sáng) ===== */}
         <View style={[s.sulk, glad ? s.sulkGlad : s.sulkSad]}>
           <View style={s.moodTag}>
-            <Icon name={glad ? 'heartfill' : 'heart'} size={13} color={glad ? colors.purpleDark : '#6E6A82'} />
-            <Text style={[s.moodTxt, { color: glad ? colors.purpleDark : '#6E6A82' }]}>
+            <Icon name={glad ? 'heartfill' : 'heart'} size={13} color={glad ? c.purpleDark : '#6E6A82'} />
+            <Text style={[s.moodTxt, { color: glad ? c.purpleDark : '#6E6A82' }]}>
               {glad ? 'Mood: mừng rớt nước mắt' : state === 'bye' ? 'Mood: bình yên' : 'Mood: tủi thân xíu'}
             </Text>
           </View>
@@ -110,11 +114,11 @@ export default function WinbackScreen({ navigation }) {
             <Text style={s.relTitle}>Mối quan hệ</Text>
             <View style={[s.state, glad ? s.stateWarm : s.stateFrozen]}>
               {glad ? (
-                <Icon name="flamefill" size={12} color={colors.pinkDark} />
+                <Icon name="flamefill" size={12} color={c.pinkDark} />
               ) : (
                 <LocalIcon name="snow" size={12} color="#7C86A0" />
               )}
-              <Text style={[s.stateTxt, { color: glad ? colors.pinkDark : '#7C86A0' }]}>
+              <Text style={[s.stateTxt, { color: glad ? c.pinkDark : '#7C86A0' }]}>
                 {glad ? 'Ấm lại rồi nè' : 'Đóng băng — đợi cưng quay lại'}
               </Text>
             </View>
@@ -122,9 +126,9 @@ export default function WinbackScreen({ navigation }) {
 
           {/* Streak đóng băng */}
           <View style={s.streakRow}>
-            <View style={[s.fic, { backgroundColor: glad ? '#FFF0E6' : '#EEF1F6' }]}>
+            <View style={[s.fic, { backgroundColor: glad ? pal.soft : '#EEF1F6' }]}>
               {glad ? (
-                <Icon name="flamefill" size={26} color={colors.coralDark} />
+                <Icon name="flamefill" size={26} color={c.coralDark} />
               ) : (
                 <Icon name="flame" size={26} color="#9AA2B4" />
               )}
@@ -134,7 +138,7 @@ export default function WinbackScreen({ navigation }) {
                 <Text style={s.streakNum}>40 ngày</Text>
                 {glad && (
                   <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
-                    <Icon name="sparkles" size={13} color={colors.mintDark} />
+                    <Icon name="sparkles" size={13} color={c.mintDark} />
                     <Text style={s.streakTag}>nối lại</Text>
                   </View>
                 )}
@@ -163,8 +167,8 @@ export default function WinbackScreen({ navigation }) {
             </View>
             <ProgressBar
               pct={64}
-              from={glad ? colors.pink : '#C4CAD8'}
-              to={glad ? colors.purple : '#C4CAD8'}
+              from={glad ? c.pink : '#C4CAD8'}
+              to={glad ? c.purple : '#C4CAD8'}
             />
           </View>
         </Card>
@@ -174,7 +178,7 @@ export default function WinbackScreen({ navigation }) {
           <View style={{ gap: 11 }}>
             <Button
               label={`Em quay lại nè, xin lỗi ${pName} 💗`}
-              tone="pink"
+              color={c.pink} colorDark={c.pinkDark}
               onPress={() => setState('back')}
               icon={<Icon name="heartfill" size={17} color="#fff" />}
             />
@@ -191,14 +195,14 @@ export default function WinbackScreen({ navigation }) {
           <View style={{ gap: 12 }}>
             <View style={s.resultCard}>
               <View style={s.resultIc}>
-                <Icon name="sparkles" size={20} color={colors.mintDark} />
+                <Icon name="sparkles" size={20} color={c.mintDark} />
               </View>
               <View style={{ flex: 1 }}>
                 <Text style={s.resultTitle}>Tụi mình lại bên nhau rồi!</Text>
                 <Text style={s.resultBody}>Streak nối lại, độ thân thiết đang ấm dần lên nha.</Text>
               </View>
             </View>
-            <Button label="Đóng" tone="pink" onPress={() => navigation.goBack()} />
+            <Button label="Đóng" color={c.pink} colorDark={c.pinkDark} onPress={() => navigation.goBack()} />
           </View>
         )}
 
@@ -206,7 +210,7 @@ export default function WinbackScreen({ navigation }) {
           <View style={{ gap: 12 }}>
             <View style={s.resultCard}>
               <View style={s.resultIc}>
-                <LocalIcon name="handheart" size={20} color={colors.mintDark} />
+                <LocalIcon name="handheart" size={20} color={c.mintDark} />
               </View>
               <View style={{ flex: 1 }}>
                 <Text style={s.resultTitle}>Tạm biệt tử tế</Text>
@@ -214,7 +218,7 @@ export default function WinbackScreen({ navigation }) {
               </View>
             </View>
             <Pressable onPress={() => setState('sad')} style={s.backLine} hitSlop={8}>
-              <Icon name="back" size={15} color={colors.pink} />
+              <Icon name="back" size={15} color={c.pink} />
               <Text style={s.backLineTxt}>Quay lại</Text>
             </Pressable>
             <Button label="Đóng" tone="soft" onPress={() => navigation.goBack()} />
@@ -223,7 +227,7 @@ export default function WinbackScreen({ navigation }) {
 
         {/* ===== Caption: thiết kế ấm áp, không thao túng ===== */}
         <View style={s.intent}>
-          <LocalIcon name="shield" size={15} color={colors.mintDark} stroke={2.2} />
+          <LocalIcon name="shield" size={15} color={c.mintDark} stroke={2.2} />
           <Text style={s.intentTxt}>Thiết kế ấm áp, không thao túng — luôn có lối rời đi tử tế.</Text>
         </View>
       </ScrollView>
@@ -231,10 +235,10 @@ export default function WinbackScreen({ navigation }) {
   );
 }
 
-const s = StyleSheet.create({
+const mkStyles = (c: AppColors, pal: any) => StyleSheet.create({
   grabRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 },
   closeBtn: {
-    width: 34, height: 34, borderRadius: radii.pill, backgroundColor: '#F1ECF6',
+    width: 34, height: 34, borderRadius: radii.pill, backgroundColor: pal.soft,
     alignItems: 'center', justifyContent: 'center',
   },
   grabTitle: { fontFamily: fonts.display, fontSize: 16, color: colors.ink },
@@ -244,7 +248,7 @@ const s = StyleSheet.create({
     borderWidth: 2, borderColor: '#fff', ...hardShadow(5, 0.14),
   },
   sulkSad: { backgroundColor: '#E7E3F0' },
-  sulkGlad: { backgroundColor: '#F6ECFB' },
+  sulkGlad: { backgroundColor: pal.soft },
   moodTag: {
     alignSelf: 'flex-end', flexDirection: 'row', alignItems: 'center', gap: 5,
     backgroundColor: '#fff', borderRadius: radii.pill, paddingVertical: 5, paddingHorizontal: 10,
@@ -253,7 +257,7 @@ const s = StyleSheet.create({
   moodTxt: { fontFamily: fonts.heading, fontSize: 12 },
   pName: { fontFamily: fonts.display, fontSize: 19, color: colors.ink },
   rar: {
-    flexDirection: 'row', alignItems: 'center', gap: 3, backgroundColor: colors.pink,
+    flexDirection: 'row', alignItems: 'center', gap: 3, backgroundColor: c.pink,
     borderRadius: radii.pill, paddingVertical: 2, paddingHorizontal: 8,
   },
   rarGray: { backgroundColor: '#B7B0C6' },
@@ -264,13 +268,13 @@ const s = StyleSheet.create({
   relTitle: { fontFamily: fonts.display, fontSize: 16, color: colors.ink },
   state: { flexDirection: 'row', alignItems: 'center', gap: 5, borderRadius: radii.pill, borderWidth: 2, paddingVertical: 5, paddingHorizontal: 10 },
   stateFrozen: { backgroundColor: '#EEF1F6', borderColor: '#DCE2EC' },
-  stateWarm: { backgroundColor: '#FFEAF2', borderColor: '#FFCCDF' },
+  stateWarm: { backgroundColor: pal.soft, borderColor: pal.surface },
   stateTxt: { fontFamily: fonts.heading, fontSize: 11 },
 
   streakRow: { flexDirection: 'row', alignItems: 'center', gap: 12, marginBottom: 14 },
   fic: { width: 48, height: 48, borderRadius: 15, alignItems: 'center', justifyContent: 'center', ...hardShadow(3, 0.12) },
   streakNum: { fontFamily: fonts.display, fontSize: 20, color: colors.ink },
-  streakTag: { fontFamily: fonts.heading, fontSize: 12, color: colors.mintDark },
+  streakTag: { fontFamily: fonts.heading, fontSize: 12, color: c.mintDark },
   streakHint: { fontFamily: fonts.body, fontSize: 12, color: colors.muted },
 
   affLbl: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 5 },
@@ -278,7 +282,7 @@ const s = StyleSheet.create({
   affR: { fontFamily: fonts.heading, fontSize: 12, color: colors.muted },
 
   resultCard: {
-    flexDirection: 'row', alignItems: 'flex-start', gap: 11, backgroundColor: '#EAF7F1',
+    flexDirection: 'row', alignItems: 'flex-start', gap: 11, backgroundColor: pal.soft,
     borderWidth: 2, borderColor: '#fff', borderRadius: 20, padding: 15, ...hardShadow(3, 0.12),
   },
   resultIc: {
@@ -289,7 +293,7 @@ const s = StyleSheet.create({
   resultBody: { fontFamily: fonts.body, fontSize: 13, color: colors.ink, lineHeight: 20 },
 
   backLine: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, paddingVertical: 2 },
-  backLineTxt: { fontFamily: fonts.heading, fontSize: 13, color: colors.pink },
+  backLineTxt: { fontFamily: fonts.heading, fontSize: 13, color: c.pink },
 
   intent: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8,

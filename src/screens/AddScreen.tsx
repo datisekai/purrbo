@@ -1,8 +1,9 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useMemo } from 'react';
 import { View, Text, ScrollView, Pressable, TextInput, StyleSheet, Alert, ActivityIndicator, Keyboard } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Svg, { Path, Circle } from 'react-native-svg';
-import { colors, fonts, radii, hardShadow } from '../theme';
+import { colors, fonts, radii, hardShadow, type AppColors } from '../theme';
+import { useC, usePal } from '../themeContext';
 import { Icon } from '../components/Icon';
 import { PersonaFace } from '../components/PersonaFace';
 import { DatePickerModal } from '../components/DatePickerModal';
@@ -85,13 +86,13 @@ const TEMPLATE_CATS: {
   },
 ];
 
-// Icon chọn được ở chế độ tự nhập (dùng Icon.js có sẵn)
-const ICON_CHOICES = [
-  { key: 'droplet', bg: '#E6F7FF', col: colors.skyDark },
-  { key: 'dumbbell', bg: '#FFEAF2', col: colors.pinkDark },
-  { key: 'book', bg: '#EEE7FF', col: colors.purpleDark },
-  { key: 'heart', bg: '#FFF0E6', col: colors.coralDark },
-  { key: 'star', bg: '#FFF7E0', col: '#C79200' },
+// Icon chọn được ở chế độ tự nhập (dùng Icon.js có sẵn) — màu theo persona đang active.
+const iconChoices = (c: AppColors, pal: any) => [
+  { key: 'droplet', bg: pal.soft, col: c.skyDark },
+  { key: 'dumbbell', bg: pal.soft, col: c.pinkDark },
+  { key: 'book', bg: pal.soft, col: c.purpleDark },
+  { key: 'heart', bg: pal.soft, col: c.coralDark },
+  { key: 'star', bg: pal.soft, col: c.yellowDark },
 ];
 
 // Đoán icon từ tên việc (NLP không trả icon)
@@ -105,6 +106,10 @@ function iconFor(name: string): string {
 }
 
 export default function AddScreen({ navigation }) {
+  const c = useC();
+  const pal = usePal();
+  const s = useMemo(() => mkStyles(c, pal), [c, pal]);
+  const ICON_CHOICES = useMemo(() => iconChoices(c, pal), [c, pal]);
   const [mode, setMode] = useState('nlp'); // 'nlp' = gõ bằng lời · 'manual' = tự nhập
   const [text, setText] = useState(''); // để trống — user tự gõ hoặc chạm gợi ý
   const [parsed, setParsed] = useState(null);
@@ -197,10 +202,10 @@ export default function AddScreen({ navigation }) {
 
   const detected = parsed
     ? [
-        { key: 'work', ic: 'coffee', inline: true, bg: '#FFEAF2', col: colors.pinkDark, label: 'Việc', val: parsed.name },
-        { key: 'who', ic: 'user', inline: false, bg: '#EEE7FF', col: colors.purpleDark, label: 'Với ai', val: parsed.withwho },
-        { key: 'time', ic: 'clock', inline: false, bg: '#E6F7FF', col: colors.skyDark, label: 'Thời gian', val: parsed.time },
-        { key: 'place', ic: 'pin', inline: true, bg: '#FFF0E6', col: colors.coralDark, label: 'Địa điểm', val: parsed.place },
+        { key: 'work', ic: 'coffee', inline: true, bg: pal.soft, col: c.pinkDark, label: 'Việc', val: parsed.name },
+        { key: 'who', ic: 'user', inline: false, bg: pal.soft, col: c.purpleDark, label: 'Với ai', val: parsed.withwho },
+        { key: 'time', ic: 'clock', inline: false, bg: pal.soft, col: c.skyDark, label: 'Thời gian', val: parsed.time },
+        { key: 'place', ic: 'pin', inline: true, bg: pal.soft, col: c.coralDark, label: 'Địa điểm', val: parsed.place },
       ]
     : [];
 
@@ -250,7 +255,7 @@ export default function AddScreen({ navigation }) {
       {/* Toast */}
       {toast && (
         <View style={s.toast}>
-          <Icon name="heartfill" size={16} color="#FF9BC1" />
+          <Icon name="heartfill" size={16} color={c.pink} />
           <Text style={s.toastTxt}>Đã thêm! Purrbo sẽ nhắc cưng đúng giờ 💗</Text>
         </View>
       )}
@@ -298,7 +303,7 @@ export default function AddScreen({ navigation }) {
             <ScrollView horizontal showsHorizontalScrollIndicator={false} keyboardShouldPersistTaps="always" style={{ marginBottom: 16 }} contentContainerStyle={{ gap: 8 }}>
               {(TEMPLATE_CATS.find((c) => c.key === tplCat)?.items || []).map((t) => (
                 <Pressable key={t.name} onPress={() => applyTemplate(t)} style={s.tpl}>
-                  <Icon name={t.icon} size={15} color={colors.purpleDark} />
+                  <Icon name={t.icon} size={15} color={c.purpleDark} />
                   <Text style={s.tplTxt}>{t.name}</Text>
                 </Pressable>
               ))}
@@ -360,7 +365,7 @@ export default function AddScreen({ navigation }) {
                   const preset = [0, 1, 2].some((n) => ymd(rDate) === ymd(addDays(n)));
                   return (
                     <Pressable onPress={() => setPickerOpen(true)} style={[s.qrChip, !preset && s.qrChipOn, { flexDirection: 'row', gap: 4 }]}>
-                      <Icon name="calendar" size={14} color={colors.purpleDark} />
+                      <Icon name="calendar" size={14} color={c.purpleDark} />
                       <Text style={[s.qrChipTxt, !preset && s.qrChipTxtOn]}>{preset ? 'Ngày khác' : DDMM(rDate)}</Text>
                     </Pressable>
                   );
@@ -424,7 +429,8 @@ export default function AddScreen({ navigation }) {
 
             <Button
               label={creating ? 'Đang tạo…' : mValid ? 'Tạo lịch' : 'Nhập tên & giờ để tạo'}
-              tone="mint"
+              color={c.mint}
+              colorDark={c.mintDark}
               disabled={!mValid || creating}
               onPress={createManual}
               icon={creating ? <ActivityIndicator color="#fff" /> : mValid ? <Icon name="check" size={18} color="#fff" /> : null}
@@ -438,7 +444,7 @@ export default function AddScreen({ navigation }) {
         {/* NLP input */}
         <View style={s.nlp}>
           <View style={s.tip}>
-            <Icon name="sparkles" size={14} color={colors.purpleDark} />
+            <Icon name="sparkles" size={14} color={c.purpleDark} />
             <Text style={s.tipTxt}>Nói kiểu gì em cũng hiểu</Text>
           </View>
           <View>
@@ -468,7 +474,8 @@ export default function AddScreen({ navigation }) {
 
           <Button
             label={loading ? 'Purrbo đang hiểu…' : 'Purrbo hiểu giúp'}
-            tone="pink"
+            color={c.pink}
+            colorDark={c.pinkDark}
             disabled={loading || !text.trim()}
             onPress={runParse}
             icon={<IconX name="wand" size={17} color="#fff" />}
@@ -482,7 +489,7 @@ export default function AddScreen({ navigation }) {
             <View style={s.sect}>
               <Text style={s.sectTxt}>Purrbo hiểu là</Text>
               <View style={s.pill}>
-                <Icon name="check" size={11} color={colors.mintDark} />
+                <Icon name="check" size={11} color={c.mintDark} />
                 <Text style={s.pillTxt}>{detected.filter((f) => f.val).length + (remind ? 1 : 0)}/5 xong</Text>
               </View>
             </View>
@@ -502,7 +509,7 @@ export default function AddScreen({ navigation }) {
                   </View>
                   {f.val ? (
                     <View style={[s.tag, s.tagOk]}>
-                      <Icon name="check" size={12} color={colors.mintDark} />
+                      <Icon name="check" size={12} color={c.mintDark} />
                       <Text style={s.tagOkTxt}>ok</Text>
                     </View>
                   ) : (
@@ -513,18 +520,18 @@ export default function AddScreen({ navigation }) {
 
               {/* Missing field */}
               <View style={[s.field, remind ? s.fieldFilled : s.fieldMiss]}>
-                <View style={[s.fic, { backgroundColor: remind ? '#EAF7F1' : '#FFF0E6' }]}>
-                  <IconX name="bell" size={20} color={remind ? colors.mintDark : colors.coralDark} />
+                <View style={[s.fic, { backgroundColor: pal.soft }]}>
+                  <IconX name="bell" size={20} color={remind ? c.mintDark : c.coralDark} />
                 </View>
                 <View style={{ flex: 1 }}>
                   <Text style={s.fLabel}>Nhắc trước bao lâu?</Text>
                   {remind
                     ? <Text style={s.fVal}>{remind}</Text>
-                    : <Text style={[s.fVal, { color: colors.coralDark }]}>chưa có · {pName} đang hỏi</Text>}
+                    : <Text style={[s.fVal, { color: c.coralDark }]}>chưa có · {pName} đang hỏi</Text>}
                 </View>
                 {remind ? (
                   <View style={[s.tag, s.tagOk]}>
-                    <Icon name="check" size={12} color={colors.mintDark} />
+                    <Icon name="check" size={12} color={c.mintDark} />
                     <Text style={s.tagOkTxt}>ok</Text>
                   </View>
                 ) : (
@@ -560,7 +567,8 @@ export default function AddScreen({ navigation }) {
             {/* Create */}
             <Button
               label={creating ? 'Đang tạo…' : complete ? 'Tạo lịch' : 'Trả lời để tạo lịch'}
-              tone="mint"
+              color={c.mint}
+              colorDark={c.mintDark}
               disabled={!complete || creating}
               onPress={create}
               icon={creating ? <ActivityIndicator color="#fff" /> : complete ? <Icon name="check" size={18} color="#fff" /> : null}
@@ -581,7 +589,7 @@ export default function AddScreen({ navigation }) {
   );
 }
 
-const s = StyleSheet.create({
+const mkStyles = (c: AppColors, pal: any) => StyleSheet.create({
   // Header
   hdr: { flexDirection: 'row', alignItems: 'center', gap: 12, marginBottom: 18 },
   back: {
@@ -593,11 +601,11 @@ const s = StyleSheet.create({
 
   // NLP input
   nlp: {
-    backgroundColor: '#F6ECFB', borderRadius: 28, padding: 16,
+    backgroundColor: pal.soft, borderRadius: 28, padding: 16,
     borderWidth: 2, borderColor: '#fff', marginBottom: 18, ...hardShadow(5, 0.14),
   },
   tip: { flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 10 },
-  tipTxt: { fontFamily: fonts.heading, fontSize: 12, color: colors.purpleDark },
+  tipTxt: { fontFamily: fonts.heading, fontSize: 12, color: c.purpleDark },
   input: {
     backgroundColor: '#fff', borderWidth: 2, borderColor: '#fff', borderRadius: 18,
     paddingVertical: 13, paddingLeft: 14, paddingRight: 40, minHeight: 78, textAlignVertical: 'top',
@@ -608,29 +616,29 @@ const s = StyleSheet.create({
     backgroundColor: '#F0EAF6', alignItems: 'center', justifyContent: 'center',
   },
   exChip: {
-    backgroundColor: '#fff', borderWidth: 1.5, borderColor: '#E3D8FF', borderRadius: radii.pill,
+    backgroundColor: '#fff', borderWidth: 1.5, borderColor: pal.surface, borderRadius: radii.pill,
     paddingVertical: 7, paddingHorizontal: 12,
   },
   tpl: {
     flexDirection: 'row', alignItems: 'center', gap: 6,
-    backgroundColor: '#F1ECF6', borderWidth: 1.5, borderColor: '#E3D8FF', borderRadius: radii.pill,
+    backgroundColor: pal.soft, borderWidth: 1.5, borderColor: pal.surface, borderRadius: radii.pill,
     paddingVertical: 8, paddingHorizontal: 12,
   },
-  tplTxt: { fontFamily: fonts.heading, fontSize: 13, color: colors.purpleDark },
+  tplTxt: { fontFamily: fonts.heading, fontSize: 13, color: c.purpleDark },
   tplCat: { backgroundColor: colors.bg, borderWidth: 1.5, borderColor: colors.line, borderRadius: radii.pill, paddingVertical: 6, paddingHorizontal: 11 },
   tplCatOn: { backgroundColor: colors.ink, borderColor: colors.ink },
   tplCatTxt: { fontFamily: fonts.heading, fontSize: 12.5, color: colors.muted },
   tplCatTxtOn: { color: '#fff' },
-  exChipTxt: { fontFamily: fonts.heading, fontSize: 12, color: colors.purpleDark },
+  exChipTxt: { fontFamily: fonts.heading, fontSize: 12, color: c.purpleDark },
 
   // Section
   sect: { flexDirection: 'row', alignItems: 'center', gap: 8, marginHorizontal: 4, marginBottom: 12 },
   sectTxt: { fontFamily: fonts.display, fontSize: 16, color: colors.ink },
   pill: {
-    flexDirection: 'row', alignItems: 'center', gap: 3, backgroundColor: '#EAF7F1',
-    borderWidth: 2, borderColor: '#CFEDE0', borderRadius: radii.pill, paddingVertical: 3, paddingHorizontal: 9,
+    flexDirection: 'row', alignItems: 'center', gap: 3, backgroundColor: pal.soft,
+    borderWidth: 2, borderColor: pal.surface, borderRadius: radii.pill, paddingVertical: 3, paddingHorizontal: 9,
   },
-  pillTxt: { fontFamily: fonts.heading, fontSize: 11, color: colors.mintDark },
+  pillTxt: { fontFamily: fonts.heading, fontSize: 11, color: c.mintDark },
 
   // Card
   card: {
@@ -641,20 +649,20 @@ const s = StyleSheet.create({
     flexDirection: 'row', alignItems: 'center', gap: 12, padding: 11,
     borderRadius: 18, borderWidth: 2, borderColor: colors.line, marginBottom: 9,
   },
-  fieldMiss: { borderColor: '#FFD9C7', backgroundColor: '#FFF6F1' },
-  fieldFilled: { borderColor: '#CFEDE0', backgroundColor: '#F3FBF7' },
+  fieldMiss: { borderColor: pal.surface, backgroundColor: pal.soft },
+  fieldFilled: { borderColor: pal.surface, backgroundColor: pal.soft },
   fic: { width: 40, height: 40, borderRadius: 13, alignItems: 'center', justifyContent: 'center', ...hardShadow(3, 0.12) },
   fLabel: { fontFamily: fonts.bodyBold, fontSize: 11, color: colors.muted, marginBottom: 1 },
   fVal: { fontFamily: fonts.heading, fontSize: 15, color: colors.ink },
   tag: { flexDirection: 'row', alignItems: 'center', gap: 4, borderRadius: radii.pill, borderWidth: 2, paddingVertical: 5, paddingHorizontal: 9 },
-  tagOk: { backgroundColor: '#EAF7F1', borderColor: '#CFEDE0' },
-  tagOkTxt: { fontFamily: fonts.heading, fontSize: 11, color: colors.mintDark },
-  tagNeed: { backgroundColor: '#FFF0E6', borderColor: '#FFD9C7' },
-  tagNeedTxt: { fontFamily: fonts.heading, fontSize: 11, color: colors.coralDark },
+  tagOk: { backgroundColor: pal.soft, borderColor: pal.surface },
+  tagOkTxt: { fontFamily: fonts.heading, fontSize: 11, color: c.mintDark },
+  tagNeed: { backgroundColor: pal.soft, borderColor: pal.surface },
+  tagNeedTxt: { fontFamily: fonts.heading, fontSize: 11, color: c.coralDark },
 
   // Persona helper
   helper: {
-    backgroundColor: '#F6ECFB', borderRadius: 26, padding: 16,
+    backgroundColor: pal.soft, borderRadius: 26, padding: 16,
     borderWidth: 2, borderColor: '#fff', marginBottom: 16, ...hardShadow(5, 0.14),
   },
   qr: { flexDirection: 'row', gap: 8, marginTop: 12 },
@@ -662,9 +670,9 @@ const s = StyleSheet.create({
     flex: 1, backgroundColor: '#fff', borderWidth: 2, borderColor: '#fff',
     borderRadius: 14, paddingVertical: 11, paddingHorizontal: 8, alignItems: 'center', ...hardShadow(3, 0.12),
   },
-  qrChipOn: { borderColor: colors.purple },
-  qrChipTxt: { fontFamily: fonts.heading, fontSize: 14, color: colors.purpleDark },
-  qrChipTxtOn: { color: colors.purpleDark },
+  qrChipOn: { borderColor: c.purple },
+  qrChipTxt: { fontFamily: fonts.heading, fontSize: 14, color: c.purpleDark },
+  qrChipTxtOn: { color: c.purpleDark },
 
   // Chọn cách thêm (segmented)
   modeSeg: {
@@ -706,7 +714,7 @@ const s = StyleSheet.create({
     flex: 1, aspectRatio: 1, borderRadius: 12, alignItems: 'center', justifyContent: 'center',
     backgroundColor: '#fff', borderWidth: 2, borderColor: colors.line,
   },
-  dayPickOn: { backgroundColor: colors.purple, borderColor: colors.purpleDark },
+  dayPickOn: { backgroundColor: c.purple, borderColor: c.purpleDark },
   dayPickTxt: { fontFamily: fonts.heading, fontSize: 12, color: colors.muted },
   dayPickTxtOn: { color: '#fff' },
 
