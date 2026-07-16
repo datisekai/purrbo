@@ -109,7 +109,7 @@ function parseRemindLead(hint?: string): number {
   const m = String(hint || '').toLowerCase().match(/nhắc trước\s*(\d+)\s*(phút|tiếng|giờ|h)/);
   if (!m) return 0;
   const n = parseInt(m[1], 10) || 0;
-  return /tiếng|giờ|h/.test(m[2]) ? n * 60 : n;
+  return m[2] === 'phút' ? n : n * 60;   // 'phút'→phút, còn lại→giờ
 }
 
 // Đặt lại toàn bộ nhắc theo lịch lặp của từng habit.
