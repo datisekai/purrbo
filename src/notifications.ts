@@ -72,7 +72,7 @@ export async function sendTestNotification(): Promise<boolean> {
     const ok = await ensureNotifPermission();
     if (!ok) return false;
     await Notifications.scheduleNotificationAsync({
-      content: { title: 'Purrbo 🐾', body: 'Thử nè cưng! Nhận được là notif đang chạy ngon 💗', data: { target: 'Main', foregroundTest: true } },
+      content: { title: 'Purrbo 🐾', body: 'Thử nè cưng! Nhận được là notif đang chạy ngon 💗', sound: 'default', data: { target: 'Main', foregroundTest: true } },
       trigger: { type: Notifications.SchedulableTriggerInputTypes.TIME_INTERVAL, seconds: 2, channelId: 'purrbo-reminders' } as any,
     });
     return true;
@@ -125,7 +125,7 @@ export async function scheduleHabitReminders(habits: Habit[], variant?: string):
     await Notifications.cancelAllScheduledNotificationsAsync();
     for (const h of habits) {
       const body = personaReminder(variant, h.name);  // nhắc theo GIỌNG persona
-      const content = { title: 'Purrbo 🐾', body, data: { target: 'Main' } };
+      const content = { title: 'Purrbo 🐾', body, sound: 'default', data: { target: 'Main' } };
       const repeat = String(h.repeat || 'daily');
 
       // Mỗi X giờ — không cần giờ cố định
