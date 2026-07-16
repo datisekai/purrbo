@@ -8,6 +8,10 @@ services:
       POSTGRES_USER: purrbo
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-purrbo}
       POSTGRES_DB: purrbo
+    # Tuning cho VPS 2GB (chống OOM + tận dụng cache hợp lý).
+    command: >
+      postgres -c shared_buffers=256MB -c effective_cache_size=512MB
+      -c work_mem=8MB -c max_connections=100
     volumes:
       - pgdata:/var/lib/postgresql/data
     healthcheck:
@@ -16,6 +20,7 @@ services:
       timeout: 5s
       retries: 5
     restart: unless-stopped
+    mem_limit: 700m
 
   api:
     build: .
@@ -29,6 +34,7 @@ services:
       db:
         condition: service_healthy
     restart: unless-stopped
+    mem_limit: 1100m
 
 volumes:
   pgdata:

@@ -11,10 +11,17 @@ from sqlalchemy.pool import NullPool
 from api.app.config import settings
 
 # Test (TESTING=1): NullPool → mỗi kết nối mở/đóng riêng, tránh pool dính event-loop
-# cũ giữa các test asyncpg. Runtime thường dùng pool mặc định.
+# cũ giữa các test asyncpg.
 _engine_kwargs = {"echo": False, "future": True}
 if os.getenv("TESTING"):
     _engine_kwargs["poolclass"] = NullPool
+else:
+    # Runtime: pool tường minh (chịu tải). Với 2 worker → tối đa 2×20=40 conn < Postgres
+    # max_connections 100. pool_timeout thấp = fail nhanh khi quá tải (không treo 30s).
+    # pre_ping tránh 'connection đã đóng' sau idle; recycle định kỳ.
+    _engine_kwargs.update(
+        pool_size=10, max_overflow=10, pool_timeout=10, pool_pre_ping=True, pool_recycle=1800
+    )
 engine = create_async_engine(settings.database_url, **_engine_kwargs)
 SessionLocal = async_sessionmaker(engine, expire_on_commit=False, class_=AsyncSession)
 

@@ -66,6 +66,10 @@ async def _ensure_columns() -> None:
         "ALTER TABLE users ADD COLUMN referral_code VARCHAR(12) DEFAULT ''",
         "ALTER TABLE users ADD COLUMN referred_by VARCHAR(64) DEFAULT ''",
         "ALTER TABLE chat_messages ADD COLUMN persona_key VARCHAR(32) DEFAULT ''",
+        # Index chịu tải (idempotent). Composite phủ đúng query thực tế.
+        "CREATE INDEX IF NOT EXISTS ix_userstate_rank ON user_state (streak DESC, affinity_points DESC)",
+        "CREATE INDEX IF NOT EXISTS ix_chat_user_persona_id ON chat_messages (user_id, persona_key, id)",
+        "CREATE INDEX IF NOT EXISTS ix_hc_user_ymd ON habit_completions (user_id, ymd)",
     ]
     async with SessionLocal() as db:
         for sql in stmts:
