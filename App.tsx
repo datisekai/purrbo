@@ -13,6 +13,7 @@ import {
 import RootNav from './src/navigation/RootNav';
 import { navigationRef } from './src/navigation/ref';
 import { AuthProvider } from './src/auth';
+import { ThemeProvider } from './src/themeContext';
 import { ErrorBoundary } from './src/components/ErrorBoundary';
 import { ensureNotifPermission, registerPushToken, setupNotificationNavigation } from './src/notifications';
 import { initSound } from './src/sound';
@@ -45,9 +46,11 @@ export default function App() {
         <StatusBar style="dark" />
         <QueryClientProvider client={queryClient}>
           <AuthProvider>
-            <NavigationContainer ref={navigationRef}>
-              <RootNav />
-            </NavigationContainer>
+            <ThemeProvider>
+              <NavigationContainer ref={navigationRef}>
+                <RootNav />
+              </NavigationContainer>
+            </ThemeProvider>
           </AuthProvider>
         </QueryClientProvider>
       </SafeAreaProvider>

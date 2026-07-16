@@ -9,7 +9,26 @@ export const colors = {
   bg: '#FFFFFF', card: '#FFFFFF',
   ink: '#2E2A3F', muted: '#8A8398', line: '#EFE7DD',
   rCommon: '#9AA0B4', rRare: '#38BDF8', rSSR: '#FFB23E',
+  danger: '#E24B4A', dangerDark: '#A32D2D',   // giữ ĐỎ cho hành động xoá/nguy hiểm
 };
+
+export type AppColors = typeof colors;
+
+// MONOCHROME theo persona: mọi màu brand (hồng/tím/vàng/mint/sky/coral) đều quy
+// về 1 tông của persona đang active → 1 màn chỉ còn tông đó + neutral.
+// Rarity giữ phân biệt bằng 3 SẮC ĐỘ của chính tông đó. ĐỎ (danger) giữ nguyên.
+export function makeColors(pal: { primary: string; primaryDark: string; surface: string; soft: string }): AppColors {
+  return {
+    ...colors,
+    pink: pal.primary, pinkDark: pal.primaryDark,
+    purple: pal.primary, purpleDark: pal.primaryDark,
+    yellow: pal.primary, yellowDark: pal.primaryDark,
+    mint: pal.primary, mintDark: pal.primaryDark,
+    sky: pal.primary, skyDark: pal.primaryDark,
+    coral: pal.primary, coralDark: pal.primaryDark,
+    rCommon: colors.muted, rRare: pal.primary, rSSR: pal.primaryDark,
+  };
+}
 
 export const radii = { sm: 12, md: 18, lg: 26, pill: 999 };
 
