@@ -5,24 +5,57 @@ import { useFocusEffect } from '@react-navigation/native';
 import { colors, fonts, radii, hardShadow, type AppColors } from '../theme';
 import { useC, usePal } from '../themeContext';
 import { Icon } from '../components/Icon';
-import { PersonaFace, PersonaChibi } from '../components/PersonaFace';
+import { PersonaChibi } from '../components/PersonaFace';
 import { AnimatedMascot } from '../components/AnimatedMascot';
-import { WidgetPreview } from '../components/WidgetPreview';
 import { CelebrationModal } from '../components/CelebrationModal';
-import { Button, Chip, ProgressBar, SkeletonRow } from '../components/ui';
+import { Button, Chip, SkeletonRow } from '../components/ui';
 import { Api } from '../api';
 import { useAuth } from '../auth';
 import { scheduleHabitReminders } from '../notifications';
-import { personaCopy, personaHomeLine } from '../personaCopy';
+import { personaHomeLine } from '../personaCopy';
 import { pushWidget } from '../widget';
 import { type PersonaPalette } from '../personaTheme';
 import { playSuccess } from '../sound';
 
-const NUDGE = 'Ơ 3 tiếng chưa uống giọt nào? Định làm khô mực cho em buồn hả 🙄💧';
-
 // Icon việc dùng CHUNG tông persona (hình icon đã đủ phân biệt) — bỏ cầu vồng
 // mỗi icon một màu, để 1 màn chỉ còn tông của persona đang active.
 const istyle = (pal: PersonaPalette) => ({ bg: pal.soft, col: pal.primaryDark });
+
+// Dòng việc — component riêng để giữ animation "pop" khi tick Khoe không bị mất
+// lúc list re-render (mỗi row tự quản lý Animated.Value của mình).
+function HabitRow({ h, s, pal, onKhoe, navigation }: any) {
+  const pop = useRef(new Animated.Value(1)).current;
+  const wasDone = useRef(h.done);
+  useEffect(() => {
+    if (!wasDone.current && h.done) {
+      pop.setValue(1.22);
+      Animated.spring(pop, { toValue: 1, useNativeDriver: true, friction: 4, tension: 140 }).start();
+    }
+    wasDone.current = h.done;
+  }, [h.done, pop]);
+  const ic = istyle(pal);
+  return (
+    <View style={[s.habit, h.done && { opacity: 0.55 }]}>
+      <Pressable onPress={() => navigation?.navigate?.('HabitEdit', { habit: h })} style={{ flexDirection: 'row', alignItems: 'center', gap: 12, flex: 1, minWidth: 0 }}>
+        <Animated.View style={[s.habitIc, { backgroundColor: ic.bg, transform: [{ scale: pop }] }]}>
+          <Icon name={h.done ? 'check' : h.icon} size={24} color={ic.col} />
+        </Animated.View>
+        <View style={{ flex: 1, minWidth: 0 }}>
+          <Text style={[{ fontFamily: fonts.heading, fontSize: 16, color: colors.ink }, h.done && { textDecorationLine: 'line-through' }]}>{h.name}</Text>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
+            <Icon name={h.done ? 'check' : 'clock'} size={13} color={colors.muted} />
+            <Text style={{ fontFamily: fonts.body, fontSize: 12, color: colors.muted }}>{h.time} · {h.hint}</Text>
+          </View>
+        </View>
+      </Pressable>
+      {h.done ? (
+        <Button label="Đã khoe" color={colors.muted} colorDark="#6E6875" onPress={() => {}} icon={<Icon name="check" size={15} color="#fff" />} style={{ paddingVertical: 9, paddingHorizontal: 14 }} />
+      ) : (
+        <Button label="Khoe" color={pal.primary} colorDark={pal.primaryDark} onPress={() => onKhoe(h)} icon={<Icon name="heart" size={15} color="#fff" />} style={{ paddingVertical: 9, paddingHorizontal: 14 }} />
+      )}
+    </View>
+  );
+}
 
 export default function HomeScreen({ navigation }: any) {
   const { user } = useAuth();
@@ -129,8 +162,6 @@ export default function HomeScreen({ navigation }: any) {
     }
   };
 
-  const aff = st?.affinity_points ?? 0;
-  const lvl = st?.affinity_level ?? 1;
   const streak = st?.streak ?? 0;
 
   // ── Việc SẮP TỚI: undone gần giờ hiện tại nhất (ưu tiên còn phía trước trong ngày) ──
@@ -158,10 +189,11 @@ export default function HomeScreen({ navigation }: any) {
     if (diff <= 0) return `${nextUp.h.time} · tới giờ rồi`;
     return nextUp.h.time;
   })();
-  const dateLabel = `Hôm nay · ${String(nowD.getDate()).padStart(2, '0')}/${String(nowD.getMonth() + 1).padStart(2, '0')}`;
 
-  // Câu nói persona ở bong bóng Home (data-driven).
+  // Câu nói persona ở bong bóng Home (data-driven) — tự chuyển sang câu "xong hết"
+  // khi nextUp rỗng (personaHomeLine đã xử lý case 'all'/'empty').
   const widgetLine = line || personaHomeLine(persona?.variant, { done: doneCount, total: todayHabits.length, next: nextUp?.h?.name });
+
   // Đẩy dữ liệu sang Widget iOS mỗi khi tiến độ / persona / việc kế tiếp đổi.
   useEffect(() => {
     pushWidget({
@@ -191,19 +223,29 @@ export default function HomeScreen({ navigation }: any) {
             <Text style={s.hi}>Chào {user?.name || 'bạn'}</Text>
             <Text style={s.sub}>Hôm nay {doneCount}/{todayHabits.length} việc · cùng em nhé</Text>
           </View>
-          <Pressable onPress={() => navigation?.navigate?.('Leaderboard')}>
-            <Chip bg={pal.soft} fg={pal.primaryDark} border={pal.surface}>
-              <Icon name="flamefill" size={14} color={pal.primaryDark} />
-              <Text style={{ fontFamily: fonts.heading, fontSize: 13, color: pal.primaryDark }}>{streak}</Text>
-            </Chip>
-          </Pressable>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+            {claimable > 0 && (
+              <Pressable onPress={() => navigation?.navigate?.('Nhiệm vụ')}>
+                <Chip>
+                  <Icon name="gift" size={14} color={pal.primaryDark} />
+                  <Text style={{ fontFamily: fonts.heading, fontSize: 13, color: pal.primaryDark }}>{claimable}</Text>
+                </Chip>
+              </Pressable>
+            )}
+            <Pressable onPress={() => navigation?.navigate?.('Leaderboard')}>
+              <Chip>
+                <Icon name="flamefill" size={14} color={pal.primaryDark} />
+                <Text style={{ fontFamily: fonts.heading, fontSize: 13, color: pal.primaryDark }}>{streak}</Text>
+              </Chip>
+            </Pressable>
+          </View>
         </View>
 
+        {/* SPOTLIGHT — 1 khối duy nhất: persona + việc kế tiếp (thay 2 card lặp) */}
         <View style={[s.hero, { backgroundColor: pal.surface }]}>
-          {/* Nhân vật là hero — nhún nhẹ cho sống; thưởng cảm xúc khi Khoe */}
           <View style={{ alignItems: 'center', justifyContent: 'center', paddingTop: 2 }}>
             <Animated.View style={{ transform: [{ translateY: heroBob.interpolate({ inputRange: [0, 1], outputRange: [3, -7] }) }] }}>
-              <PersonaChibi variant={persona?.variant || 'mun'} size={140} items={equipped} expr={heroExpr} />
+              <PersonaChibi variant={persona?.variant || 'mun'} size={116} items={equipped} expr={heroExpr} />
             </Animated.View>
             <Animated.View
               pointerEvents="none"
@@ -213,43 +255,35 @@ export default function HomeScreen({ navigation }: any) {
             </Animated.View>
           </View>
 
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 6 }}>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 4 }}>
             <Text style={s.pName}>{persona?.name || 'Mèo Mun'}</Text>
             <View style={s.ssr}><Icon name="star" size={9} color="#fff" /><Text style={{ fontFamily: fonts.heading, fontSize: 10, color: '#fff' }}>{persona?.rarity || 'SSR'}</Text></View>
           </View>
-          <Text style={s.pTag}>bạn đồng hành · {persona?.tag || 'cà khịa yêu'}</Text>
 
-          <View style={[s.bubble, { marginTop: 12, alignSelf: 'stretch' }]}><Text style={{ fontFamily: fonts.body, fontSize: 14, color: colors.ink, lineHeight: 21 }}>{widgetLine}</Text></View>
-        </View>
+          <View style={[s.bubble, { marginTop: 10, alignSelf: 'stretch' }]}><Text style={{ fontFamily: fonts.body, fontSize: 14, color: colors.ink, lineHeight: 21 }}>{widgetLine}</Text></View>
 
-        {/* SẮP TỚI — spotlight: người đồng hành đang đợi cưng làm việc kế tiếp */}
-        {!loading && nextUp && (
-          <View style={s.next}>
-            <View style={s.nextTag}>
-              <Icon name="clock" size={12} color="#fff" />
-              <Text style={s.nextTagTxt}>SẮP TỚI · {nextLabel}</Text>
-            </View>
-            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
-              <PersonaChibi variant={persona?.variant || 'mun'} size={92} items={equipped} expr="happy" />
-              <View style={{ flex: 1, minWidth: 0 }}>
-                <Text style={s.nextName} numberOfLines={1}>{nextUp.h.name}</Text>
-                <Text style={s.nextNudge} numberOfLines={2}>{personaCopy(persona?.variant).waiting}</Text>
+          {!loading && nextUp && (
+            <View style={s.nextBlock}>
+              <View style={s.nextTag}>
+                <Icon name="clock" size={12} color={pal.primaryDark} />
+                <Text style={[s.nextTagTxt, { color: pal.primaryDark }]}>SẮP TỚI · {nextLabel}</Text>
               </View>
+              <Text style={s.nextName} numberOfLines={1}>{nextUp.h.name}</Text>
+              <Button
+                label="Khoe ngay 💗"
+                color={pal.primary}
+                colorDark={pal.primaryDark}
+                onPress={() => khoe(nextUp.h)}
+                icon={<Icon name="heart" size={16} color="#fff" />}
+                style={{ marginTop: 10, alignSelf: 'stretch', paddingVertical: 13 }}
+              />
             </View>
-            <Button
-              label="Khoe ngay 💗"
-              color={pal.primary}
-              colorDark={pal.primaryDark}
-              onPress={() => khoe(nextUp.h)}
-              icon={<Icon name="heart" size={16} color="#fff" />}
-              style={{ marginTop: 12, paddingVertical: 13 }}
-            />
-          </View>
-        )}
+          )}
+        </View>
 
         <View style={s.stitle}>
           <Text style={s.stitleTxt}>Cả ngày</Text>
-          <Pressable onPress={() => navigation?.navigate?.('AddTask')} style={s.addBtn}>
+          <Pressable onPress={() => navigation?.navigate?.('AddTask')} style={[s.addBtn, { backgroundColor: pal.primary, borderBottomColor: pal.primaryDark }]}>
             <Icon name="plus" size={14} color="#fff" />
             <Text style={s.addBtnTxt}>Thêm việc</Text>
           </Pressable>
@@ -266,33 +300,9 @@ export default function HomeScreen({ navigation }: any) {
           </View>
         )}
 
-        {todayHabits.filter((h) => !(nextUp && h.id === nextUp.h.id)).sort((a, b) => (parseHM(a.time) ?? 9999) - (parseHM(b.time) ?? 9999)).map((h) => {
-          const ic = istyle(pal);
-          return (
-            <View key={h.id} style={[s.habit, h.done && { opacity: 0.55 }]}>
-              <Pressable onPress={() => navigation?.navigate?.('HabitEdit', { habit: h })} style={{ flexDirection: 'row', alignItems: 'center', gap: 12, flex: 1, minWidth: 0 }}>
-                <View style={[s.habitIc, { backgroundColor: ic.bg }]}><Icon name={h.icon} size={24} color={ic.col} /></View>
-                <View style={{ flex: 1, minWidth: 0 }}>
-                  <Text style={[{ fontFamily: fonts.heading, fontSize: 16, color: colors.ink }, h.done && { textDecorationLine: 'line-through' }]}>{h.name}</Text>
-                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
-                    <Icon name={h.done ? 'check' : 'clock'} size={13} color={colors.muted} />
-                    <Text style={{ fontFamily: fonts.body, fontSize: 12, color: colors.muted }}>{h.time} · {h.hint}</Text>
-                  </View>
-                </View>
-              </Pressable>
-              {h.done ? (
-                <Button label="Đã khoe" color={c.mint} colorDark={c.mintDark} onPress={() => {}} icon={<Icon name="check" size={15} color={c.mintDark} />} style={{ paddingVertical: 9, paddingHorizontal: 14 }} />
-              ) : (
-                <Button label="Khoe" color={c.mint} colorDark={c.mintDark} onPress={() => khoe(h)} icon={<Icon name="heart" size={15} color="#fff" />} style={{ paddingVertical: 9, paddingHorizontal: 14 }} />
-              )}
-            </View>
-          );
-        })}
-
-        {/* Widget màn hình chính — xem trước */}
-        <View style={{ marginTop: 10 }}>
-          <WidgetPreview habits={habits} dateLabel={dateLabel} />
-        </View>
+        {todayHabits.filter((h) => !(nextUp && h.id === nextUp.h.id)).sort((a, b) => (parseHM(a.time) ?? 9999) - (parseHM(b.time) ?? 9999)).map((h) => (
+          <HabitRow key={h.id} h={h} s={s} pal={pal} onKhoe={khoe} navigation={navigation} />
+        ))}
       </ScrollView>
 
       <CelebrationModal data={celebration} onClose={() => setCelebration(null)} />
@@ -302,16 +312,6 @@ export default function HomeScreen({ navigation }: any) {
 
 const mkStyles = (c: AppColors, pal: any) => StyleSheet.create({
   top: { flexDirection: 'row', alignItems: 'center', marginBottom: 16 },
-  quest: {
-    flexDirection: 'row', alignItems: 'center', gap: 12, marginBottom: 20,
-    backgroundColor: c.purple, borderRadius: 20, padding: 13,
-    borderWidth: 2, borderColor: '#fff', ...hardShadow(5, 0.16),
-  },
-  questIc: { width: 44, height: 44, borderRadius: 14, backgroundColor: '#ffffff30', alignItems: 'center', justifyContent: 'center' },
-  questTitle: { fontFamily: fonts.display, fontSize: 16, color: '#fff' },
-  questSub: { fontFamily: fonts.body, fontSize: 12, color: '#fff', opacity: 0.92, marginTop: 1 },
-  questDot: { minWidth: 26, height: 26, borderRadius: 13, backgroundColor: c.yellow, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 6 },
-  questDotTxt: { fontFamily: fonts.display, fontSize: 13, color: colors.ink },
   hi: { fontFamily: fonts.display, fontSize: 22, color: colors.ink },
   sub: { fontFamily: fonts.body, fontSize: 13, color: colors.muted },
   hero: {
@@ -319,30 +319,21 @@ const mkStyles = (c: AppColors, pal: any) => StyleSheet.create({
     borderWidth: 2, borderColor: '#fff', alignItems: 'center', ...hardShadow(5, 0.14),
   },
   pName: { fontFamily: fonts.display, fontSize: 22, color: colors.ink },
-  pTag: { fontFamily: fonts.body, fontSize: 12, color: colors.muted, marginTop: 2, textAlign: 'center' },
   float: { fontFamily: fonts.display, fontSize: 22, color: c.pinkDark },
-  questStrip: { flexDirection: 'row', alignItems: 'center', gap: 9, backgroundColor: pal.soft, borderRadius: 16, paddingVertical: 10, paddingHorizontal: 12, marginTop: 8 },
-  questStripIc: { width: 28, height: 28, borderRadius: 9, backgroundColor: '#fff', alignItems: 'center', justifyContent: 'center' },
-  questStripTxt: { flex: 1, fontFamily: fonts.heading, fontSize: 12.5, color: c.purpleDark },
   ssr: { flexDirection: 'row', alignItems: 'center', gap: 3, backgroundColor: c.pink, borderRadius: radii.pill, paddingVertical: 2, paddingHorizontal: 8 },
   bubble: { backgroundColor: '#fff', borderRadius: 18, borderBottomLeftRadius: 5, padding: 12, ...hardShadow(3, 0.12) },
-  next: {
-    backgroundColor: c.pink, borderRadius: 26, padding: 16, marginBottom: 20,
-    borderWidth: 3, borderColor: '#fff', ...hardShadow(7, 0.2),
-  },
+  nextBlock: { alignSelf: 'stretch', marginTop: 14, alignItems: 'flex-start' },
   nextTag: {
     flexDirection: 'row', alignItems: 'center', gap: 5, alignSelf: 'flex-start',
-    backgroundColor: '#ffffff33', borderRadius: radii.pill, paddingVertical: 4, paddingHorizontal: 11, marginBottom: 12,
+    backgroundColor: '#fff', borderRadius: radii.pill, paddingVertical: 4, paddingHorizontal: 11,
   },
-  nextTagTxt: { fontFamily: fonts.heading, fontSize: 11, color: '#fff', letterSpacing: 0.5 },
-  nextName: { fontFamily: fonts.display, fontSize: 21, color: '#fff' },
-  nextNudge: { fontFamily: fonts.body, fontSize: 13, color: '#fff', opacity: 0.92, marginTop: 3, lineHeight: 19 },
+  nextTagTxt: { fontFamily: fonts.heading, fontSize: 11, letterSpacing: 0.5 },
+  nextName: { fontFamily: fonts.display, fontSize: 20, color: colors.ink, marginTop: 8 },
   stitle: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12, marginHorizontal: 4 },
   stitleTxt: { fontFamily: fonts.display, fontSize: 17, color: colors.ink },
   addBtn: {
-    flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: c.pink,
-    borderRadius: radii.pill, paddingVertical: 6, paddingHorizontal: 12,
-    borderBottomWidth: 3, borderBottomColor: c.pinkDark,
+    flexDirection: 'row', alignItems: 'center', gap: 4,
+    borderRadius: radii.pill, paddingVertical: 6, paddingHorizontal: 12, borderBottomWidth: 3,
   },
   addBtnTxt: { fontFamily: fonts.heading, fontSize: 12, color: '#fff' },
   empty: {

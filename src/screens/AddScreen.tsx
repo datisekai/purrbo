@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect, useMemo } from 'react';
-import { View, Text, ScrollView, Pressable, TextInput, StyleSheet, Alert, ActivityIndicator, Keyboard } from 'react-native';
+import { View, Text, ScrollView, Pressable, TextInput, StyleSheet, Alert, ActivityIndicator, Animated, Keyboard } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Svg, { Path, Circle } from 'react-native-svg';
 import { colors, fonts, radii, hardShadow, type AppColors } from '../theme';
@@ -131,6 +131,20 @@ export default function AddScreen({ navigation }) {
   }, []);
   const tRef = useRef(null);
 
+  // Nhân vật "đang đọc" — nhấp nháy nhẹ trong lúc chờ NLP, thay vì chỉ đổi chữ nút.
+  const thinkOp = useRef(new Animated.Value(0.4)).current;
+  useEffect(() => {
+    if (!loading) return;
+    const loop = Animated.loop(
+      Animated.sequence([
+        Animated.timing(thinkOp, { toValue: 1, duration: 500, useNativeDriver: true }),
+        Animated.timing(thinkOp, { toValue: 0.4, duration: 500, useNativeDriver: true }),
+      ])
+    );
+    loop.start();
+    return () => loop.stop();
+  }, [loading, thinkOp]);
+
   // Tự nhập
   const [mName, setMName] = useState('');
   const [mIcon, setMIcon] = useState('droplet');
@@ -160,6 +174,8 @@ export default function AddScreen({ navigation }) {
     setRDays((xs) => (xs.includes(d) ? xs.filter((x) => x !== d) : [...xs, d]));
 
   const complete = !!remind;
+  // Toast dùng chung cho cả 2 luồng (bằng lời / tự nhập) — giọng persona, không phải câu hệ thống khô khan.
+  const toastCopy = `${pName} đã ghim vô lịch rồi, cưng khỏi lo 💗`;
 
   const showToast = () => {
     setToast(true);
@@ -167,7 +183,7 @@ export default function AddScreen({ navigation }) {
     tRef.current = setTimeout(() => {
       setToast(false);
       navigation?.goBack?.();
-    }, 1100);
+    }, 1300);
   };
 
   const applyTemplate = (t: any) => {
@@ -200,13 +216,14 @@ export default function AddScreen({ navigation }) {
     } finally { setCreating(false); }
   };
 
-  const detected = parsed
+  // Chỉ những gì NLP THỰC SỰ bắt được mới hiện — không vẽ ra field rỗng rồi báo "thiếu"
+  // cho những thứ user chưa từng nhắc tới (ví dụ "uống nước mỗi 2 tiếng" không có địa điểm).
+  const contextChips = parsed
     ? [
-        { key: 'work', ic: 'coffee', inline: true, bg: pal.soft, col: c.pinkDark, label: 'Việc', val: parsed.name },
-        { key: 'who', ic: 'user', inline: false, bg: pal.soft, col: c.purpleDark, label: 'Với ai', val: parsed.withwho },
-        { key: 'time', ic: 'clock', inline: false, bg: pal.soft, col: c.skyDark, label: 'Thời gian', val: parsed.time },
-        { key: 'place', ic: 'pin', inline: true, bg: pal.soft, col: c.coralDark, label: 'Địa điểm', val: parsed.place },
-      ]
+        { key: 'time', ic: 'clock', inline: false, val: parsed.time },
+        { key: 'place', ic: 'pin', inline: true, val: parsed.place },
+        { key: 'who', ic: 'user', inline: false, val: parsed.withwho },
+      ].filter((f) => f.val)
     : [];
 
   const reset = () => {
@@ -252,11 +269,11 @@ export default function AddScreen({ navigation }) {
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: colors.bg }} edges={['top']}>
-      {/* Toast */}
+      {/* Toast — giọng persona, không phải thông báo hệ thống khô khan */}
       {toast && (
-        <View style={s.toast}>
-          <Icon name="heartfill" size={16} color={c.pink} />
-          <Text style={s.toastTxt}>Đã thêm! Purrbo sẽ nhắc cưng đúng giờ 💗</Text>
+        <View style={[s.toast, { backgroundColor: pal.primary }]}>
+          <PersonaFace variant={pVariant} size={26} />
+          <Text style={s.toastTxt}>{toastCopy}</Text>
         </View>
       )}
 
@@ -268,7 +285,7 @@ export default function AddScreen({ navigation }) {
           </Pressable>
           <View style={{ flex: 1 }}>
             <Text style={s.hTitle}>Thêm việc mới</Text>
-            <Text style={s.hSub}>gõ bằng lời, hoặc tự nhập cho nhanh</Text>
+            <Text style={s.hSub}>gõ bằng lời cho nhanh · tự nhập khi thích tự tay chọn</Text>
           </View>
         </View>
 
@@ -291,17 +308,17 @@ export default function AddScreen({ navigation }) {
           <View style={s.mcard}>
             <Text style={s.mLabel}>Mẫu nhanh</Text>
             <ScrollView horizontal showsHorizontalScrollIndicator={false} keyboardShouldPersistTaps="always" style={{ marginBottom: 10 }} contentContainerStyle={{ gap: 6 }}>
-              {TEMPLATE_CATS.map((c) => {
-                const on = tplCat === c.key;
+              {TEMPLATE_CATS.map((cat) => {
+                const on = tplCat === cat.key;
                 return (
-                  <Pressable key={c.key} onPress={() => setTplCat(c.key)} style={[s.tplCat, on && s.tplCatOn]}>
-                    <Text style={[s.tplCatTxt, on && s.tplCatTxtOn]}>{c.label}</Text>
+                  <Pressable key={cat.key} onPress={() => setTplCat(cat.key)} style={[s.tplCat, on && s.tplCatOn]}>
+                    <Text style={[s.tplCatTxt, on && s.tplCatTxtOn]}>{cat.label}</Text>
                   </Pressable>
                 );
               })}
             </ScrollView>
             <ScrollView horizontal showsHorizontalScrollIndicator={false} keyboardShouldPersistTaps="always" style={{ marginBottom: 16 }} contentContainerStyle={{ gap: 8 }}>
-              {(TEMPLATE_CATS.find((c) => c.key === tplCat)?.items || []).map((t) => (
+              {(TEMPLATE_CATS.find((cat) => cat.key === tplCat)?.items || []).map((t) => (
                 <Pressable key={t.name} onPress={() => applyTemplate(t)} style={s.tpl}>
                   <Icon name={t.icon} size={15} color={c.purpleDark} />
                   <Text style={s.tplTxt}>{t.name}</Text>
@@ -320,15 +337,15 @@ export default function AddScreen({ navigation }) {
 
             <Text style={[s.mLabel, { marginTop: 16 }]}>Icon</Text>
             <View style={s.iconRow}>
-              {ICON_CHOICES.map((c) => {
-                const on = mIcon === c.key;
+              {ICON_CHOICES.map((ic) => {
+                const on = mIcon === ic.key;
                 return (
                   <Pressable
-                    key={c.key}
-                    onPress={() => setMIcon(c.key)}
-                    style={[s.iconPick, { backgroundColor: c.bg }, on && s.iconPickOn]}
+                    key={ic.key}
+                    onPress={() => setMIcon(ic.key)}
+                    style={[s.iconPick, { backgroundColor: ic.bg }, on && s.iconPickOn]}
                   >
-                    <Icon name={c.key} size={22} color={c.col} />
+                    <Icon name={ic.key} size={22} color={ic.col} />
                   </Pressable>
                 );
               })}
@@ -481,68 +498,50 @@ export default function AddScreen({ navigation }) {
             icon={<IconX name="wand" size={17} color="#fff" />}
             style={{ marginTop: 12, paddingVertical: 14 }}
           />
+
+          {/* Nhân vật "đang đọc" — thay vì chỉ đổi chữ nút, có ai đó thật sự đang ngồi đọc câu của cưng. */}
+          {loading && (
+            <View style={s.thinking}>
+              <Animated.View style={{ opacity: thinkOp }}>
+                <PersonaFace variant={pVariant} size={28} />
+              </Animated.View>
+              <Text style={s.thinkingTxt}>{pName} đang đọc nè…</Text>
+            </View>
+          )}
         </View>
 
         {parsed && (
           <>
-            {/* Section title */}
+            {/* Section title — không còn đếm "x/5" giả (chỉ 1 thứ thật sự cần trả lời) */}
             <View style={s.sect}>
-              <Text style={s.sectTxt}>Purrbo hiểu là</Text>
-              <View style={s.pill}>
-                <Icon name="check" size={11} color={c.mintDark} />
-                <Text style={s.pillTxt}>{detected.filter((f) => f.val).length + (remind ? 1 : 0)}/5 xong</Text>
-              </View>
+              <Icon name="sparkles" size={14} color={pal.primaryDark} />
+              <Text style={s.sectTxt}>Purrbo hiểu vầy nè</Text>
             </View>
 
-            {/* Parsed card */}
+            {/* Card xác nhận — chỉ hiện những gì THỰC SỰ bắt được, không có ok/thiếu giả */}
             <View style={s.card}>
-              {detected.map((f) => (
-                <View key={f.key} style={s.field}>
-                  <View style={[s.fic, { backgroundColor: f.bg }]}>
-                    {f.inline
-                      ? <IconX name={f.ic} size={20} color={f.col} />
-                      : <Icon name={f.ic} size={20} color={f.col} />}
-                  </View>
-                  <View style={{ flex: 1 }}>
-                    <Text style={s.fLabel}>{f.label}</Text>
-                    <Text style={s.fVal}>{f.val}</Text>
-                  </View>
-                  {f.val ? (
-                    <View style={[s.tag, s.tagOk]}>
-                      <Icon name="check" size={12} color={c.mintDark} />
-                      <Text style={s.tagOkTxt}>ok</Text>
-                    </View>
-                  ) : (
-                    <View style={[s.tag, s.tagNeed]}><Text style={s.tagNeedTxt}>—</Text></View>
-                  )}
-                </View>
-              ))}
-
-              {/* Missing field */}
-              <View style={[s.field, remind ? s.fieldFilled : s.fieldMiss]}>
+              <View style={s.taskRow}>
                 <View style={[s.fic, { backgroundColor: pal.soft }]}>
-                  <IconX name="bell" size={20} color={remind ? c.mintDark : c.coralDark} />
+                  <IconX name="coffee" size={20} color={pal.primaryDark} />
                 </View>
-                <View style={{ flex: 1 }}>
-                  <Text style={s.fLabel}>Nhắc trước bao lâu?</Text>
-                  {remind
-                    ? <Text style={s.fVal}>{remind}</Text>
-                    : <Text style={[s.fVal, { color: c.coralDark }]}>chưa có · {pName} đang hỏi</Text>}
-                </View>
-                {remind ? (
-                  <View style={[s.tag, s.tagOk]}>
-                    <Icon name="check" size={12} color={c.mintDark} />
-                    <Text style={s.tagOkTxt}>ok</Text>
-                  </View>
-                ) : (
-                  <View style={[s.tag, s.tagNeed]}>
-                    <Text style={s.tagNeedTxt}>thiếu</Text>
-                  </View>
-                )}
+                <Text style={s.taskName} numberOfLines={2}>{parsed.name}</Text>
               </View>
+
+              {contextChips.length > 0 && (
+                <View style={s.ctxRow}>
+                  {contextChips.map((f) => (
+                    <View key={f.key} style={s.ctxChip}>
+                      {f.inline
+                        ? <IconX name={f.ic} size={13} color={pal.primaryDark} />
+                        : <Icon name={f.ic} size={13} color={pal.primaryDark} />}
+                      <Text style={s.ctxChipTxt} numberOfLines={1}>{f.val}</Text>
+                    </View>
+                  ))}
+                </View>
+              )}
             </View>
 
-            {/* Persona helper */}
+            {/* Câu hỏi DUY NHẤT cần cưng trả lời — 1 chỗ hỏi, không hỏi lặp lại */}
             <View style={s.helper}>
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: 11 }}>
                 <PersonaFace variant={pVariant} ring="ssr" size={52} />
@@ -631,34 +630,27 @@ const mkStyles = (c: AppColors, pal: any) => StyleSheet.create({
   tplCatTxtOn: { color: '#fff' },
   exChipTxt: { fontFamily: fonts.heading, fontSize: 12, color: c.purpleDark },
 
+  thinking: { flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 12, alignSelf: 'center' },
+  thinkingTxt: { fontFamily: fonts.heading, fontSize: 12.5, color: c.purpleDark },
+
   // Section
   sect: { flexDirection: 'row', alignItems: 'center', gap: 8, marginHorizontal: 4, marginBottom: 12 },
   sectTxt: { fontFamily: fonts.display, fontSize: 16, color: colors.ink },
-  pill: {
-    flexDirection: 'row', alignItems: 'center', gap: 3, backgroundColor: pal.soft,
-    borderWidth: 2, borderColor: pal.surface, borderRadius: radii.pill, paddingVertical: 3, paddingHorizontal: 9,
-  },
-  pillTxt: { fontFamily: fonts.heading, fontSize: 11, color: c.mintDark },
 
-  // Card
+  // Card xác nhận
   card: {
     backgroundColor: '#fff', borderWidth: 2, borderColor: colors.line,
-    borderRadius: 24, padding: 14, marginBottom: 18, ...hardShadow(5, 0.14),
+    borderRadius: 24, padding: 16, marginBottom: 18, ...hardShadow(5, 0.14),
   },
-  field: {
-    flexDirection: 'row', alignItems: 'center', gap: 12, padding: 11,
-    borderRadius: 18, borderWidth: 2, borderColor: colors.line, marginBottom: 9,
-  },
-  fieldMiss: { borderColor: pal.surface, backgroundColor: pal.soft },
-  fieldFilled: { borderColor: pal.surface, backgroundColor: pal.soft },
+  taskRow: { flexDirection: 'row', alignItems: 'center', gap: 12 },
+  taskName: { flex: 1, fontFamily: fonts.display, fontSize: 18, color: colors.ink },
   fic: { width: 40, height: 40, borderRadius: 13, alignItems: 'center', justifyContent: 'center', ...hardShadow(3, 0.12) },
-  fLabel: { fontFamily: fonts.bodyBold, fontSize: 11, color: colors.muted, marginBottom: 1 },
-  fVal: { fontFamily: fonts.heading, fontSize: 15, color: colors.ink },
-  tag: { flexDirection: 'row', alignItems: 'center', gap: 4, borderRadius: radii.pill, borderWidth: 2, paddingVertical: 5, paddingHorizontal: 9 },
-  tagOk: { backgroundColor: pal.soft, borderColor: pal.surface },
-  tagOkTxt: { fontFamily: fonts.heading, fontSize: 11, color: c.mintDark },
-  tagNeed: { backgroundColor: pal.soft, borderColor: pal.surface },
-  tagNeedTxt: { fontFamily: fonts.heading, fontSize: 11, color: c.coralDark },
+  ctxRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginTop: 14 },
+  ctxChip: {
+    flexDirection: 'row', alignItems: 'center', gap: 5, backgroundColor: pal.soft,
+    borderRadius: radii.pill, paddingVertical: 6, paddingHorizontal: 11, maxWidth: '100%',
+  },
+  ctxChipTxt: { fontFamily: fonts.heading, fontSize: 12.5, color: colors.ink, flexShrink: 1 },
 
   // Persona helper
   helper: {
@@ -721,9 +713,9 @@ const mkStyles = (c: AppColors, pal: any) => StyleSheet.create({
   // Toast
   toast: {
     position: 'absolute', top: 52, alignSelf: 'center', zIndex: 30,
-    flexDirection: 'row', alignItems: 'center', gap: 8, maxWidth: 320,
-    backgroundColor: colors.ink, borderRadius: radii.pill, paddingVertical: 11, paddingHorizontal: 18,
+    flexDirection: 'row', alignItems: 'center', gap: 9, maxWidth: 320,
+    borderRadius: radii.pill, paddingVertical: 9, paddingHorizontal: 14, borderWidth: 2, borderColor: '#fff',
     shadowColor: '#000', shadowOffset: { width: 0, height: 6 }, shadowOpacity: 0.25, shadowRadius: 8, elevation: 10,
   },
-  toastTxt: { fontFamily: fonts.heading, fontSize: 14, color: '#fff', flexShrink: 1 },
+  toastTxt: { fontFamily: fonts.heading, fontSize: 13.5, color: '#fff', flexShrink: 1 },
 });
