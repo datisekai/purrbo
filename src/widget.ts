@@ -1,24 +1,26 @@
 // Cầu nối app RN → Widget iOS (WidgetKit) qua App Group.
-// Ghi JSON vào UserDefaults(suiteName: group.com.purrbo.app) key "purrbo_widget",
-// rồi gọi reload timeline để widget cập nhật ngay.
+// Ghi JSON vào UserDefaults(suiteName: group.com.purrbo.app) key "purrbo_widget"
+// (gồm cả token + apiBase để nút "Xong" trên widget gọi khoe được), rồi reload.
 //
-// Cần cài (xem docs/widget-setup.md):
+// Cần cài (docs/widget-setup.md):
 //   npx expo install react-native-shared-group-preferences react-native-widgetkit
-// Chưa cài → require an toàn, app vẫn chạy (chỉ là widget không cập nhật).
 import { Platform } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { API_BASE } from './api';
 
 const APP_GROUP = 'group.com.purrbo.app';
 const KEY = 'purrbo_widget';
+const TOKEN_KEY = 'purrbo.token';   // trùng với api.ts
 
-// Load lib mềm — không có cũng không làm crash app (dev/Expo Go).
 let SharedGroupPreferences: any = null;
 let WidgetKit: any = null;
 try { SharedGroupPreferences = require('react-native-shared-group-preferences').default; } catch {}
 try { WidgetKit = require('react-native-widgetkit').WidgetKit; } catch {}
 
+// Dữ liệu hiển thị + hành động cho widget. next = việc kế tiếp (để nút Xong khoe).
 export type WidgetData = {
-  personaName: string;
-  line: string;
+  personaVariant: string;
+  nextId: number;
   nextName: string;
   nextTime: string;
   done: number;
@@ -26,14 +28,15 @@ export type WidgetData = {
   streak: number;
 };
 
-// Gọi mỗi khi dữ liệu Home đổi (load, khoe, tạo/xoá việc…).
 export async function pushWidget(data: WidgetData): Promise<void> {
   if (Platform.OS !== 'ios' || !SharedGroupPreferences) return;
   try {
-    // Lưu dạng CHUỖI JSON (Swift đọc bằng defaults.string(forKey:) rồi decode).
-    await SharedGroupPreferences.setItem(KEY, JSON.stringify(data), APP_GROUP);
+    const token = (await AsyncStorage.getItem(TOKEN_KEY)) || '';
+    // token + apiBase để AppIntent trên widget gọi POST /v1/habits/{id}/khoe.
+    const payload = { ...data, token, apiBase: API_BASE };
+    await SharedGroupPreferences.setItem(KEY, JSON.stringify(payload), APP_GROUP);
     WidgetKit?.reloadAllTimelines?.();
   } catch {
-    // im lặng — widget không cập nhật được thì thôi, không ảnh hưởng app.
+    // widget không cập nhật được thì thôi, không ảnh hưởng app.
   }
 }

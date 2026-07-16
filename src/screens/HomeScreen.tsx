@@ -158,19 +158,20 @@ export default function HomeScreen({ navigation }: any) {
   })();
   const dateLabel = `Hôm nay · ${String(nowD.getDate()).padStart(2, '0')}/${String(nowD.getMonth() + 1).padStart(2, '0')}`;
 
-  // Đẩy dữ liệu sang Widget iOS mỗi khi tiến độ / persona / streak đổi.
+  // Câu nói persona ở bong bóng Home (data-driven).
   const widgetLine = line || personaHomeLine(persona?.variant, { done: doneCount, total: todayHabits.length, next: nextUp?.h?.name });
+  // Đẩy dữ liệu sang Widget iOS mỗi khi tiến độ / persona / việc kế tiếp đổi.
   useEffect(() => {
     pushWidget({
-      personaName: persona?.name || 'Purrbo',
-      line: widgetLine,
+      personaVariant: persona?.variant || 'mun',
+      nextId: nextUp?.h?.id || 0,
       nextName: nextUp?.h?.name || '',
       nextTime: nextUp?.h?.time || '',
       done: doneCount,
       total: todayHabits.length,
       streak,
     });
-  }, [widgetLine, nextUp?.h?.name, nextUp?.h?.time, doneCount, todayHabits.length, streak, persona?.name]);
+  }, [persona?.variant, nextUp?.h?.id, nextUp?.h?.name, nextUp?.h?.time, doneCount, todayHabits.length, streak]);
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: colors.bg }} edges={['top']}>
