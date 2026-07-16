@@ -57,7 +57,52 @@
       "expo-asset",
       "expo-font",
       "expo-status-bar",
-      "@bacons/apple-targets"
+      "@bacons/apple-targets",
+      [
+        "expo-alternate-app-icons",
+        [
+          {
+            "name": "Mun",
+            "ios": "./assets/persona-icons/icon-mun.png",
+            "android": { "foregroundImage": "./assets/persona-icons/icon-mun-android.png", "backgroundColor": "#6C63E0" }
+          },
+          {
+            "name": "Cam",
+            "ios": "./assets/persona-icons/icon-cam.png",
+            "android": { "foregroundImage": "./assets/persona-icons/icon-cam-android.png", "backgroundColor": "#FF9E4D" }
+          },
+          {
+            "name": "Ly",
+            "ios": "./assets/persona-icons/icon-ly.png",
+            "android": { "foregroundImage": "./assets/persona-icons/icon-ly-android.png", "backgroundColor": "#E8743B" }
+          },
+          {
+            "name": "Sep",
+            "ios": "./assets/persona-icons/icon-sep.png",
+            "android": { "foregroundImage": "./assets/persona-icons/icon-sep-android.png", "backgroundColor": "#8B7BB0" }
+          },
+          {
+            "name": "Bong",
+            "ios": "./assets/persona-icons/icon-bong.png",
+            "android": { "foregroundImage": "./assets/persona-icons/icon-bong-android.png", "backgroundColor": "#EC6FA0" }
+          },
+          {
+            "name": "Xu",
+            "ios": "./assets/persona-icons/icon-xu.png",
+            "android": { "foregroundImage": "./assets/persona-icons/icon-xu-android.png", "backgroundColor": "#22B584" }
+          },
+          {
+            "name": "Bo",
+            "ios": "./assets/persona-icons/icon-bo.png",
+            "android": { "foregroundImage": "./assets/persona-icons/icon-bo-android.png", "backgroundColor": "#7FB77E" }
+          },
+          {
+            "name": "Sin",
+            "ios": "./assets/persona-icons/icon-sin.png",
+            "android": { "foregroundImage": "./assets/persona-icons/icon-sin-android.png", "backgroundColor": "#D99A22" }
+          }
+        ]
+      ]
     ],
     "extra": {
       "eas": {
