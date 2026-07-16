@@ -34,7 +34,9 @@ export function SkeletonRow() {
 }
 
 // Nút bấm hiệu ứng "lún" kiểu Duolingo (dùng borderBottom làm chân 3D).
-export function Button({ label, onPress, tone = 'pink', icon = null, disabled, style }) {
+// color/colorDark: đè tone cố định bằng MÀU PERSONA (personaPalette) — để 1 màn
+// chỉ dùng tông của persona đang active thay vì cầu vồng nhiều màu.
+export function Button({ label, onPress, tone = 'pink', color, colorDark, icon = null, disabled, style }) {
   const [down, setDown] = useState(false);
   const handlePress = disabled ? undefined : (e: any) => { playTap(); onPress?.(e); };
   const map = {
@@ -44,7 +46,11 @@ export function Button({ label, onPress, tone = 'pink', icon = null, disabled, s
     mint: [colors.mint, colors.mintDark, '#fff'],
     soft: ['#F1ECF6', '#E1D8EC', '#807892'],
   };
-  const [bg, foot, fg] = disabled ? ['#E7E2EE', '#D6CFE0', '#B7AFC6'] : map[tone];
+  const [bg, foot, fg] = disabled
+    ? ['#E7E2EE', '#D6CFE0', '#B7AFC6']
+    : color
+      ? [color, colorDark || color, '#fff']
+      : map[tone];
   return (
     <Pressable
       onPress={handlePress}

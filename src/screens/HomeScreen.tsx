@@ -14,17 +14,14 @@ import { useAuth } from '../auth';
 import { scheduleHabitReminders } from '../notifications';
 import { personaCopy, personaHomeLine } from '../personaCopy';
 import { pushWidget } from '../widget';
-import { personaTheme } from '../personaTheme';
+import { personaTheme, personaPalette, type PersonaPalette } from '../personaTheme';
 import { playSuccess } from '../sound';
 
 const NUDGE = 'Ơ 3 tiếng chưa uống giọt nào? Định làm khô mực cho em buồn hả 🙄💧';
 
-const ICON_STYLE: Record<string, { bg: string; col: string }> = {
-  droplet: { bg: '#E6F7FF', col: colors.skyDark },
-  dumbbell: { bg: '#FFEAF2', col: colors.pinkDark },
-  book: { bg: '#EEE7FF', col: colors.purpleDark },
-};
-const istyle = (ic: string) => ICON_STYLE[ic] ?? { bg: '#F1ECF6', col: colors.muted };
+// Icon việc dùng CHUNG tông persona (hình icon đã đủ phân biệt) — bỏ cầu vồng
+// mỗi icon một màu, để 1 màn chỉ còn tông của persona đang active.
+const istyle = (pal: PersonaPalette) => ({ bg: pal.soft, col: pal.primaryDark });
 
 export default function HomeScreen({ navigation }: any) {
   const { user } = useAuth();
@@ -130,6 +127,8 @@ export default function HomeScreen({ navigation }: any) {
   const aff = st?.affinity_points ?? 0;
   const lvl = st?.affinity_level ?? 1;
   const streak = st?.streak ?? 0;
+  // Tông màu của persona đang active — dùng cho MỌI nhấn trên màn (bỏ cầu vồng).
+  const pal = personaPalette(persona?.variant);
 
   // ── Việc SẮP TỚI: undone gần giờ hiện tại nhất (ưu tiên còn phía trước trong ngày) ──
   const parseHM = (t: string) => { const m = String(t || '').match(/(\d{1,2})[:h](\d{0,2})/); return m ? Number(m[1]) * 60 + Number(m[2] || 0) : null; };
@@ -178,7 +177,7 @@ export default function HomeScreen({ navigation }: any) {
       <ScrollView
         contentContainerStyle={{ padding: 18, paddingBottom: 40 }}
         showsVerticalScrollIndicator={false}
-        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.pink} colors={[colors.pink]} />}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={pal.primary} colors={[pal.primary]} />}
       >
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 14 }}>
           <AnimatedMascot size={34} />
@@ -190,14 +189,14 @@ export default function HomeScreen({ navigation }: any) {
             <Text style={s.sub}>Hôm nay {doneCount}/{todayHabits.length} việc · cùng em nhé</Text>
           </View>
           <Pressable onPress={() => navigation?.navigate?.('Leaderboard')}>
-            <Chip bg="#FFF0E6" fg={colors.coralDark} border="#FFD9C7">
-              <Icon name="flamefill" size={14} color={colors.coralDark} />
-              <Text style={{ fontFamily: fonts.heading, fontSize: 13, color: colors.coralDark }}>{streak}</Text>
+            <Chip bg={pal.soft} fg={pal.primaryDark} border={pal.surface}>
+              <Icon name="flamefill" size={14} color={pal.primaryDark} />
+              <Text style={{ fontFamily: fonts.heading, fontSize: 13, color: pal.primaryDark }}>{streak}</Text>
             </Chip>
           </Pressable>
         </View>
 
-        <View style={[s.hero, { backgroundColor: personaTheme(persona?.variant).surface }]}>
+        <View style={[s.hero, { backgroundColor: pal.surface }]}>
           {/* Nhân vật là hero — nhún nhẹ cho sống; thưởng cảm xúc khi Khoe */}
           <View style={{ alignItems: 'center', justifyContent: 'center', paddingTop: 2 }}>
             <Animated.View style={{ transform: [{ translateY: heroBob.interpolate({ inputRange: [0, 1], outputRange: [3, -7] }) }] }}>
@@ -236,7 +235,8 @@ export default function HomeScreen({ navigation }: any) {
             </View>
             <Button
               label="Khoe ngay 💗"
-              tone="mint"
+              color={pal.primary}
+              colorDark={pal.primaryDark}
               onPress={() => khoe(nextUp.h)}
               icon={<Icon name="heart" size={16} color="#fff" />}
               style={{ marginTop: 12, paddingVertical: 13 }}
@@ -259,12 +259,12 @@ export default function HomeScreen({ navigation }: any) {
             <AnimatedMascot size={72} />
             <Text style={s.emptyTitle}>Chưa có việc nào hôm nay</Text>
             <Text style={s.emptySub}>Thêm việc đầu tiên để bạn đồng hành bắt đầu nhắc cưng nha 🐾</Text>
-            <Button label="Thêm việc đầu tiên" tone="pink" onPress={() => navigation?.navigate?.('AddTask')} icon={<Icon name="plus" size={16} color="#fff" />} style={{ marginTop: 14, paddingHorizontal: 20 }} />
+            <Button label="Thêm việc đầu tiên" color={pal.primary} colorDark={pal.primaryDark} onPress={() => navigation?.navigate?.('AddTask')} icon={<Icon name="plus" size={16} color="#fff" />} style={{ marginTop: 14, paddingHorizontal: 20 }} />
           </View>
         )}
 
         {todayHabits.filter((h) => !(nextUp && h.id === nextUp.h.id)).sort((a, b) => (parseHM(a.time) ?? 9999) - (parseHM(b.time) ?? 9999)).map((h) => {
-          const ic = istyle(h.icon);
+          const ic = istyle(pal);
           return (
             <View key={h.id} style={[s.habit, h.done && { opacity: 0.55 }]}>
               <Pressable onPress={() => navigation?.navigate?.('HabitEdit', { habit: h })} style={{ flexDirection: 'row', alignItems: 'center', gap: 12, flex: 1, minWidth: 0 }}>

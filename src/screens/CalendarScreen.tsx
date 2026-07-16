@@ -10,7 +10,7 @@ import { Button, SkeletonRow } from '../components/ui';
 import { CelebrationModal } from '../components/CelebrationModal';
 import { Api } from '../api';
 import { personaCopy } from '../personaCopy';
-import { personaTheme } from '../personaTheme';
+import { personaTheme, personaPalette } from '../personaTheme';
 import { getGcalToken, getLarkToken } from '../googleCalendar';
 import { playSuccess } from '../sound';
 
@@ -142,6 +142,8 @@ export default function CalendarScreen({ navigation }) {
   const [gcalOn, setGcalOn] = useState(false);
   const [st, setSt] = useState(null);
   const [activePersona, setActivePersona] = useState({ variant: 'mun', name: 'Bạn đồng hành' });
+  // Tông persona cho MỌI nhấn trên màn (bỏ cầu vồng mỗi icon 1 màu).
+  const pal = personaPalette(activePersona?.variant);
   const [celebration, setCelebration] = useState(null);
   // KHÔNG bịa habit mẫu — chỉ hiện việc thật từ backend (rỗng → empty state).
   const [items, setItems] = useState<any[]>([]);
@@ -248,7 +250,7 @@ export default function CalendarScreen({ navigation }) {
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: colors.bg }} edges={['top']}>
       <ScrollView contentContainerStyle={{ padding: 18, paddingBottom: 40 }} showsVerticalScrollIndicator={false}
-        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.pink} colors={[colors.pink]} />}>
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={pal.primary} colors={[pal.primary]} />}>
         {/* Header */}
         <View style={s.top}>
           <View style={{ flex: 1 }}>
@@ -374,10 +376,10 @@ export default function CalendarScreen({ navigation }) {
                   onPress={it.type === 'habit' ? () => navigation?.navigate?.('HabitEdit', { habit: { id: it.hid, name: it.name, icon: it.iconKey, time: it.time, hint: it.nudge, repeat: it.repeat } }) : undefined}
                   style={{ flexDirection: 'row', alignItems: 'center', gap: 11, flex: 1, minWidth: 0 }}
                 >
-                  <View style={[s.itemIc, { backgroundColor: it.bg }]}>
+                  <View style={[s.itemIc, { backgroundColor: pal.soft }]}>
                     {SHARED[it.ic]
-                      ? <Icon name={it.ic} size={22} color={it.col} />
-                      : <MiniIcon name={it.ic} size={22} color={it.col} />}
+                      ? <Icon name={it.ic} size={22} color={pal.primaryDark} />
+                      : <MiniIcon name={it.ic} size={22} color={pal.primaryDark} />}
                   </View>
                   <View style={{ flex: 1, minWidth: 0 }}>
                     <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
