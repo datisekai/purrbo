@@ -31,10 +31,10 @@ function MiniIcon({ name, size = 22, color = colors.ink, stroke = 2.4 }) {
 }
 
 const PERSONA = {
-  mun:  { name: 'Mun',   variant: 'mun',  rar: 'SSR',  tag: 'tsundere · cà khịa yêu', line: 'Ơ chào cưng 😼 Em là Mun. Nghe nói cưng hay quên uống nước lắm đúng hông? Yên tâm, có em cằn nhằn cho mà nhớ 💅' },
-  cam:  { name: 'Mochi', variant: 'cam',  rar: 'SSR',  tag: 'soft · ngọt xỉu thả thính', line: 'Hí hí chào cưng 🍊 Em là Mochi nè. Từ nay em cưng cưng mỗi ngày, cưng chỉ việc ngoan là em thương xỉu 💗' },
-  sep:  { name: 'Sếp',   variant: 'sep',  rar: 'Hiếm', tag: 'tổng tài · chủ động', line: 'Chào. Ta là Sếp 💼 Từ giờ lịch trình của cưng do ta quản. Sống kỷ luật vào, ta lo phần còn lại.' },
-  xu:   { name: 'Xu',    variant: 'xu',   rar: 'Hiếm', tag: 'hype · năng lượng vô cực', line: 'YO chào cậu 👾 Xu đây! Chuẩn bị quẩy tung cái list việc luôn nha, đi đi đi khum có lười 🔥' },
+  mun:  { name: 'Mun',   variant: 'mun',  rar: 'SSR',  tag: 'tsundere · cà khịa yêu', line: 'Ơ chào cưng 😼 Em là Mun. Nghe nói cưng hay quên uống nước lắm đúng hông? Yên tâm, có em cằn nhằn cho mà nhớ — mà hông lo cho cưng đâu nha 💅' },
+  cam:  { name: 'Mochi', variant: 'cam',  rar: 'SSR',  tag: 'soft · ngọt xỉu thả thính', line: 'Hí hí chào cưng 🍊 Em là Mochi nè. Ăn chưa đó cưng?? Từ nay em hỏi dồn mỗi ngày, cưng chỉ việc ngoan là em yên tâm 💗' },
+  sep:  { name: 'Sếp',   variant: 'sep',  rar: 'Hiếm', tag: 'tổng tài · chủ động', line: 'Chào. Ta là Sếp 💼 Từ giờ lịch trình của cưng do ta quản. Sống kỷ luật vào — mọi thứ ta Duyệt hết.' },
+  xu:   { name: 'Xu',    variant: 'xu',   rar: 'Hiếm', tag: 'hype · năng lượng vô cực', line: 'YO chào cậu 👾 Xu đây! Chuẩn bị quẩy tung cái list việc luôn nha, ĐI ĐI ĐI khum có lười 🔥' },
 };
 
 const mkQuiz = (c: AppColors, pal: any) => [

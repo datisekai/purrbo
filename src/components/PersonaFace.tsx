@@ -204,6 +204,17 @@ function FaceSvg({ variant = 'mun', items, expr }) {
       <Circle cx="32" cy="34" r="22" fill={`url(#${gid})`} stroke={D} strokeWidth="3" />
       {/* highlight bóng nhẹ trên đỉnh đầu */}
       <Ellipse cx="24" cy="24" rx="8" ry="5.5" fill="#fff" opacity="0.28" />
+      {/* Dấu hiệu riêng trên trán — giúp nhận ra ở size nhỏ (icon/widget), không
+          phải phụ kiện mua được. Cam = tim hồng (mẹ bỉm thả thính), Bơ = lá trà. */}
+      {variant === 'cam' && (
+        <Path d="M32 20 q-3 -3.5 -0.2 -4.6 q1.2 -0.5 0.2 1 q1 -1.5 0.2 -1 q2.8 1.1 -0.2 4.6z" fill="#FF7AA8" />
+      )}
+      {variant === 'bo' && (
+        <G>
+          <Path d="M28.5 15 Q32 8 35.5 15 Q32 19.5 28.5 15 Z" fill="#5C9159" stroke={D} strokeWidth="1.6" strokeLinejoin="round" />
+          <Path d="M32 11 v6" stroke={D} strokeWidth="1" strokeLinecap="round" opacity="0.6" />
+        </G>
+      )}
       {v.glasses && !expr ? (
         <G>
           <Circle cx="25" cy="33" r="5.5" fill="none" stroke={D} strokeWidth="2.5" />

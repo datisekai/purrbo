@@ -155,9 +155,9 @@ export default function HomeScreen({ navigation }: any) {
       rewardBurst((r.affinity_points ?? prevAff) - prevAff);
       // Ăn mừng: lên cấp thân thiết hoặc chạm mốc streak (chỉ khi tăng thật)
       if (r.affinity_level > prevLevel) {
-        setCelebration({ type: 'level', value: r.affinity_level, persona, items: equipped });
+        setCelebration({ type: 'level', value: r.affinity_level, persona, items: equipped, level: r.affinity_level });
       } else if (r.streak > prevStreak && STREAK_MILESTONES.includes(r.streak)) {
-        setCelebration({ type: 'streak', value: r.streak, persona, items: equipped });
+        setCelebration({ type: 'streak', value: r.streak, persona, items: equipped, level: r.affinity_level });
       }
     } catch {
       /* giữ optimistic */
@@ -194,7 +194,7 @@ export default function HomeScreen({ navigation }: any) {
 
   // Câu nói persona ở bong bóng Home (data-driven) — tự chuyển sang câu "xong hết"
   // khi nextUp rỗng (personaHomeLine đã xử lý case 'all'/'empty').
-  const widgetLine = line || personaHomeLine(persona?.variant, { done: doneCount, total: todayHabits.length, next: nextUp?.h?.name });
+  const widgetLine = line || personaHomeLine(persona?.variant, { done: doneCount, total: todayHabits.length, next: nextUp?.h?.name }, st?.affinity_level);
 
   // Đẩy dữ liệu sang Widget iOS mỗi khi tiến độ / persona / việc kế tiếp đổi.
   useEffect(() => {

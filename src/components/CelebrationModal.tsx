@@ -55,7 +55,7 @@ function Flame({ size = 30, color = '#fff' }) {
   );
 }
 
-type Celebration = { type: 'level' | 'streak'; value: number; persona?: any; items?: Record<string, string> } | null;
+type Celebration = { type: 'level' | 'streak'; value: number; persona?: any; items?: Record<string, string>; level?: number } | null;
 
 export function CelebrationModal({ data, onClose }: { data: Celebration; onClose: () => void }) {
   const c = useC();
@@ -73,7 +73,7 @@ export function CelebrationModal({ data, onClose }: { data: Celebration; onClose
 
   const isLevel = data.type === 'level';
   const title = isLevel ? `Lên Lv.${data.value}!` : `Streak ${data.value} ngày!`;
-  const sub = personaCelebrate(data.persona?.variant, isLevel ? 'level' : 'streak');
+  const sub = personaCelebrate(data.persona?.variant, isLevel ? 'level' : 'streak', data.level);
   const scale = pop.interpolate({ inputRange: [0, 1], outputRange: [0.7, 1] });
 
   return (
