@@ -17,4 +17,6 @@ COPY domain ./domain
 COPY adapters ./adapters
 
 EXPOSE 8000
-CMD ["uvicorn", "api.app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+# 2 worker (process riêng) — hợp với pool DB đã tính sẵn cho 2 worker (xem db.py)
+# + advisory-lock bootstrap (xem main.py) để 2 process không race lúc khởi động.
+CMD ["uvicorn", "api.app.main:app", "--host", "0.0.0.0", "--port", "8000", "--workers", "2"]

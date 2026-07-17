@@ -5,6 +5,8 @@ import os
 
 from openai import AsyncOpenAI
 
+from adapters._openai_limit import OPENAI_SEMAPHORE
+
 _MODEL = os.environ.get("OPENAI_MEMORY_MODEL", "gpt-4o-mini")
 
 _SYSTEM = (
@@ -20,13 +22,14 @@ class OpenAIMemory:
 
     async def summarize(self, persona_name: str, old_summary: str, messages: list[str]) -> str:
         content = f"Tóm tắt cũ: {old_summary or '(chưa có)'}\n\nHội thoại gần đây:\n" + "\n".join(messages)
-        resp = await self._client.chat.completions.create(
-            model=_MODEL,
-            temperature=0.3,
-            max_tokens=220,
-            messages=[
-                {"role": "system", "content": _SYSTEM.format(name=persona_name)},
-                {"role": "user", "content": content},
-            ],
-        )
+        async with OPENAI_SEMAPHORE:
+            resp = await self._client.chat.completions.create(
+                model=_MODEL,
+                temperature=0.3,
+                max_tokens=220,
+                messages=[
+                    {"role": "system", "content": _SYSTEM.format(name=persona_name)},
+                    {"role": "user", "content": content},
+                ],
+            )
         return (resp.choices[0].message.content or old_summary).strip()

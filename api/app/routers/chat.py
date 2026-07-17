@@ -4,7 +4,8 @@ from fastapi import APIRouter, Depends
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from api.app.db import get_session
+from api.app.ai_cap import ai_call_allowed
+from api.app.db import SessionLocal, get_session
 from api.app.deps import get_current_user, get_dialogue, get_memory
 from api.app.models import ChatMessage, Persona, PersonaMemory, UserState
 from api.app.schemas import ChatIn, ChatOut
@@ -61,24 +62,43 @@ async def send(payload: ChatIn, user_id: str = Depends(get_current_user), db: As
 
     mem = await _memory(db, user_id, st.persona_key)                 # AD-11: trí nhớ bền
     memory_ctx = ([f"[Ghi nhớ] {mem.summary}"] if mem.summary else []) + recent_lines
+    mem_summary = mem.summary
 
-    dialogue = get_dialogue()
-    reply = await dialogue.generate(DialogueContext(
-        persona_name=pname,
-        persona_tag=persona.tag if persona else "cà khịa yêu",
-        persona_variant=persona.variant if persona else "mun",
-        mood=st.mood,
-        intimacy_level=st.affinity_level,
-        event="reply",
-        detail=payload.text,
-        memory=memory_ctx,
-    ))
-    db.add(ChatMessage(user_id=user_id, role="persona", text=reply, persona_key=pkey))
+    ptag = persona.tag if persona else "cà khịa yêu"
+    pvariant = persona.variant if persona else "mun"
+    mood, lvl = st.mood, st.affinity_level
 
-    # Cứ ~6 tin thì cô đọng lại tóm tắt (giảm cost, vẫn giữ moat)
-    mem.msg_count += 1
-    if mem.msg_count % 6 == 0:
-        mem.summary = await get_memory().summarize(pname, mem.summary, recent_lines + [f"user: {payload.text}"])
-
+    # Chốt tin nhắn user + counter trần AI, commit+đóng session TRƯỚC khi chờ OpenAI
+    # (có thể mất tới 8s) — nhả connection về pool thay vì giữ suốt lúc chờ AI, đây
+    # là thứ giới hạn trần CCU thật sự khi nhiều người chat cùng lúc.
+    ai_ok = await ai_call_allowed(st)
     await db.commit()
+    await db.close()
+
+    if ai_ok:
+        dialogue = get_dialogue()
+        reply = await dialogue.generate(DialogueContext(
+            persona_name=pname,
+            persona_tag=ptag,
+            persona_variant=pvariant,
+            mood=mood,
+            intimacy_level=lvl,
+            event="reply",
+            detail=payload.text,
+            memory=memory_ctx,
+        ))
+    else:
+        reply = "Cưng ơi hôm nay em nói chuyện nhiều quá rồi, mai tám tiếp nha 🥹"
+
+    # Session MỚI — session cũ đã đóng trong lúc chờ AI ở trên, không đứng đợi.
+    async with SessionLocal() as db2:
+        db2.add(ChatMessage(user_id=user_id, role="persona", text=reply, persona_key=pkey))
+        mem2 = await _memory(db2, user_id, pkey)
+        mem2.msg_count += 1
+        # Cứ ~6 tin thì cô đọng lại tóm tắt (giảm cost, vẫn giữ moat) — bỏ qua nếu
+        # đã chạm trần AI ở trên (khỏi tốn thêm 1 call OpenAI nữa).
+        if ai_ok and mem2.msg_count % 6 == 0:
+            mem2.summary = await get_memory().summarize(pname, mem_summary, recent_lines + [f"user: {payload.text}"])
+        await db2.commit()
+
     return ChatOut(reply=reply)

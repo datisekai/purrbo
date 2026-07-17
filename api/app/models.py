@@ -70,6 +70,8 @@ class UserState(Base):
     lay: Mapped[int] = mapped_column(Integer, default=2)               # 0 dịu · 1 vừa · 2 gắt
     freq: Mapped[int] = mapped_column(Integer, default=1)              # 0 ít · 1 vừa · 2 nhiều
     onboarded: Mapped[bool] = mapped_column(Boolean, default=False)    # đã qua onboarding chưa
+    ai_calls_ymd: Mapped[str] = mapped_column(String(10), default="")  # AD-7: ngày đếm trần AI (YYYY-MM-DD)
+    ai_calls_count: Mapped[int] = mapped_column(Integer, default=0)    # AD-7: số call AI đã dùng trong ngày đó
 
 
 class OwnedPersona(Base):

@@ -14,6 +14,8 @@ except Exception:  # thiếu tzdata → fallback offset cứng +7
 
 from openai import AsyncOpenAI
 
+from adapters._openai_limit import OPENAI_SEMAPHORE
+
 _MODEL = os.environ.get("OPENAI_NLP_MODEL", "gpt-4o-mini")
 _WD_VI = ["Thứ 2", "Thứ 3", "Thứ 4", "Thứ 5", "Thứ 6", "Thứ 7", "Chủ nhật"]
 
@@ -64,15 +66,16 @@ class OpenAISchedule:
         self._client = AsyncOpenAI(api_key=api_key or os.environ.get("OPENAI_API_KEY"), timeout=8.0, max_retries=1)
 
     async def parse(self, text: str, now: str = "") -> dict:
-        resp = await self._client.chat.completions.create(
-            model=_MODEL,
-            temperature=0,
-            response_format={"type": "json_object"},
-            messages=[
-                {"role": "system", "content": _system(_today(now))},
-                {"role": "user", "content": text},
-            ],
-        )
+        async with OPENAI_SEMAPHORE:
+            resp = await self._client.chat.completions.create(
+                model=_MODEL,
+                temperature=0,
+                response_format={"type": "json_object"},
+                messages=[
+                    {"role": "system", "content": _system(_today(now))},
+                    {"role": "user", "content": text},
+                ],
+            )
         try:
             data = json.loads(resp.choices[0].message.content or "{}")
         except json.JSONDecodeError:

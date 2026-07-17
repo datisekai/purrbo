@@ -4,6 +4,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from api.app.ai_cap import ai_call_allowed
 from api.app.db import get_session
 from api.app.deps import get_current_user, get_dialogue
 from api.app.models import Habit, Persona, UserState
@@ -97,19 +98,34 @@ async def khoe(habit_id: int, user_id: str = Depends(get_current_user), db: Asyn
         await db.execute(select(Persona).where(Persona.key == st.persona_key))
     ).scalar_one_or_none()
 
+    # Chốt số liệu (điểm/streak) TRƯỚC khi gọi AI, rồi commit+đóng session ngay —
+    # nhả connection về pool trong lúc chờ OpenAI (có thể mất tới 8s). Giữ connection
+    # suốt lúc đó là thứ bóp nghẹt trần CCU thật sự khi nhiều người Khoe cùng lúc.
+    out_points, out_level, out_streak = st.affinity_points, st.affinity_level, st.streak
+    persona_name = persona.name if persona else "Mèo Mun"
+    persona_tag = persona.tag if persona else "cà khịa yêu"
+    persona_variant = persona.variant if persona else "mun"
+    mood, lvl = st.mood, st.affinity_level
+    ai_ok = await ai_call_allowed(st) if is_new else False        # AD-7: trần AI/user/ngày — tăng counter ngay
+    await db.commit()
+    await db.close()
+
     line = ""
     if is_new:
-        dialogue = get_dialogue()
-        line = await dialogue.generate(DialogueContext(
-            persona_name=persona.name if persona else "Mèo Mun",
-            persona_tag=persona.tag if persona else "cà khịa yêu",
-            mood=st.mood,
-            intimacy_level=st.affinity_level,
-            event="praise",
-            detail=f"Cưng vừa hoàn thành: {habit.name}",
-        ))
+        if ai_ok:
+            dialogue = get_dialogue()
+            line = await dialogue.generate(DialogueContext(
+                persona_name=persona_name,
+                persona_tag=persona_tag,
+                persona_variant=persona_variant,
+                mood=mood,
+                intimacy_level=lvl,
+                event="praise",
+                detail=f"Cưng vừa hoàn thành: {habit.name}",
+            ))
+        else:
+            line = "Cưng khoe rồi nè 💗 (hôm nay em khen nhiều lần quá rồi, mai em khen tử tế hơn nha)"
     else:
         line = "Cưng khoe rồi mà 😝 nay giỏi rồi, mai làm tiếp cho em nha!"
 
-    await db.commit()
-    return KhoeOut(line=line, affinity_points=st.affinity_points, affinity_level=st.affinity_level, streak=st.streak)
+    return KhoeOut(line=line, affinity_points=out_points, affinity_level=out_level, streak=out_streak)

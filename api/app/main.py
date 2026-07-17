@@ -6,11 +6,11 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
-from sqlalchemy import func, select
+from sqlalchemy import func, select, text
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
 from api.app.config import settings
-from api.app.db import SessionLocal, init_db
+from api.app.db import SessionLocal, engine, init_db
 from api.app.models import Persona
 from api.app.routers import (
     admin, appconfig, auth, chat, gacha, habits, integrations, items, nlp, personas, profile,
@@ -66,6 +66,8 @@ async def _ensure_columns() -> None:
         "ALTER TABLE users ADD COLUMN referral_code VARCHAR(12) DEFAULT ''",
         "ALTER TABLE users ADD COLUMN referred_by VARCHAR(64) DEFAULT ''",
         "ALTER TABLE chat_messages ADD COLUMN persona_key VARCHAR(32) DEFAULT ''",
+        "ALTER TABLE user_state ADD COLUMN ai_calls_ymd VARCHAR(10) DEFAULT ''",
+        "ALTER TABLE user_state ADD COLUMN ai_calls_count INTEGER DEFAULT 0",
         # Index chịu tải (idempotent). Composite phủ đúng query thực tế.
         "CREATE INDEX IF NOT EXISTS ix_userstate_rank ON user_state (streak DESC, affinity_points DESC)",
         "CREATE INDEX IF NOT EXISTS ix_chat_user_persona_id ON chat_messages (user_id, persona_key, id)",
@@ -80,13 +82,33 @@ async def _ensure_columns() -> None:
                 await db.rollback()
 
 
+# Khoá cố định riêng cho bootstrap Purrbo (số bất kỳ, chỉ cần ổn định giữa các
+# lần chạy). Chạy nhiều uvicorn worker (--workers 2) → mỗi worker là 1 process
+# riêng, lifespan chạy độc lập ở từng process → không có khoá thì 2 worker cùng
+# ALTER TABLE / seed persona song song sẽ đụng race (trùng insert, lỗi cột đã có
+# giữa chừng...). pg_advisory_lock xếp hàng chúng lại: worker sau đợi worker
+# trước bootstrap xong (idempotent) rồi mới chạy tiếp — an toàn dù chạy lại.
+_BOOTSTRAP_LOCK_KEY = 727271
+
+
+@asynccontextmanager
+async def _bootstrap_guard():
+    async with engine.connect() as conn:
+        await conn.execute(text(f"SELECT pg_advisory_lock({_BOOTSTRAP_LOCK_KEY})"))
+        try:
+            yield
+        finally:
+            await conn.execute(text(f"SELECT pg_advisory_unlock({_BOOTSTRAP_LOCK_KEY})"))
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    await init_db()          # dev bootstrap; prod dùng Alembic (AD-6)
-    await _ensure_columns()
-    await _seed_personas()
-    async with SessionLocal() as db:
-        await seed_items(db)
+    async with _bootstrap_guard():
+        await init_db()          # dev bootstrap; prod dùng Alembic (AD-6)
+        await _ensure_columns()
+        await _seed_personas()
+        async with SessionLocal() as db:
+            await seed_items(db)
     yield
 
 
